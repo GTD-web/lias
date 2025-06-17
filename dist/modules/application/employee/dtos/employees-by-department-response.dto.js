@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmplyeesByDepartmentResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const employee_response_dto_1 = require("./employee-response.dto");
 class EmplyeesByDepartmentResponseDto {
 }
 exports.EmplyeesByDepartmentResponseDto = EmplyeesByDepartmentResponseDto;
@@ -19,7 +20,9 @@ __decorate([
     __metadata("design:type", String)
 ], EmplyeesByDepartmentResponseDto.prototype, "department", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({
+        type: [employee_response_dto_1.EmployeeResponseDto],
+    }),
     __metadata("design:type", Array)
 ], EmplyeesByDepartmentResponseDto.prototype, "employees", void 0);
 //# sourceMappingURL=employees-by-department-response.dto.js.map

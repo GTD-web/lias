@@ -9,6 +9,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './common/swagger/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ENV } from './configs/env.config';
+import * as dto from './common/dtos';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -42,7 +43,7 @@ async function bootstrap() {
     // app.useGlobalInterceptors(new RequestInterceptor(), new ResponseInterceptor(), new ErrorInterceptor());
     // app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-    setupSwagger(app, []);
+    setupSwagger(app, Object.values(dto));
     await app.listen(ENV.APP_PORT || 3000);
 }
 bootstrap();

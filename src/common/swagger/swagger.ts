@@ -10,7 +10,7 @@ export function setupSwagger(app: INestApplication, dtos: any[]) {
         .build();
 
     const document = SwaggerModule.createDocument(app, config, {
-        // extraModels: [BaseResponseDto, PaginationData, ...dtos],
+        extraModels: [...dtos],
     });
 
     SwaggerModule.setup('api-docs', app, document, {

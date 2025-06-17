@@ -1,6 +1,0 @@
-export declare enum ResourceType {
-    MEETING_ROOM = "MEETING_ROOM",
-    VEHICLE = "VEHICLE",
-    ACCOMMODATION = "ACCOMMODATION",
-    EQUIPMENT = "EQUIPMENT"
-}

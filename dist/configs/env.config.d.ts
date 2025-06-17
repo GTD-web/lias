@@ -1,5 +1,5 @@
 export declare const ENV: NodeJS.ProcessEnv;
-declare const _default: (() => {
+export declare const DB_Config: (() => {
     host: string;
     port: number;
     username: string;
@@ -12,7 +12,6 @@ declare const _default: (() => {
     password: string;
     database: string;
 }>;
-export default _default;
 export declare const JWT_CONFIG: (() => {
     secret: string;
     expiresIn: string;

@@ -9,7 +9,9 @@ function setupSwagger(app, dtos) {
         .setVersion('1.0')
         .addBearerAuth()
         .build();
-    const document = swagger_1.SwaggerModule.createDocument(app, config, {});
+    const document = swagger_1.SwaggerModule.createDocument(app, config, {
+        extraModels: [...dtos],
+    });
     swagger_1.SwaggerModule.setup('api-docs', app, document, {
         jsonDocumentUrl: '/api-docs-json',
         customJs: [

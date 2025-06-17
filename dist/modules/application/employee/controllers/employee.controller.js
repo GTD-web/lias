@@ -13,22 +13,19 @@ exports.UserEmployeeController = void 0;
 const common_1 = require("@nestjs/common");
 const employee_service_1 = require("../employee.service");
 const swagger_1 = require("@nestjs/swagger");
-const api_responses_decorator_1 = require("@libs/decorators/api-responses.decorator");
-const employees_by_department_response_dto_1 = require("@resource/application/employee/dtos/employees-by-department-response.dto");
-const role_decorator_1 = require("@libs/decorators/role.decorator");
-const role_type_enum_1 = require("@libs/enums/role-type.enum");
+const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
+const employees_by_department_response_dto_1 = require("../dtos/employees-by-department-response.dto");
 let UserEmployeeController = class UserEmployeeController {
     constructor(employeeService) {
         this.employeeService = employeeService;
     }
     async findAllEmplyeesByDepartment() {
-        return this.employeeService.findEmployeeList();
+        return [];
     }
 };
 exports.UserEmployeeController = UserEmployeeController;
 __decorate([
     (0, common_1.Get)('department'),
-    (0, role_decorator_1.Roles)(role_type_enum_1.Role.USER),
     (0, swagger_1.ApiOperation)({ summary: '부서별 직원 목록 조회 #사용자/참석자설정/모달' }),
     (0, api_responses_decorator_1.ApiDataResponse)({
         status: 200,
@@ -42,7 +39,7 @@ __decorate([
 exports.UserEmployeeController = UserEmployeeController = __decorate([
     (0, swagger_1.ApiTags)('5. 직원 '),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.Controller)('v1/employees'),
+    (0, common_1.Controller)('employees'),
     __metadata("design:paramtypes", [employee_service_1.EmployeeService])
 ], UserEmployeeController);
 //# sourceMappingURL=employee.controller.js.map

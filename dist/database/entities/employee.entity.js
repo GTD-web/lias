@@ -11,27 +11,52 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Employee = void 0;
 const typeorm_1 = require("typeorm");
+const document_entity_1 = require("./document.entity");
+const form_approval_step_entity_1 = require("./form-approval-step.entity");
+const approval_step_entity_1 = require("./approval-step.entity");
 let Employee = class Employee {
 };
 exports.Employee = Employee;
 __decorate([
-    (0, typeorm_1.PrimaryColumn)('uuid', {
-        generated: 'uuid',
-    }),
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Employee.prototype, "employeeId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ comment: '이름' }),
     __metadata("design:type", String)
 ], Employee.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ comment: '사번' }),
     __metadata("design:type", String)
 ], Employee.prototype, "employeeNumber", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ nullable: true, comment: '이메일' }),
     __metadata("design:type", String)
 ], Employee.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: '부서' }),
+    __metadata("design:type", String)
+], Employee.prototype, "department", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: '직책' }),
+    __metadata("design:type", String)
+], Employee.prototype, "position", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: '직급' }),
+    __metadata("design:type", String)
+], Employee.prototype, "rank", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => document_entity_1.Document, (document) => document.employee),
+    __metadata("design:type", Array)
+], Employee.prototype, "documents", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => form_approval_step_entity_1.FormApprovalStep, (formApprovalStep) => formApprovalStep.defaultApprover),
+    __metadata("design:type", Array)
+], Employee.prototype, "defaultApprovers", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => approval_step_entity_1.ApprovalStep, (approvalStep) => approvalStep.approver),
+    __metadata("design:type", Array)
+], Employee.prototype, "approvers", void 0);
 exports.Employee = Employee = __decorate([
     (0, typeorm_1.Entity)('employees')
 ], Employee);
