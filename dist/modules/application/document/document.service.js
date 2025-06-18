@@ -11,12 +11,24 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentService = void 0;
 const common_1 = require("@nestjs/common");
+const create_approval_line_usecase_1 = require("./usecases/create-approval-line.usecase");
+const find_approval_lines_usecase_1 = require("./usecases/find-approval-lines.usecase");
 let DocumentService = class DocumentService {
-    constructor() { }
+    constructor(createApprovalLineUseCase, findApprovalLinesUseCase) {
+        this.createApprovalLineUseCase = createApprovalLineUseCase;
+        this.findApprovalLinesUseCase = findApprovalLinesUseCase;
+    }
+    async createApprovalLine(dto) {
+        return await this.createApprovalLineUseCase.execute(dto);
+    }
+    async findApprovalLines() {
+        return await this.findApprovalLinesUseCase.execute();
+    }
 };
 exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [create_approval_line_usecase_1.CreateApprovalLineUseCase,
+        find_approval_lines_usecase_1.FindApprovalLinesUseCase])
 ], DocumentService);
 //# sourceMappingURL=document.service.js.map

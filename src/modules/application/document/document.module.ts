@@ -9,7 +9,8 @@ import { DocumentFormController } from './controllers/document-form.controller';
 import { FormTypeController } from './controllers/form-type.controllers';
 import { ApprovalLineController } from './controllers/approval-line.controller';
 import { DocumentService } from './document.service';
-import { RouterModule } from '@nestjs/core';
+import { CreateApprovalLineUseCase } from './usecases/create-approval-line.usecase';
+import { FindApprovalLinesUseCase } from './usecases/find-approval-lines.usecase';
 
 @Module({
     imports: [
@@ -20,7 +21,7 @@ import { RouterModule } from '@nestjs/core';
         DomainFormApprovalStepModule,
     ],
     controllers: [ApprovalLineController, FormTypeController, DocumentFormController],
-    providers: [DocumentService],
+    providers: [DocumentService, CreateApprovalLineUseCase, FindApprovalLinesUseCase],
     exports: [],
 })
 export class DocumentModule {

@@ -7,7 +7,6 @@ import {
     FormApprovalLineResponseDto,
     UpdateFormApprovalLineDto,
 } from '../dtos/approval-line.dto';
-import { ApprovalLineType } from 'src/common/enums/approval.enum';
 
 @ApiTags('결재선')
 @ApiBearerAuth()
@@ -25,17 +24,8 @@ export class ApprovalLineController {
     async createApprovalLine(
         @Body() createFormApprovalLineDto: CreateFormApprovalLineDto,
     ): Promise<FormApprovalLineResponseDto> {
-        return {
-            formApprovalLineId: '1',
-            name: '결재선 1',
-            description: '결재선 1 설명',
-            type: ApprovalLineType.COMMON,
-            isActive: true,
-            order: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            formApprovalSteps: [],
-        };
+        const approvalLine = await this.documentService.createApprovalLine(createFormApprovalLineDto);
+        return approvalLine;
     }
 
     @Get('')
@@ -46,7 +36,7 @@ export class ApprovalLineController {
         type: [FormApprovalLineResponseDto],
     })
     async findAllApprovalLines(): Promise<FormApprovalLineResponseDto[]> {
-        return [];
+        return await this.documentService.findApprovalLines();
     }
 
     @Get(':id')

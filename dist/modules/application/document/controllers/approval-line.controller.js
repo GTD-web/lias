@@ -18,26 +18,16 @@ const swagger_1 = require("@nestjs/swagger");
 const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
 const document_service_1 = require("../document.service");
 const approval_line_dto_1 = require("../dtos/approval-line.dto");
-const approval_enum_1 = require("../../../../common/enums/approval.enum");
 let ApprovalLineController = class ApprovalLineController {
     constructor(documentService) {
         this.documentService = documentService;
     }
     async createApprovalLine(createFormApprovalLineDto) {
-        return {
-            formApprovalLineId: '1',
-            name: '결재선 1',
-            description: '결재선 1 설명',
-            type: approval_enum_1.ApprovalLineType.COMMON,
-            isActive: true,
-            order: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            formApprovalSteps: [],
-        };
+        const approvalLine = await this.documentService.createApprovalLine(createFormApprovalLineDto);
+        return approvalLine;
     }
     async findAllApprovalLines() {
-        return [];
+        return await this.documentService.findApprovalLines();
     }
     async findApprovalLineById(id) {
         return null;

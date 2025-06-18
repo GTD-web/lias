@@ -18,6 +18,8 @@ const document_form_controller_1 = require("./controllers/document-form.controll
 const form_type_controllers_1 = require("./controllers/form-type.controllers");
 const approval_line_controller_1 = require("./controllers/approval-line.controller");
 const document_service_1 = require("./document.service");
+const create_approval_line_usecase_1 = require("./usecases/create-approval-line.usecase");
+const find_approval_lines_usecase_1 = require("./usecases/find-approval-lines.usecase");
 let DocumentModule = class DocumentModule {
     configure(consumer) {
         consumer.apply().forRoutes({
@@ -37,7 +39,7 @@ exports.DocumentModule = DocumentModule = __decorate([
             form_approval_step_module_1.DomainFormApprovalStepModule,
         ],
         controllers: [approval_line_controller_1.ApprovalLineController, form_type_controllers_1.FormTypeController, document_form_controller_1.DocumentFormController],
-        providers: [document_service_1.DocumentService],
+        providers: [document_service_1.DocumentService, create_approval_line_usecase_1.CreateApprovalLineUseCase, find_approval_lines_usecase_1.FindApprovalLinesUseCase],
         exports: [],
     })
 ], DocumentModule);

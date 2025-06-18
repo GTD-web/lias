@@ -11,6 +11,10 @@ const env_config_1 = require("./configs/env.config");
 const dto = require("./common/dtos");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.enableCors({
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+    });
     app.setGlobalPrefix('api');
     app.useGlobalInterceptors(new request_interceptor_1.RequestInterceptor(), new response_interceptor_1.ResponseInterceptor(), new error_interceptor_1.ErrorInterceptor());
     app.useGlobalPipes(new common_1.ValidationPipe({ transform: true }));
