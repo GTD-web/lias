@@ -9,4 +9,4 @@ import { DomainFormApprovalLineRepository } from './form-approval-line.repositor
     providers: [DomainFormApprovalLineService, DomainFormApprovalLineRepository],
     exports: [DomainFormApprovalLineService],
 })
-export class FormApprovalLineModule {}
+export class DomainFormApprovalLineModule {}

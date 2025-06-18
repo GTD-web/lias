@@ -15,15 +15,15 @@ class BaseResponseDto {
 }
 exports.BaseResponseDto = BaseResponseDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: true, type: 'except' }),
+    (0, swagger_1.ApiProperty)({ example: true }),
     __metadata("design:type", Boolean)
 ], BaseResponseDto.prototype, "success", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: true, description: '응답 데이터', type: 'except' }),
+    (0, swagger_1.ApiProperty)({ required: true, description: '응답 데이터' }),
     __metadata("design:type", Object)
 ], BaseResponseDto.prototype, "data", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false, example: '성공적으로 처리되었습니다.', description: '성공 메시지', type: 'except' }),
+    (0, swagger_1.ApiProperty)({ required: false, example: '성공적으로 처리되었습니다.', description: '성공 메시지' }),
     __metadata("design:type", String)
 ], BaseResponseDto.prototype, "message", void 0);
 class ErrorResponseDto {

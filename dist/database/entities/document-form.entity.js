@@ -11,8 +11,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentForm = void 0;
 const typeorm_1 = require("typeorm");
-const document_entity_1 = require("./document.entity");
 const form_approval_line_entity_1 = require("./form-approval-line.entity");
+const document_type_entity_1 = require("./document-type.entity");
 let DocumentForm = class DocumentForm {
 };
 exports.DocumentForm = DocumentForm;
@@ -21,15 +21,11 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentForm.prototype, "documentFormId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '문서 양식 타입' }),
-    __metadata("design:type", String)
-], DocumentForm.prototype, "type", void 0);
-__decorate([
     (0, typeorm_1.Column)({ comment: '문서 양식 이름' }),
     __metadata("design:type", String)
 ], DocumentForm.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '문서 양식 설명' }),
+    (0, typeorm_1.Column)({ comment: '문서 양식 설명', nullable: true }),
     __metadata("design:type", String)
 ], DocumentForm.prototype, "description", void 0);
 __decorate([
@@ -37,13 +33,23 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentForm.prototype, "template", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => document_entity_1.Document, (document) => document.documentForm),
-    __metadata("design:type", Array)
-], DocumentForm.prototype, "documents", void 0);
+    (0, typeorm_1.Column)({ comment: '결재선 ID' }),
+    __metadata("design:type", String)
+], DocumentForm.prototype, "formApprovalLineId", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => form_approval_line_entity_1.FormApprovalLine, (formApprovalLine) => formApprovalLine.documentForm),
-    __metadata("design:type", Array)
-], DocumentForm.prototype, "formApprovalLines", void 0);
+    (0, typeorm_1.ManyToOne)(() => form_approval_line_entity_1.FormApprovalLine, (formApprovalLine) => formApprovalLine.documentForms),
+    (0, typeorm_1.JoinColumn)({ name: 'formApprovalLineId' }),
+    __metadata("design:type", form_approval_line_entity_1.FormApprovalLine)
+], DocumentForm.prototype, "formApprovalLine", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: '문서 양식 타입 ID' }),
+    __metadata("design:type", String)
+], DocumentForm.prototype, "documentTypeId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => document_type_entity_1.DocumentType, (documentType) => documentType.documentForms),
+    (0, typeorm_1.JoinColumn)({ name: 'documentTypeId' }),
+    __metadata("design:type", document_type_entity_1.DocumentType)
+], DocumentForm.prototype, "documentType", void 0);
 exports.DocumentForm = DocumentForm = __decorate([
     (0, typeorm_1.Entity)('document-forms')
 ], DocumentForm);

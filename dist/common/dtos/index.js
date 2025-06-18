@@ -23,4 +23,5 @@ var response_dto_1 = require("./response.dto");
 Object.defineProperty(exports, "ErrorResponseDto", { enumerable: true, get: function () { return response_dto_1.ErrorResponseDto; } });
 Object.defineProperty(exports, "BaseResponseDto", { enumerable: true, get: function () { return response_dto_1.BaseResponseDto; } });
 __exportStar(require("../../modules/application/employee/dtos/index"), exports);
+__exportStar(require("../../modules/application/document/dtos/index"), exports);
 //# sourceMappingURL=index.js.map

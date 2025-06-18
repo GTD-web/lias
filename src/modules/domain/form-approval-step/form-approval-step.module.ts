@@ -9,4 +9,4 @@ import { DomainFormApprovalStepRepository } from './form-approval-step.repositor
     providers: [DomainFormApprovalStepService, DomainFormApprovalStepRepository],
     exports: [DomainFormApprovalStepService],
 })
-export class FormApprovalStepModule {}
+export class DomainFormApprovalStepModule {}

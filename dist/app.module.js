@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const core_1 = require("@nestjs/core");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const typeorm_config_1 = require("./configs/typeorm.config");
@@ -18,6 +19,7 @@ const env_config_1 = require("./configs/env.config");
 const api_doc_service_1 = require("./common/documents/api-doc.service");
 const db_doc_service_1 = require("./common/documents/db-doc.service");
 const employee_module_1 = require("./modules/application/employee/employee.module");
+const document_module_1 = require("./modules/application/document/document.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +35,13 @@ exports.AppModule = AppModule = __decorate([
                 useFactory: typeorm_config_1.typeOrmConfig,
             }),
             typeorm_1.TypeOrmModule.forFeature(list_1.EntityList),
+            core_1.RouterModule.register([
+                {
+                    path: 'document',
+                    module: document_module_1.DocumentModule,
+                },
+            ]),
+            document_module_1.DocumentModule,
             employee_module_1.EmployeeModule,
         ],
         controllers: [app_controller_1.AppController],

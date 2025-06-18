@@ -5,3 +5,6 @@ export { ErrorResponseDto, BaseResponseDto } from './response.dto';
 
 // Employee
 export * from '../../modules/application/employee/dtos/index';
+
+// Document
+export * from '../../modules/application/document/dtos/index';

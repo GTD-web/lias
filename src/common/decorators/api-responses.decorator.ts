@@ -27,10 +27,44 @@ const ApiCommonErrors = () =>
 export const ApiDataResponse = (options: {
     status?: number;
     description: string;
-    type?: any;
+    type?: 'string' | 'number' | 'boolean' | Array<any> | Function;
     isPaginated?: boolean;
 }) => {
-    const schema = options.type
+    if (!options.type) {
+        return applyDecorators(
+            ApiOkResponse({
+                status: options.status || 200,
+                description: options.description || '성공적으로 처리되었습니다.',
+            }),
+            ApiCommonErrors(),
+        );
+    }
+    const isArray = Array.isArray(options.type);
+    const isObject = typeof options.type !== 'string';
+    const type = isArray ? options.type[0] : options.type;
+
+    let property;
+
+    switch (typeof options.type) {
+        case 'string':
+            property = {
+                success: { type: 'boolean', example: true },
+                data: { type: type },
+                message: { type: 'string', example: options.description },
+            };
+            break;
+        default:
+            property = { $ref: getSchemaPath(type) };
+    }
+
+    if (isArray) {
+        property = {
+            type: 'array',
+            items: property,
+        };
+    }
+
+    const schema = isObject
         ? {
               allOf: [
                   {
@@ -38,32 +72,26 @@ export const ApiDataResponse = (options: {
                   },
                   {
                       properties: {
-                          data:
-                              options.isPaginated || Array.isArray(options.type)
-                                  ? {
-                                        type: 'object',
-                                        properties: {
-                                            items: {
-                                                type: 'array',
-                                                items: { $ref: getSchemaPath(options.type[0]) },
-                                            },
-                                            meta: {
-                                                $ref: getSchemaPath(PaginationMetaDto),
-                                            },
+                          data: options.isPaginated
+                              ? {
+                                    type: 'object',
+                                    properties: {
+                                        items: {
+                                            type: 'array',
+                                            items: property,
                                         },
-                                    }
-                                  : {
-                                        $ref: getSchemaPath(options.type),
+                                        meta: {
+                                            $ref: getSchemaPath(PaginationMetaDto),
+                                        },
                                     },
+                                }
+                              : property,
                       },
                   },
               ],
           }
         : {
-              properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: options.description },
-              },
+              properties: property,
           };
 
     return applyDecorators(

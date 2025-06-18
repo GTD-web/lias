@@ -9,4 +9,4 @@ import { DomainDocumentFormRepository } from './document-form.repository';
     providers: [DomainDocumentFormService, DomainDocumentFormRepository],
     exports: [DomainDocumentFormService],
 })
-export class DocumentFormModule {}
+export class DomainDocumentFormModule {}

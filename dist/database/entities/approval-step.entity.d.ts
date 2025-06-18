@@ -1,10 +1,9 @@
 import { Employee } from './employee.entity';
 import { Document } from './document.entity';
+import { ApprovalStepType } from 'src/common/enums/approval.enum';
 export declare class ApprovalStep {
     approvalStepId: string;
-    type: string;
-    name: string;
-    description: string;
+    type: ApprovalStepType;
     order: number;
     approvedDate: Date;
     createdAt: Date;

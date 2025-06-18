@@ -9,4 +9,4 @@ import { DomainDocumentRepository } from './document.repository';
     providers: [DomainDocumentService, DomainDocumentRepository],
     exports: [DomainDocumentService],
 })
-export class DocumentModule {}
+export class DomainDocumentModule {}

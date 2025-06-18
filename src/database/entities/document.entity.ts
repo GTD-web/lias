@@ -4,13 +4,11 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     UpdateDateColumn,
-    DeleteDateColumn,
     JoinColumn,
     ManyToOne,
     OneToMany,
 } from 'typeorm';
 import { Employee } from './employee.entity';
-import { DocumentForm } from './document-form.entity';
 import { File } from './file.entity';
 import { ApprovalStep } from './approval-step.entity';
 
@@ -60,14 +58,6 @@ export class Document {
     @ManyToOne(() => Employee, (employee) => employee.documents)
     @JoinColumn({ name: 'employeeId' })
     employee: Employee;
-
-    // document form
-    @Column({ nullable: true })
-    documentFormId: string;
-
-    @ManyToOne(() => DocumentForm, (documentForm) => documentForm.documents)
-    @JoinColumn({ name: 'documentFormId' })
-    documentForm: DocumentForm;
 
     // approval steps
     @OneToMany(() => ApprovalStep, (approvalStep) => approvalStep.document)

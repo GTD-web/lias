@@ -6,20 +6,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FormApprovalStepModule = void 0;
+exports.DomainFormApprovalStepModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("../../../database/entities");
 const form_approval_step_service_1 = require("./form-approval-step.service");
 const form_approval_step_repository_1 = require("./form-approval-step.repository");
-let FormApprovalStepModule = class FormApprovalStepModule {
+let DomainFormApprovalStepModule = class DomainFormApprovalStepModule {
 };
-exports.FormApprovalStepModule = FormApprovalStepModule;
-exports.FormApprovalStepModule = FormApprovalStepModule = __decorate([
+exports.DomainFormApprovalStepModule = DomainFormApprovalStepModule;
+exports.DomainFormApprovalStepModule = DomainFormApprovalStepModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.FormApprovalStep])],
         providers: [form_approval_step_service_1.DomainFormApprovalStepService, form_approval_step_repository_1.DomainFormApprovalStepRepository],
         exports: [form_approval_step_service_1.DomainFormApprovalStepService],
     })
-], FormApprovalStepModule);
+], DomainFormApprovalStepModule);
 //# sourceMappingURL=form-approval-step.module.js.map

@@ -6,20 +6,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApprovalStepModule = void 0;
+exports.DomainApprovalStepModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("../../../database/entities");
 const approval_step_service_1 = require("./approval-step.service");
 const approval_step_repository_1 = require("./approval-step.repository");
-let ApprovalStepModule = class ApprovalStepModule {
+let DomainApprovalStepModule = class DomainApprovalStepModule {
 };
-exports.ApprovalStepModule = ApprovalStepModule;
-exports.ApprovalStepModule = ApprovalStepModule = __decorate([
+exports.DomainApprovalStepModule = DomainApprovalStepModule;
+exports.DomainApprovalStepModule = DomainApprovalStepModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.ApprovalStep])],
         providers: [approval_step_service_1.DomainApprovalStepService, approval_step_repository_1.DomainApprovalStepRepository],
         exports: [approval_step_service_1.DomainApprovalStepService],
     })
-], ApprovalStepModule);
+], DomainApprovalStepModule);
 //# sourceMappingURL=approval-step.module.js.map

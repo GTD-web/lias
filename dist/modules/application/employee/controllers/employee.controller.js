@@ -37,7 +37,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserEmployeeController.prototype, "findAllEmplyeesByDepartment", null);
 exports.UserEmployeeController = UserEmployeeController = __decorate([
-    (0, swagger_1.ApiTags)('5. 직원 '),
+    (0, swagger_1.ApiTags)('직원 '),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('employees'),
     __metadata("design:paramtypes", [employee_service_1.EmployeeService])

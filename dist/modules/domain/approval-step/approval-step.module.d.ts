@@ -1,2 +1,2 @@
-export declare class ApprovalStepModule {
+export declare class DomainApprovalStepModule {
 }

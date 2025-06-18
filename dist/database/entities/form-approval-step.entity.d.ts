@@ -1,14 +1,13 @@
 import { FormApprovalLine } from './form-approval-line.entity';
 import { Employee } from './employee.entity';
+import { ApprovalStepType, ApproverType, DepartmentScopeType } from 'src/common/enums/approval.enum';
 export declare class FormApprovalStep {
     formApprovalStepId: string;
-    type: string;
-    name: string;
-    description: string;
+    type: ApprovalStepType;
     order: number;
-    approverType: string;
+    approverType: ApproverType;
     approverValue: string;
-    departmentScopeType: string;
+    departmentScopeType: DepartmentScopeType;
     conditionExpression: object;
     isMandatory: boolean;
     createdAt: Date;

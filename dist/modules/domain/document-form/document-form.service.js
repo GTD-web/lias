@@ -18,20 +18,6 @@ let DomainDocumentFormService = class DomainDocumentFormService extends base_ser
         super(documentFormRepository);
         this.documentFormRepository = documentFormRepository;
     }
-    async findByDocumentFormId(documentFormId) {
-        const documentForm = await this.documentFormRepository.findOne({
-            where: { documentFormId },
-        });
-        if (!documentForm) {
-            throw new common_1.NotFoundException('문서 양식을 찾을 수 없습니다.');
-        }
-        return documentForm;
-    }
-    async findByType(type) {
-        return this.documentFormRepository.find({
-            where: { type },
-        });
-    }
 };
 exports.DomainDocumentFormService = DomainDocumentFormService;
 exports.DomainDocumentFormService = DomainDocumentFormService = __decorate([

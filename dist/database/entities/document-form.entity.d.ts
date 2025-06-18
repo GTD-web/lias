@@ -1,11 +1,12 @@
-import { Document } from './document.entity';
 import { FormApprovalLine } from './form-approval-line.entity';
+import { DocumentType } from './document-type.entity';
 export declare class DocumentForm {
     documentFormId: string;
-    type: string;
     name: string;
     description: string;
     template: string;
-    documents: Document[];
-    formApprovalLines: FormApprovalLine[];
+    formApprovalLineId: string;
+    formApprovalLine: FormApprovalLine;
+    documentTypeId: string;
+    documentType: DocumentType;
 }

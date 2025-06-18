@@ -11,8 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentType = void 0;
 const typeorm_1 = require("typeorm");
-const document_entity_1 = require("./document.entity");
-const form_approval_line_entity_1 = require("./form-approval-line.entity");
+const document_form_entity_1 = require("./document-form.entity");
 let DocumentType = class DocumentType {
 };
 exports.DocumentType = DocumentType;
@@ -21,29 +20,17 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentType.prototype, "documentTypeId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], DocumentType.prototype, "type", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ comment: '문서 타입 이름' }),
     __metadata("design:type", String)
 ], DocumentType.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ comment: '문서 번호 코드 (ex. 휴가, 출결, 출신 등' }),
     __metadata("design:type", String)
-], DocumentType.prototype, "description", void 0);
+], DocumentType.prototype, "documentNumberCode", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', comment: '문서 양식 html' }),
-    __metadata("design:type", String)
-], DocumentType.prototype, "template", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => document_entity_1.Document, (document) => document.documentType),
+    (0, typeorm_1.OneToMany)(() => document_form_entity_1.DocumentForm, (documentForm) => documentForm.documentType),
     __metadata("design:type", Array)
-], DocumentType.prototype, "documents", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => form_approval_line_entity_1.ApprovalLineTemplate, (approvalLineTemplate) => approvalLineTemplate.documentType),
-    __metadata("design:type", Array)
-], DocumentType.prototype, "approvalLineTemplates", void 0);
+], DocumentType.prototype, "documentForms", void 0);
 exports.DocumentType = DocumentType = __decorate([
     (0, typeorm_1.Entity)('document-types')
 ], DocumentType);

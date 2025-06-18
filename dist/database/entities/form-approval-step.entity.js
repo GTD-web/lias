@@ -13,6 +13,7 @@ exports.FormApprovalStep = void 0;
 const typeorm_1 = require("typeorm");
 const form_approval_line_entity_1 = require("./form-approval-line.entity");
 const employee_entity_1 = require("./employee.entity");
+const approval_enum_1 = require("../../common/enums/approval.enum");
 let FormApprovalStep = class FormApprovalStep {
 };
 exports.FormApprovalStep = FormApprovalStep;
@@ -21,23 +22,19 @@ __decorate([
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "formApprovalStepId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' }),
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "type", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 이름' }),
-    __metadata("design:type", String)
-], FormApprovalStep.prototype, "name", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 설명' }),
-    __metadata("design:type", String)
-], FormApprovalStep.prototype, "description", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: '결재 단계 순서' }),
     __metadata("design:type", Number)
 ], FormApprovalStep.prototype, "order", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재자 지정 방식 (ex. Enum(USER, DEPARTMENT_POSITION, POSITION, TITLE))' }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: approval_enum_1.ApproverType,
+        comment: '결재자 지정 방식 (ex. Enum(USER, DEPARTMENT_POSITION, POSITION, TITLE))',
+    }),
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "approverType", void 0);
 __decorate([
@@ -45,11 +42,16 @@ __decorate([
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "approverValue", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: 'DEPARTMENT_POSITION인 경우 부서 범위 타입  (ex. Enum(SELECTED, DRAFT_OWNER, NONE))' }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: approval_enum_1.DepartmentScopeType,
+        comment: 'DEPARTMENT_POSITION인 경우 부서 범위 타입  (ex. Enum(SELECTED, DRAFT_OWNER))',
+        nullable: true,
+    }),
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "departmentScopeType", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', comment: '결재 단계 조건 표현식' }),
+    (0, typeorm_1.Column)({ type: 'jsonb', comment: '결재 단계 조건 표현식', nullable: true }),
     __metadata("design:type", Object)
 ], FormApprovalStep.prototype, "conditionExpression", void 0);
 __decorate([

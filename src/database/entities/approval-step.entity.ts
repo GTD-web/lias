@@ -11,20 +11,15 @@ import {
 } from 'typeorm';
 import { Employee } from './employee.entity';
 import { Document } from './document.entity';
+import { ApprovalStepType } from 'src/common/enums/approval.enum';
 
 @Entity('approval-steps')
 export class ApprovalStep {
     @PrimaryGeneratedColumn('uuid')
     approvalStepId: string;
 
-    @Column({ comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' })
-    type: string;
-
-    @Column({ comment: '결재 단계 이름' })
-    name: string;
-
-    @Column({ comment: '결재 단계 설명' })
-    description: string;
+    @Column({ type: 'enum', enum: ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' })
+    type: ApprovalStepType;
 
     @Column({ comment: '결재 단계 순서' })
     order: number;

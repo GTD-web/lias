@@ -23,15 +23,6 @@ function setupSwagger(app, dtos) {
             'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.css',
         ],
         swaggerOptions: {
-            tagsSorter: (a, b) => {
-                const isAEnglish = /^[A-Za-z]/.test(a);
-                const isBEnglish = /^[A-Za-z]/.test(b);
-                if (isAEnglish && !isBEnglish)
-                    return -1;
-                if (!isAEnglish && isBEnglish)
-                    return 1;
-                return a.localeCompare(b, 'en');
-            },
             docExpansion: 'none',
             persistAuthorization: true,
         },

@@ -6,20 +6,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentModule = void 0;
+exports.DomainDocumentModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("../../../database/entities");
 const document_service_1 = require("./document.service");
 const document_repository_1 = require("./document.repository");
-let DocumentModule = class DocumentModule {
+let DomainDocumentModule = class DomainDocumentModule {
 };
-exports.DocumentModule = DocumentModule;
-exports.DocumentModule = DocumentModule = __decorate([
+exports.DomainDocumentModule = DomainDocumentModule;
+exports.DomainDocumentModule = DomainDocumentModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.Document])],
         providers: [document_service_1.DomainDocumentService, document_repository_1.DomainDocumentRepository],
         exports: [document_service_1.DomainDocumentService],
     })
-], DocumentModule);
+], DomainDocumentModule);
 //# sourceMappingURL=document.module.js.map

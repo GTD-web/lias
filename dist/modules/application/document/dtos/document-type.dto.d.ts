@@ -1,0 +1,15 @@
+export declare class CreateDocumentTypeDto {
+    type: string;
+    name: string;
+    documentNumberCode: string;
+}
+declare const UpdateDocumentTypeDto_base: import("@nestjs/common").Type<Partial<CreateDocumentTypeDto>>;
+export declare class UpdateDocumentTypeDto extends UpdateDocumentTypeDto_base {
+}
+export declare class DocumentTypeResponseDto {
+    documentTypeId: string;
+    type: string;
+    name: string;
+    documentNumberCode: string;
+}
+export {};

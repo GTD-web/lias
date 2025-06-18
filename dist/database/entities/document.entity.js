@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Document = void 0;
 const typeorm_1 = require("typeorm");
 const employee_entity_1 = require("./employee.entity");
-const document_form_entity_1 = require("./document-form.entity");
 const file_entity_1 = require("./file.entity");
 const approval_step_entity_1 = require("./approval-step.entity");
 let Document = class Document {
@@ -75,15 +74,6 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'employeeId' }),
     __metadata("design:type", employee_entity_1.Employee)
 ], Document.prototype, "employee", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Document.prototype, "documentFormId", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => document_form_entity_1.DocumentForm, (documentForm) => documentForm.documents),
-    (0, typeorm_1.JoinColumn)({ name: 'documentFormId' }),
-    __metadata("design:type", document_form_entity_1.DocumentForm)
-], Document.prototype, "documentForm", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => approval_step_entity_1.ApprovalStep, (approvalStep) => approvalStep.document),
     __metadata("design:type", Array)

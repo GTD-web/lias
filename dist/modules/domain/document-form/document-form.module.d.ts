@@ -1,2 +1,2 @@
-export declare class DocumentFormModule {
+export declare class DomainDocumentFormModule {
 }

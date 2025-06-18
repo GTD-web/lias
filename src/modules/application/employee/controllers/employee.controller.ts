@@ -6,7 +6,7 @@ import { EmplyeesByDepartmentResponseDto } from '../dtos/employees-by-department
 import { Roles } from '../../../../common/decorators/role.decorator';
 import { Role } from '../../../../common/enums/role-type.enum';
 
-@ApiTags('5. 직원 ')
+@ApiTags('직원 ')
 @ApiBearerAuth()
 @Controller('employees')
 export class UserEmployeeController {

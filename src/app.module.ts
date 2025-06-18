@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { RouterModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { typeOrmConfig } from './configs/typeorm.config';
@@ -9,6 +10,7 @@ import { DB_Config, JWT_CONFIG } from './configs/env.config';
 import { ApiDocService } from './common/documents/api-doc.service';
 import { DbDocService } from './common/documents/db-doc.service';
 import { EmployeeModule } from './modules/application/employee/employee.module';
+import { DocumentModule } from './modules/application/document/document.module';
 
 @Module({
     imports: [
@@ -21,7 +23,14 @@ import { EmployeeModule } from './modules/application/employee/employee.module';
             useFactory: typeOrmConfig,
         }),
         TypeOrmModule.forFeature(EntityList),
+        RouterModule.register([
+            {
+                path: 'document',
+                module: DocumentModule,
+            },
+        ]),
 
+        DocumentModule,
         EmployeeModule,
     ],
     controllers: [AppController],

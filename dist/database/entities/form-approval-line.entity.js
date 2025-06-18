@@ -13,6 +13,8 @@ exports.FormApprovalLine = void 0;
 const typeorm_1 = require("typeorm");
 const document_form_entity_1 = require("./document-form.entity");
 const form_approval_step_entity_1 = require("./form-approval-step.entity");
+const employee_entity_1 = require("./employee.entity");
+const approval_enum_1 = require("../../common/enums/approval.enum");
 let FormApprovalLine = class FormApprovalLine {
 };
 exports.FormApprovalLine = FormApprovalLine;
@@ -25,9 +27,26 @@ __decorate([
     __metadata("design:type", String)
 ], FormApprovalLine.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재 라인 설명' }),
+    (0, typeorm_1.Column)({ comment: '결재 라인 설명', nullable: true }),
     __metadata("design:type", String)
 ], FormApprovalLine.prototype, "description", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: approval_enum_1.ApprovalLineType,
+        comment: '결재 라인 타입 (COMMON: 공통, CUSTOM: 개인화)',
+        default: approval_enum_1.ApprovalLineType.COMMON,
+    }),
+    __metadata("design:type", String)
+], FormApprovalLine.prototype, "type", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: '결재 라인 사용 여부', default: true }),
+    __metadata("design:type", Boolean)
+], FormApprovalLine.prototype, "isActive", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: '결재 라인 정렬 순서', default: 0 }),
+    __metadata("design:type", Number)
+], FormApprovalLine.prototype, "order", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ type: 'timestamp with time zone' }),
     __metadata("design:type", Date)
@@ -37,14 +56,18 @@ __decorate([
     __metadata("design:type", Date)
 ], FormApprovalLine.prototype, "updatedAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true, comment: '개인화된 결재라인의 경우 사용자 ID' }),
     __metadata("design:type", String)
-], FormApprovalLine.prototype, "documentFormId", void 0);
+], FormApprovalLine.prototype, "employeeId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => document_form_entity_1.DocumentForm, (documentForm) => documentForm.formApprovalLines),
-    (0, typeorm_1.JoinColumn)({ name: 'documentFormId' }),
-    __metadata("design:type", document_form_entity_1.DocumentForm)
-], FormApprovalLine.prototype, "documentForm", void 0);
+    (0, typeorm_1.OneToMany)(() => document_form_entity_1.DocumentForm, (documentForm) => documentForm.formApprovalLine),
+    __metadata("design:type", Array)
+], FormApprovalLine.prototype, "documentForms", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => employee_entity_1.Employee, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'employeeId' }),
+    __metadata("design:type", employee_entity_1.Employee)
+], FormApprovalLine.prototype, "employee", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => form_approval_step_entity_1.FormApprovalStep, (formApprovalStep) => formApprovalStep.formApprovalLine),
     __metadata("design:type", Array)

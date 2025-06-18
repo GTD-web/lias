@@ -6,20 +6,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentFormModule = void 0;
+exports.DomainDocumentFormModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("../../../database/entities");
 const document_form_service_1 = require("./document-form.service");
 const document_form_repository_1 = require("./document-form.repository");
-let DocumentFormModule = class DocumentFormModule {
+let DomainDocumentFormModule = class DomainDocumentFormModule {
 };
-exports.DocumentFormModule = DocumentFormModule;
-exports.DocumentFormModule = DocumentFormModule = __decorate([
+exports.DomainDocumentFormModule = DomainDocumentFormModule;
+exports.DomainDocumentFormModule = DomainDocumentFormModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.DocumentForm])],
         providers: [document_form_service_1.DomainDocumentFormService, document_form_repository_1.DomainDocumentFormRepository],
         exports: [document_form_service_1.DomainDocumentFormService],
     })
-], DocumentFormModule);
+], DomainDocumentFormModule);
 //# sourceMappingURL=document-form.module.js.map

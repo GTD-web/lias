@@ -13,6 +13,7 @@ exports.ApprovalStep = void 0;
 const typeorm_1 = require("typeorm");
 const employee_entity_1 = require("./employee.entity");
 const document_entity_1 = require("./document.entity");
+const approval_enum_1 = require("../../common/enums/approval.enum");
 let ApprovalStep = class ApprovalStep {
 };
 exports.ApprovalStep = ApprovalStep;
@@ -21,17 +22,9 @@ __decorate([
     __metadata("design:type", String)
 ], ApprovalStep.prototype, "approvalStepId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' }),
     __metadata("design:type", String)
 ], ApprovalStep.prototype, "type", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 이름' }),
-    __metadata("design:type", String)
-], ApprovalStep.prototype, "name", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 설명' }),
-    __metadata("design:type", String)
-], ApprovalStep.prototype, "description", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: '결재 단계 순서' }),
     __metadata("design:type", Number)
