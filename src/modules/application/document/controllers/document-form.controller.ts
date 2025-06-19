@@ -40,6 +40,8 @@ export class DocumentFormController {
                 updatedAt: new Date(),
                 formApprovalSteps: [],
             },
+            receiverInfo: [],
+            implementerInfo: [],
         };
     }
 

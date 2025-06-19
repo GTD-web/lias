@@ -36,55 +36,6 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateFormApprovalStepDto.prototype, "order", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(approval_enum_1.ApproverType),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, swagger_1.ApiProperty)({
-        enum: approval_enum_1.ApproverType,
-        description: '결재자 지정 방식',
-        example: 'USER',
-    }),
-    __metadata("design:type", String)
-], CreateFormApprovalStepDto.prototype, "approverType", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, swagger_1.ApiProperty)({
-        description: '결재자 지정 값',
-        example: '1',
-    }),
-    __metadata("design:type", String)
-], CreateFormApprovalStepDto.prototype, "approverValue", void 0);
-__decorate([
-    (0, class_validator_1.IsEnum)(approval_enum_1.DepartmentScopeType),
-    (0, class_validator_1.IsOptional)(),
-    (0, swagger_1.ApiProperty)({
-        enum: approval_enum_1.DepartmentScopeType,
-        description: 'DEPARTMENT_POSITION인 경우 부서 범위 타입',
-        example: 'SELECTED',
-        required: false,
-    }),
-    __metadata("design:type", String)
-], CreateFormApprovalStepDto.prototype, "departmentScopeType", void 0);
-__decorate([
-    (0, class_validator_1.IsObject)(),
-    (0, class_validator_1.IsOptional)(),
-    (0, swagger_1.ApiProperty)({
-        description: '결재 단계 조건 표현식',
-        example: {},
-        required: false,
-    }),
-    __metadata("design:type", Object)
-], CreateFormApprovalStepDto.prototype, "conditionExpression", void 0);
-__decorate([
-    (0, class_validator_1.IsBoolean)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, swagger_1.ApiProperty)({
-        description: '결재 단계 필수 여부',
-        example: true,
-    }),
-    __metadata("design:type", Boolean)
-], CreateFormApprovalStepDto.prototype, "isMandatory", void 0);
-__decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     (0, swagger_1.ApiProperty)({
@@ -218,41 +169,6 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], FormApprovalStepResponseDto.prototype, "order", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '결재자 지정 방식',
-        example: 'USER',
-    }),
-    __metadata("design:type", String)
-], FormApprovalStepResponseDto.prototype, "approverType", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '결재자 지정 값',
-        example: '1',
-    }),
-    __metadata("design:type", String)
-], FormApprovalStepResponseDto.prototype, "approverValue", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'DEPARTMENT_POSITION인 경우 부서 범위 타입',
-        example: 'SELECTED',
-    }),
-    __metadata("design:type", String)
-], FormApprovalStepResponseDto.prototype, "departmentScopeType", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '결재 단계 조건 표현식',
-        example: {},
-    }),
-    __metadata("design:type", Object)
-], FormApprovalStepResponseDto.prototype, "conditionExpression", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '결재 단계 필수 여부',
-        example: true,
-    }),
-    __metadata("design:type", Boolean)
-], FormApprovalStepResponseDto.prototype, "isMandatory", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         type: ApproverResponseDto,

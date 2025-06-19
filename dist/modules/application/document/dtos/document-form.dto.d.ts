@@ -1,9 +1,12 @@
 import { FormApprovalLineResponseDto } from './approval-line.dto';
 import { DocumentTypeResponseDto } from './form-type.dto';
+import { ImplementerInfo, ReferencerInfo } from 'src/common/types/entity.type';
 export declare class CreateDocumentFormDto {
     name: string;
     description: string;
     template: string;
+    receiverInfo: ReferencerInfo[];
+    implementerInfo: ImplementerInfo[];
     documentTypeId: string;
     formApprovalLineId: string;
 }
@@ -15,6 +18,8 @@ export declare class DocumentFormResponseDto {
     name: string;
     description: string;
     template: string;
+    receiverInfo: ReferencerInfo[];
+    implementerInfo: ImplementerInfo[];
     documentType: DocumentTypeResponseDto;
     formApprovalLine: FormApprovalLineResponseDto;
 }

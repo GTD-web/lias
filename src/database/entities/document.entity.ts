@@ -11,6 +11,8 @@ import {
 import { Employee } from './employee.entity';
 import { File } from './file.entity';
 import { ApprovalStep } from './approval-step.entity';
+import { DocumentImplementer } from './document-implementer.entity';
+import { DocumentReferencer } from './document-referencer.entity';
 
 @Entity('documents')
 export class Document {
@@ -44,6 +46,9 @@ export class Document {
     @Column({ nullable: true, comment: '보존 연한 종료일' })
     retentionEndDate: Date;
 
+    @Column({ nullable: true, comment: '시행 일자' })
+    implementDate: Date;
+
     @CreateDateColumn({ type: 'timestamp with time zone' })
     createdAt: Date;
 
@@ -51,13 +56,20 @@ export class Document {
     updatedAt: Date;
 
     // relations
-    // employee
+    // drafter
     @Column({ nullable: true, comment: '기안자' })
-    employeeId: string;
+    drafterId: string;
 
-    @ManyToOne(() => Employee, (employee) => employee.documents)
-    @JoinColumn({ name: 'employeeId' })
-    employee: Employee;
+    @ManyToOne(() => Employee, (employee) => employee.draftDocuments)
+    @JoinColumn({ name: 'drafterId' })
+    drafter: Employee;
+
+    // document implementer
+    @OneToMany(() => DocumentImplementer, (documentImplementer) => documentImplementer.implementer)
+    implementers: DocumentImplementer[];
+
+    @OneToMany(() => DocumentReferencer, (documentReferencer) => documentReferencer.referencer)
+    referencers: DocumentReferencer[];
 
     // approval steps
     @OneToMany(() => ApprovalStep, (approvalStep) => approvalStep.document)

@@ -14,6 +14,8 @@ const typeorm_1 = require("typeorm");
 const employee_entity_1 = require("./employee.entity");
 const file_entity_1 = require("./file.entity");
 const approval_step_entity_1 = require("./approval-step.entity");
+const document_implementer_entity_1 = require("./document-implementer.entity");
+const document_referencer_entity_1 = require("./document-referencer.entity");
 let Document = class Document {
 };
 exports.Document = Document;
@@ -58,6 +60,10 @@ __decorate([
     __metadata("design:type", Date)
 ], Document.prototype, "retentionEndDate", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: '시행 일자' }),
+    __metadata("design:type", Date)
+], Document.prototype, "implementDate", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ type: 'timestamp with time zone' }),
     __metadata("design:type", Date)
 ], Document.prototype, "createdAt", void 0);
@@ -68,12 +74,20 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, comment: '기안자' }),
     __metadata("design:type", String)
-], Document.prototype, "employeeId", void 0);
+], Document.prototype, "drafterId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => employee_entity_1.Employee, (employee) => employee.documents),
-    (0, typeorm_1.JoinColumn)({ name: 'employeeId' }),
+    (0, typeorm_1.ManyToOne)(() => employee_entity_1.Employee, (employee) => employee.draftDocuments),
+    (0, typeorm_1.JoinColumn)({ name: 'drafterId' }),
     __metadata("design:type", employee_entity_1.Employee)
-], Document.prototype, "employee", void 0);
+], Document.prototype, "drafter", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => document_implementer_entity_1.DocumentImplementer, (documentImplementer) => documentImplementer.implementer),
+    __metadata("design:type", Array)
+], Document.prototype, "implementers", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => document_referencer_entity_1.DocumentReferencer, (documentReferencer) => documentReferencer.referencer),
+    __metadata("design:type", Array)
+], Document.prototype, "referencers", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => approval_step_entity_1.ApprovalStep, (approvalStep) => approvalStep.document),
     __metadata("design:type", Array)

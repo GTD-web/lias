@@ -45,6 +45,8 @@ let DocumentFormController = class DocumentFormController {
                 updatedAt: new Date(),
                 formApprovalSteps: [],
             },
+            receiverInfo: [],
+            implementerInfo: [],
         };
     }
     async findAllDocumentForms() {

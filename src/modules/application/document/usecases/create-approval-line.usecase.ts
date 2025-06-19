@@ -17,7 +17,6 @@ export class CreateApprovalLineUseCase {
             name: dto.name,
             description: dto.description,
             type: dto.type,
-            isActive: true,
             order: 1, // 기본값으로 1 설정
         });
 

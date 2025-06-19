@@ -23,7 +23,6 @@ let CreateApprovalLineUseCase = class CreateApprovalLineUseCase {
             name: dto.name,
             description: dto.description,
             type: dto.type,
-            isActive: true,
             order: 1,
         });
         for (const stepDto of dto.formApprovalSteps) {

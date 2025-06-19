@@ -18,35 +18,11 @@ export class FormApprovalStep {
     @PrimaryGeneratedColumn('uuid')
     formApprovalStepId: string;
 
-    @Column({ type: 'enum', enum: ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' })
+    @Column({ type: 'enum', enum: ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재)' })
     type: ApprovalStepType;
 
     @Column({ comment: '결재 단계 순서' })
     order: number;
-
-    @Column({
-        type: 'enum',
-        enum: ApproverType,
-        comment: '결재자 지정 방식 (ex. Enum(USER, DEPARTMENT_POSITION, POSITION, TITLE))',
-    })
-    approverType: ApproverType;
-
-    @Column({ comment: '결재자 지정 값 (ex.  userId, positionCode, titleCode)' })
-    approverValue: string;
-
-    @Column({
-        type: 'enum',
-        enum: DepartmentScopeType,
-        comment: 'DEPARTMENT_POSITION인 경우 부서 범위 타입  (ex. Enum(SELECTED, DRAFT_OWNER))',
-        nullable: true,
-    })
-    departmentScopeType: DepartmentScopeType;
-
-    @Column({ type: 'jsonb', comment: '결재 단계 조건 표현식', nullable: true })
-    conditionExpression: object;
-
-    @Column({ comment: '결재 단계 필수 여부' })
-    isMandatory: boolean;
 
     @CreateDateColumn({ type: 'timestamp with time zone' })
     createdAt: Date;

@@ -1,12 +1,7 @@
-import { ApprovalLineType, ApprovalStepType, ApproverType, DepartmentScopeType } from 'src/common/enums/approval.enum';
+import { ApprovalLineType, ApprovalStepType } from 'src/common/enums/approval.enum';
 export declare class CreateFormApprovalStepDto {
     type: ApprovalStepType;
     order: number;
-    approverType: ApproverType;
-    approverValue: string;
-    departmentScopeType: DepartmentScopeType;
-    conditionExpression: object;
-    isMandatory: boolean;
     defaultApproverId: string;
 }
 export declare class CreateFormApprovalLineDto {
@@ -30,11 +25,6 @@ export declare class FormApprovalStepResponseDto {
     formApprovalStepId: string;
     type: ApprovalStepType;
     order: number;
-    approverType: ApproverType;
-    approverValue: string;
-    departmentScopeType: DepartmentScopeType;
-    conditionExpression: object;
-    isMandatory: boolean;
     defaultApprover: ApproverResponseDto;
 }
 export declare class FormApprovalLineResponseDto {

@@ -17,11 +17,6 @@
   "formApprovalSteps": {
     "type": "결재", // 결재 단계 타입, ✅ Required
     "order": 1, // 결재 단계 순서, ✅ Required
-    "approverType": "USER", // 결재자 지정 방식, ✅ Required
-    "approverValue": "1", // 결재자 지정 값, ✅ Required
-    "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ❌ Optional
-    "conditionExpression": [object Object], // 결재 단계 조건 표현식, ❌ Optional
-    "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
     "defaultApproverId": "1" // 기본 결재자 ID, ❌ Optional
   } // ✅ Required
 }
@@ -49,11 +44,6 @@
       "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
       "type": "결재", // 결재선 단계 타입, ✅ Required
       "order": 1, // 결재선 단계 순서, ✅ Required
-      "approverType": "USER", // 결재자 지정 방식, ✅ Required
-      "approverValue": "1", // 결재자 지정 값, ✅ Required
-      "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-      "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-      "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
       "defaultApprover": {
         "employeeId": "1", // 결재자 ID, ✅ Required
         "name": "홍길동", // 결재자 이름, ✅ Required
@@ -120,11 +110,6 @@
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
         "type": "결재", // 결재선 단계 타입, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
-        "approverType": "USER", // 결재자 지정 방식, ✅ Required
-        "approverValue": "1", // 결재자 지정 값, ✅ Required
-        "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-        "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-        "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
           "name": "홍길동", // 결재자 이름, ✅ Required
@@ -200,11 +185,6 @@
       "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
       "type": "결재", // 결재선 단계 타입, ✅ Required
       "order": 1, // 결재선 단계 순서, ✅ Required
-      "approverType": "USER", // 결재자 지정 방식, ✅ Required
-      "approverValue": "1", // 결재자 지정 값, ✅ Required
-      "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-      "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-      "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
       "defaultApprover": {
         "employeeId": "1", // 결재자 ID, ✅ Required
         "name": "홍길동", // 결재자 이름, ✅ Required
@@ -269,11 +249,6 @@
   "formApprovalSteps": {
     "type": "결재", // 결재 단계 타입, ✅ Required
     "order": 1, // 결재 단계 순서, ✅ Required
-    "approverType": "USER", // 결재자 지정 방식, ✅ Required
-    "approverValue": "1", // 결재자 지정 값, ✅ Required
-    "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ❌ Optional
-    "conditionExpression": [object Object], // 결재 단계 조건 표현식, ❌ Optional
-    "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
     "defaultApproverId": "1" // 기본 결재자 ID, ❌ Optional
   } // ❌ Optional
 }
@@ -301,11 +276,6 @@
       "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
       "type": "결재", // 결재선 단계 타입, ✅ Required
       "order": 1, // 결재선 단계 순서, ✅ Required
-      "approverType": "USER", // 결재자 지정 방식, ✅ Required
-      "approverValue": "1", // 결재자 지정 값, ✅ Required
-      "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-      "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-      "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
       "defaultApprover": {
         "employeeId": "1", // 결재자 ID, ✅ Required
         "name": "홍길동", // 결재자 이름, ✅ Required
@@ -684,6 +654,8 @@ null
   "name": "휴가신청서", // 문서 양식 이름, ✅ Required
   "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ❌ Optional
   "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
+  "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
+  "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
   "documentTypeId": "uuid", // 문서 양식 타입 ID, ✅ Required
   "formApprovalLineId": "uuid" // 결재선 ID, ✅ Required
 }
@@ -703,6 +675,8 @@ null
     "name": "휴가신청서", // 문서 양식 이름, ✅ Required
     "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
     "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
+    "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
+    "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
     "documentType": {
       "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
       "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -721,11 +695,6 @@ null
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
         "type": "결재", // 결재선 단계 타입, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
-        "approverType": "USER", // 결재자 지정 방식, ✅ Required
-        "approverValue": "1", // 결재자 지정 값, ✅ Required
-        "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-        "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-        "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
           "name": "홍길동", // 결재자 이름, ✅ Required
@@ -785,6 +754,8 @@ null
       "name": "휴가신청서", // 문서 양식 이름, ✅ Required
       "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
       "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
+      "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
+      "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
       "documentType": {
         "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
         "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -803,11 +774,6 @@ null
           "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
           "type": "결재", // 결재선 단계 타입, ✅ Required
           "order": 1, // 결재선 단계 순서, ✅ Required
-          "approverType": "USER", // 결재자 지정 방식, ✅ Required
-          "approverValue": "1", // 결재자 지정 값, ✅ Required
-          "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-          "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-          "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
           "defaultApprover": {
             "employeeId": "1", // 결재자 ID, ✅ Required
             "name": "홍길동", // 결재자 이름, ✅ Required
@@ -876,6 +842,8 @@ null
     "name": "휴가신청서", // 문서 양식 이름, ✅ Required
     "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
     "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
+    "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
+    "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
     "documentType": {
       "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
       "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -894,11 +862,6 @@ null
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
         "type": "결재", // 결재선 단계 타입, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
-        "approverType": "USER", // 결재자 지정 방식, ✅ Required
-        "approverValue": "1", // 결재자 지정 값, ✅ Required
-        "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-        "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-        "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
           "name": "홍길동", // 결재자 이름, ✅ Required
@@ -961,6 +924,8 @@ null
   "name": "휴가신청서", // 문서 양식 이름, ❌ Optional
   "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ❌ Optional
   "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ❌ Optional
+  "receiverInfo": [""], // 수신 및 참조자 정보 객체, ❌ Optional
+  "implementerInfo": [""], // 시행자 정보 객체, ❌ Optional
   "documentTypeId": "uuid", // 문서 양식 타입 ID, ❌ Optional
   "formApprovalLineId": "uuid" // 결재선 ID, ❌ Optional
 }
@@ -980,6 +945,8 @@ null
     "name": "휴가신청서", // 문서 양식 이름, ✅ Required
     "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
     "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
+    "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
+    "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
     "documentType": {
       "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
       "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -998,11 +965,6 @@ null
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
         "type": "결재", // 결재선 단계 타입, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
-        "approverType": "USER", // 결재자 지정 방식, ✅ Required
-        "approverValue": "1", // 결재자 지정 값, ✅ Required
-        "departmentScopeType": "SELECTED", // DEPARTMENT_POSITION인 경우 부서 범위 타입, ✅ Required
-        "conditionExpression": [object Object], // 결재 단계 조건 표현식, ✅ Required
-        "isMandatory": true, // 결재 단계 필수 여부, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
           "name": "홍길동", // 결재자 이름, ✅ Required

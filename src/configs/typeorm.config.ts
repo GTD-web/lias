@@ -13,9 +13,9 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
         database: configService.get('database.database'),
         entities: EntityList,
         schema: 'public',
-        // synchronize: configService.get('NODE_ENV') === 'local',
+        synchronize: configService.get('NODE_ENV') === 'local',
         // logging: configService.get('NODE_ENV') === 'local',
-        migrations: [join(__dirname, 'libs/migrations/*.ts')],
+        migrations: [join(__dirname, '../common/migrations/*.ts')],
         migrationsRun: configService.get('database.port') === 6543,
         ssl: configService.get('database.port') === 6543,
         extra: {

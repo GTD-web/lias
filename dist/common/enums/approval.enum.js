@@ -4,9 +4,7 @@ exports.ApprovalLineType = exports.ApprovalStatus = exports.ApprovalStepType = e
 var ApproverType;
 (function (ApproverType) {
     ApproverType["USER"] = "USER";
-    ApproverType["DEPARTMENT_POSITION"] = "DEPARTMENT_POSITION";
     ApproverType["POSITION"] = "POSITION";
-    ApproverType["TITLE"] = "TITLE";
 })(ApproverType || (exports.ApproverType = ApproverType = {}));
 var DepartmentScopeType;
 (function (DepartmentScopeType) {
@@ -17,8 +15,6 @@ var ApprovalStepType;
 (function (ApprovalStepType) {
     ApprovalStepType["AGREEMENT"] = "AGREEMENT";
     ApprovalStepType["APPROVAL"] = "APPROVAL";
-    ApprovalStepType["EXECUTION"] = "EXECUTION";
-    ApprovalStepType["REFERENCE"] = "REFERENCE";
 })(ApprovalStepType || (exports.ApprovalStepType = ApprovalStepType = {}));
 var ApprovalStatus;
 (function (ApprovalStatus) {

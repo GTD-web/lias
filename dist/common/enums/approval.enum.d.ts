@@ -1,8 +1,6 @@
 export declare enum ApproverType {
     USER = "USER",
-    DEPARTMENT_POSITION = "DEPARTMENT_POSITION",
-    POSITION = "POSITION",
-    TITLE = "TITLE"
+    POSITION = "POSITION"
 }
 export declare enum DepartmentScopeType {
     SELECTED = "SELECTED",
@@ -10,9 +8,7 @@ export declare enum DepartmentScopeType {
 }
 export declare enum ApprovalStepType {
     AGREEMENT = "AGREEMENT",
-    APPROVAL = "APPROVAL",
-    EXECUTION = "EXECUTION",
-    REFERENCE = "REFERENCE"
+    APPROVAL = "APPROVAL"
 }
 export declare enum ApprovalStatus {
     PENDING = "PENDING",

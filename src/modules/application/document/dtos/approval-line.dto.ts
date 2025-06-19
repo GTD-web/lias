@@ -21,50 +21,6 @@ export class CreateFormApprovalStepDto {
     })
     order: number;
 
-    @IsEnum(ApproverType)
-    @IsNotEmpty()
-    @ApiProperty({
-        enum: ApproverType,
-        description: '결재자 지정 방식',
-        example: 'USER',
-    })
-    approverType: ApproverType;
-
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty({
-        description: '결재자 지정 값',
-        example: '1',
-    })
-    approverValue: string;
-
-    @IsEnum(DepartmentScopeType)
-    @IsOptional()
-    @ApiProperty({
-        enum: DepartmentScopeType,
-        description: 'DEPARTMENT_POSITION인 경우 부서 범위 타입',
-        example: 'SELECTED',
-        required: false,
-    })
-    departmentScopeType: DepartmentScopeType;
-
-    @IsObject()
-    @IsOptional()
-    @ApiProperty({
-        description: '결재 단계 조건 표현식',
-        example: {},
-        required: false,
-    })
-    conditionExpression: object;
-
-    @IsBoolean()
-    @IsNotEmpty()
-    @ApiProperty({
-        description: '결재 단계 필수 여부',
-        example: true,
-    })
-    isMandatory: boolean;
-
     @IsString()
     @IsOptional()
     @ApiProperty({
@@ -180,36 +136,6 @@ export class FormApprovalStepResponseDto {
         example: 1,
     })
     order: number;
-
-    @ApiProperty({
-        description: '결재자 지정 방식',
-        example: 'USER',
-    })
-    approverType: ApproverType;
-
-    @ApiProperty({
-        description: '결재자 지정 값',
-        example: '1',
-    })
-    approverValue: string;
-
-    @ApiProperty({
-        description: 'DEPARTMENT_POSITION인 경우 부서 범위 타입',
-        example: 'SELECTED',
-    })
-    departmentScopeType: DepartmentScopeType;
-
-    @ApiProperty({
-        description: '결재 단계 조건 표현식',
-        example: {},
-    })
-    conditionExpression: object;
-
-    @ApiProperty({
-        description: '결재 단계 필수 여부',
-        example: true,
-    })
-    isMandatory: boolean;
 
     @ApiProperty({
         type: ApproverResponseDto,

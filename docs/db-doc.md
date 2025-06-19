@@ -25,6 +25,21 @@ erDiagram
         string approverId 
         string documentId 
     }
+    documentimplementer {
+        uuid documentImplementerId PK
+        string name 
+        string rank 
+        date implementDate 
+        string implementerId 
+        string documentId 
+    }
+    documentreferencer {
+        uuid documentReferencerId PK
+        string name 
+        string rank 
+        string referencerId 
+        string documentId 
+    }
     document {
         uuid documentId PK
         string documentNumber 
@@ -36,9 +51,10 @@ erDiagram
         string retentionPeriodUnit 
         date retentionStartDate 
         date retentionEndDate 
+        date implementDate 
         timestamp with time zone createdAt 
         timestamp with time zone updatedAt 
-        string employeeId 
+        string drafterId 
         string parentDocumentId 
     }
     documenttype {
@@ -51,6 +67,8 @@ erDiagram
         string name 
         string description 
         text template 
+        jsonb receiverInfo 
+        jsonb implementerInfo 
         string formApprovalLineId 
         string documentTypeId 
     }
@@ -69,11 +87,6 @@ erDiagram
         uuid formApprovalStepId PK
         enum type 
         number order 
-        enum approverType 
-        string approverValue 
-        enum departmentScopeType 
-        jsonb conditionExpression 
-        boolean isMandatory 
         timestamp with time zone createdAt 
         timestamp with time zone updatedAt 
         string defaultApproverId 
@@ -91,7 +104,13 @@ erDiagram
     file }|--|| document : belongs_to
     approvalstep }|--|| employee : belongs_to
     approvalstep }|--|| document : belongs_to
+    documentimplementer }|--|| employee : belongs_to
+    documentimplementer }|--|| document : belongs_to
+    documentreferencer }|--|| employee : belongs_to
+    documentreferencer }|--|| document : belongs_to
     document }|--|| employee : belongs_to
+    document ||--o{ documentimplementer : has
+    document ||--o{ documentreferencer : has
     document ||--o{ approvalstep : has
     document }|--|| document : belongs_to
     document ||--o{ document : has
@@ -107,6 +126,8 @@ erDiagram
     employee ||--o{ document : has
     employee ||--o{ formapprovalstep : has
     employee ||--o{ approvalstep : has
+    employee ||--o{ documentimplementer : has
+    employee ||--o{ documentreferencer : has
 `}
 />
 
@@ -135,6 +156,27 @@ erDiagram
 | approverId | String |  | 기본 결재자 ID |
 | documentId | String | NOT NULL | 문서 ID |
 
+### document-implementers
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|-----------|------|
+| documentImplementerId | uuid | PK, NOT NULL |  |
+| name | String | NOT NULL | 이름 |
+| rank | String | NOT NULL | 직급 |
+| implementDate | Date |  | 시행 일자 |
+| implementerId | String |  | 시행자 |
+| documentId | String |  | 문서 ID |
+
+### document-referencers
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|-----------|------|
+| documentReferencerId | uuid | PK, NOT NULL |  |
+| name | String | NOT NULL | 이름 |
+| rank | String | NOT NULL | 직급 |
+| referencerId | String |  | 참조자 |
+| documentId | String |  | 문서 ID |
+
 ### documents
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
@@ -149,9 +191,10 @@ erDiagram
 | retentionPeriodUnit | String |  | 보존 연한 단위 (ex. 년, 월, 일) |
 | retentionStartDate | Date |  | 보존 연한 시작일 |
 | retentionEndDate | Date |  | 보존 연한 종료일 |
+| implementDate | Date |  | 시행 일자 |
 | createdAt | timestamp with time zone | NOT NULL |  |
 | updatedAt | timestamp with time zone | NOT NULL |  |
-| employeeId | String |  | 기안자 |
+| drafterId | String |  | 기안자 |
 | parentDocumentId | String |  |  |
 
 ### document-types
@@ -170,6 +213,8 @@ erDiagram
 | name | String | NOT NULL | 문서 양식 이름 |
 | description | String |  | 문서 양식 설명 |
 | template | text | NOT NULL | 문서 양식 html |
+| receiverInfo | jsonb |  | 수신 및 참조자 정보 객체 |
+| implementerInfo | jsonb |  | 시행자 정보 객체 |
 | formApprovalLineId | String | NOT NULL | 결재선 ID |
 | documentTypeId | String | NOT NULL | 문서 양식 타입 ID |
 
@@ -192,13 +237,8 @@ erDiagram
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
 | formApprovalStepId | uuid | PK, NOT NULL |  |
-| type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등) |
+| type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재) |
 | order | Number | NOT NULL | 결재 단계 순서 |
-| approverType | enum | NOT NULL | 결재자 지정 방식 (ex. Enum(USER, DEPARTMENT_POSITION, POSITION, TITLE)) |
-| approverValue | String | NOT NULL | 결재자 지정 값 (ex.  userId, positionCode, titleCode) |
-| departmentScopeType | enum |  | DEPARTMENT_POSITION인 경우 부서 범위 타입  (ex. Enum(SELECTED, DRAFT_OWNER)) |
-| conditionExpression | jsonb |  | 결재 단계 조건 표현식 |
-| isMandatory | Boolean | NOT NULL | 결재 단계 필수 여부 |
 | createdAt | timestamp with time zone | NOT NULL |  |
 | updatedAt | timestamp with time zone | NOT NULL |  |
 | defaultApproverId | String |  | 기본 결재자 ID |
@@ -231,11 +271,27 @@ erDiagram
 | many-to-one | () => employee_entity_1.Employee |  |
 | many-to-one | () => document_entity_1.Document |  |
 
+### document-implementers 관계
+
+| 관계 타입 | 대상 엔티티 | 설명 |
+|------------|-------------|------|
+| many-to-one | () => employee_entity_1.Employee |  |
+| many-to-one | () => document_entity_1.Document |  |
+
+### document-referencers 관계
+
+| 관계 타입 | 대상 엔티티 | 설명 |
+|------------|-------------|------|
+| many-to-one | () => employee_entity_1.Employee |  |
+| many-to-one | () => document_entity_1.Document |  |
+
 ### documents 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
 | many-to-one | () => employee_entity_1.Employee |  |
+| one-to-many | () => document_implementer_entity_1.DocumentImplementer |  |
+| one-to-many | () => document_referencer_entity_1.DocumentReferencer |  |
 | one-to-many | () => approval_step_entity_1.ApprovalStep |  |
 | many-to-one | () => Document |  |
 | one-to-many | () => Document |  |
@@ -276,4 +332,6 @@ erDiagram
 | one-to-many | () => document_entity_1.Document |  |
 | one-to-many | () => form_approval_step_entity_1.FormApprovalStep |  |
 | one-to-many | () => approval_step_entity_1.ApprovalStep |  |
+| one-to-many | () => document_implementer_entity_1.DocumentImplementer |  |
+| one-to-many | () => document_referencer_entity_1.DocumentReferencer |  |
 

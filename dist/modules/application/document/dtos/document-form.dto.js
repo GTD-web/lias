@@ -48,6 +48,26 @@ __decorate([
     __metadata("design:type", String)
 ], CreateDocumentFormDto.prototype, "template", void 0);
 __decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '수신 및 참조자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        required: true,
+    }),
+    __metadata("design:type", Array)
+], CreateDocumentFormDto.prototype, "receiverInfo", void 0);
+__decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '시행자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        required: true,
+    }),
+    __metadata("design:type", Array)
+], CreateDocumentFormDto.prototype, "implementerInfo", void 0);
+__decorate([
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
     (0, swagger_1.ApiProperty)({
@@ -101,6 +121,20 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], DocumentFormResponseDto.prototype, "template", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '수신 및 참조자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+    }),
+    __metadata("design:type", Array)
+], DocumentFormResponseDto.prototype, "receiverInfo", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '시행자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+    }),
+    __metadata("design:type", Array)
+], DocumentFormResponseDto.prototype, "implementerInfo", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '문서 양식 타입 ID',

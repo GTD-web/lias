@@ -1,8 +1,8 @@
 export enum ApproverType {
     USER = 'USER',
-    DEPARTMENT_POSITION = 'DEPARTMENT_POSITION',
     POSITION = 'POSITION',
-    TITLE = 'TITLE',
+    // DEPARTMENT_POSITION = 'DEPARTMENT_POSITION',
+    // TITLE = 'TITLE',
 }
 
 export enum DepartmentScopeType {
@@ -13,8 +13,8 @@ export enum DepartmentScopeType {
 export enum ApprovalStepType {
     AGREEMENT = 'AGREEMENT',
     APPROVAL = 'APPROVAL',
-    EXECUTION = 'EXECUTION',
-    REFERENCE = 'REFERENCE',
+    // EXECUTION = 'EXECUTION',
+    // REFERENCE = 'REFERENCE',
 }
 
 export enum ApprovalStatus {

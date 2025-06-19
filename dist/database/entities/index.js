@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.File = exports.ApprovalStep = exports.FormApprovalStep = exports.FormApprovalLine = exports.DocumentType = exports.DocumentForm = exports.Document = exports.Employee = void 0;
+exports.File = exports.ApprovalStep = exports.FormApprovalStep = exports.FormApprovalLine = exports.DocumentReferencer = exports.DocumentImplementer = exports.DocumentType = exports.DocumentForm = exports.Document = exports.Employee = void 0;
 var employee_entity_1 = require("./employee.entity");
 Object.defineProperty(exports, "Employee", { enumerable: true, get: function () { return employee_entity_1.Employee; } });
 var document_entity_1 = require("./document.entity");
@@ -9,6 +9,10 @@ var document_form_entity_1 = require("./document-form.entity");
 Object.defineProperty(exports, "DocumentForm", { enumerable: true, get: function () { return document_form_entity_1.DocumentForm; } });
 var document_type_entity_1 = require("./document-type.entity");
 Object.defineProperty(exports, "DocumentType", { enumerable: true, get: function () { return document_type_entity_1.DocumentType; } });
+var document_implementer_entity_1 = require("./document-implementer.entity");
+Object.defineProperty(exports, "DocumentImplementer", { enumerable: true, get: function () { return document_implementer_entity_1.DocumentImplementer; } });
+var document_referencer_entity_1 = require("./document-referencer.entity");
+Object.defineProperty(exports, "DocumentReferencer", { enumerable: true, get: function () { return document_referencer_entity_1.DocumentReferencer; } });
 var form_approval_line_entity_1 = require("./form-approval-line.entity");
 Object.defineProperty(exports, "FormApprovalLine", { enumerable: true, get: function () { return form_approval_line_entity_1.FormApprovalLine; } });
 var form_approval_step_entity_1 = require("./form-approval-step.entity");

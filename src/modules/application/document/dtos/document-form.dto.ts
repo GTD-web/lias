@@ -2,6 +2,7 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { FormApprovalLineResponseDto } from './approval-line.dto';
 import { DocumentTypeResponseDto } from './form-type.dto';
+import { ImplementerInfo, ReferencerInfo } from 'src/common/types/entity.type';
 
 export class CreateDocumentFormDto {
     @IsString()
@@ -30,6 +31,24 @@ export class CreateDocumentFormDto {
         required: true,
     })
     template: string;
+
+    @IsArray()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '수신 및 참조자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        required: true,
+    })
+    receiverInfo: ReferencerInfo[];
+
+    @IsArray()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '시행자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        required: true,
+    })
+    implementerInfo: ImplementerInfo[];
 
     @IsUUID()
     @IsNotEmpty()
@@ -76,6 +95,18 @@ export class DocumentFormResponseDto {
         example: '<div>문서 양식 템플릿</div>',
     })
     template: string;
+
+    @ApiProperty({
+        description: '수신 및 참조자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+    })
+    receiverInfo: ReferencerInfo[];
+
+    @ApiProperty({
+        description: '시행자 정보 객체',
+        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+    })
+    implementerInfo: ImplementerInfo[];
 
     @ApiProperty({
         description: '문서 양식 타입 ID',

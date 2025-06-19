@@ -52,7 +52,7 @@ __decorate([
 ], UserResponseDto.prototype, "position", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: ['USER', 'RESOURCE_ADMIN', 'SYSTEM_ADMIN'],
+        example: ['USER', 'ADMIN'],
     }),
     __metadata("design:type", Array)
 ], UserResponseDto.prototype, "roles", void 0);

@@ -22,42 +22,13 @@ __decorate([
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "formApprovalStepId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재)' }),
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "type", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: '결재 단계 순서' }),
     __metadata("design:type", Number)
 ], FormApprovalStep.prototype, "order", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: approval_enum_1.ApproverType,
-        comment: '결재자 지정 방식 (ex. Enum(USER, DEPARTMENT_POSITION, POSITION, TITLE))',
-    }),
-    __metadata("design:type", String)
-], FormApprovalStep.prototype, "approverType", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ comment: '결재자 지정 값 (ex.  userId, positionCode, titleCode)' }),
-    __metadata("design:type", String)
-], FormApprovalStep.prototype, "approverValue", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: approval_enum_1.DepartmentScopeType,
-        comment: 'DEPARTMENT_POSITION인 경우 부서 범위 타입  (ex. Enum(SELECTED, DRAFT_OWNER))',
-        nullable: true,
-    }),
-    __metadata("design:type", String)
-], FormApprovalStep.prototype, "departmentScopeType", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', comment: '결재 단계 조건 표현식', nullable: true }),
-    __metadata("design:type", Object)
-], FormApprovalStep.prototype, "conditionExpression", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ comment: '결재 단계 필수 여부' }),
-    __metadata("design:type", Boolean)
-], FormApprovalStep.prototype, "isMandatory", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ type: 'timestamp with time zone' }),
     __metadata("design:type", Date)

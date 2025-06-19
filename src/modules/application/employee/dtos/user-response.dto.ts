@@ -32,7 +32,7 @@ export class UserResponseDto {
     position: string;
 
     @ApiProperty({
-        example: ['USER', 'RESOURCE_ADMIN', 'SYSTEM_ADMIN'],
+        example: ['USER', 'ADMIN'],
     })
     roles: string[];
 

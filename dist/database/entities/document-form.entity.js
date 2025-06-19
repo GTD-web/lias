@@ -33,6 +33,14 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentForm.prototype, "template", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', comment: '수신 및 참조자 정보 객체', nullable: true }),
+    __metadata("design:type", Array)
+], DocumentForm.prototype, "receiverInfo", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', comment: '시행자 정보 객체', nullable: true }),
+    __metadata("design:type", Array)
+], DocumentForm.prototype, "implementerInfo", void 0);
+__decorate([
     (0, typeorm_1.Column)({ comment: '결재선 ID' }),
     __metadata("design:type", String)
 ], DocumentForm.prototype, "formApprovalLineId", void 0);
