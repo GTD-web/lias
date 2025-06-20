@@ -44,7 +44,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], FormApprovalLine.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재 라인 정렬 순서', default: 0 }),
+    (0, typeorm_1.Column)({ comment: '결재 라인 정렬 순서', nullable: true }),
     __metadata("design:type", Number)
 ], FormApprovalLine.prototype, "order", void 0);
 __decorate([
@@ -73,6 +73,6 @@ __decorate([
     __metadata("design:type", Array)
 ], FormApprovalLine.prototype, "formApprovalSteps", void 0);
 exports.FormApprovalLine = FormApprovalLine = __decorate([
-    (0, typeorm_1.Entity)('form-approval-lines')
+    (0, typeorm_1.Entity)('form_approval_lines')
 ], FormApprovalLine);
 //# sourceMappingURL=form-approval-line.entity.js.map

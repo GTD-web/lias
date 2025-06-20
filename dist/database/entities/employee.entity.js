@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Employee = void 0;
 const typeorm_1 = require("typeorm");
+const role_type_enum_1 = require("../../common/enums/role-type.enum");
 const document_entity_1 = require("./document.entity");
 const form_approval_step_entity_1 = require("./form-approval-step.entity");
 const approval_step_entity_1 = require("./approval-step.entity");
@@ -47,6 +48,18 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true, comment: '직급' }),
     __metadata("design:type", String)
 ], Employee.prototype, "rank", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: '액세스 토큰' }),
+    __metadata("design:type", String)
+], Employee.prototype, "accessToken", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, comment: '토큰 만료 시간', type: 'timestamp with time zone' }),
+    __metadata("design:type", Date)
+], Employee.prototype, "expiredAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'enum', enum: role_type_enum_1.Role, array: true, default: [role_type_enum_1.Role.USER], comment: '사용자 역할' }),
+    __metadata("design:type", Array)
+], Employee.prototype, "roles", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => document_entity_1.Document, (document) => document.drafter),
     __metadata("design:type", Array)

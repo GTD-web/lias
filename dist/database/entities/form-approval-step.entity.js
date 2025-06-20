@@ -56,6 +56,6 @@ __decorate([
     __metadata("design:type", form_approval_line_entity_1.FormApprovalLine)
 ], FormApprovalStep.prototype, "formApprovalLine", void 0);
 exports.FormApprovalStep = FormApprovalStep = __decorate([
-    (0, typeorm_1.Entity)('form-approval-steps')
+    (0, typeorm_1.Entity)('form_approval_steps')
 ], FormApprovalStep);
 //# sourceMappingURL=form-approval-step.entity.js.map

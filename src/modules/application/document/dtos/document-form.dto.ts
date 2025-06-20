@@ -69,7 +69,16 @@ export class CreateDocumentFormDto {
     formApprovalLineId: string;
 }
 
-export class UpdateDocumentFormDto extends PartialType(CreateDocumentFormDto) {}
+export class UpdateDocumentFormDto extends PartialType(CreateDocumentFormDto) {
+    @IsUUID()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '문서 양식 ID',
+        example: 'uuid',
+        required: true,
+    })
+    documentFormId: string;
+}
 
 export class DocumentFormResponseDto {
     @ApiProperty({
@@ -109,8 +118,8 @@ export class DocumentFormResponseDto {
     implementerInfo: ImplementerInfo[];
 
     @ApiProperty({
+        type: DocumentTypeResponseDto,
         description: '문서 양식 타입 ID',
-        example: 'uuid',
     })
     documentType: DocumentTypeResponseDto;
 

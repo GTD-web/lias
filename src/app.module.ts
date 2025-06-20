@@ -9,8 +9,9 @@ import { AppService } from './app.service';
 import { DB_Config, JWT_CONFIG } from './configs/env.config';
 import { ApiDocService } from './common/documents/api-doc.service';
 import { DbDocService } from './common/documents/db-doc.service';
-import { EmployeeModule } from './modules/application/employee/employee.module';
 import { DocumentModule } from './modules/application/document/document.module';
+import { AuthModule } from './modules/application/authorization/auth.module';
+import { MetadataModule } from './modules/application/metadata/metadata.module';
 
 @Module({
     imports: [
@@ -28,10 +29,15 @@ import { DocumentModule } from './modules/application/document/document.module';
                 path: 'document',
                 module: DocumentModule,
             },
+            {
+                path: 'metadata',
+                module: MetadataModule,
+            },
         ]),
 
+        AuthModule,
+        MetadataModule,
         DocumentModule,
-        EmployeeModule,
     ],
     controllers: [AppController],
     providers: [AppService, ApiDocService, DbDocService],

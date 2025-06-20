@@ -18,48 +18,24 @@ const swagger_1 = require("@nestjs/swagger");
 const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
 const document_service_1 = require("../document.service");
 const document_form_dto_1 = require("../dtos/document-form.dto");
-const approval_enum_1 = require("../../../../common/enums/approval.enum");
 let DocumentFormController = class DocumentFormController {
     constructor(documentService) {
         this.documentService = documentService;
     }
     async createDocumentForm(createDocumentFormDto) {
-        return {
-            documentFormId: '1',
-            name: '휴가신청서',
-            description: '휴가 신청을 위한 문서 양식입니다.',
-            template: '<div>문서 양식 템플릿</div>',
-            documentType: {
-                documentTypeId: '1',
-                name: 'VACATION',
-                documentNumberCode: 'VAC-001',
-            },
-            formApprovalLine: {
-                formApprovalLineId: '1',
-                name: '결재선 1',
-                description: '결재선 1 설명',
-                type: approval_enum_1.ApprovalLineType.COMMON,
-                isActive: true,
-                order: 1,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                formApprovalSteps: [],
-            },
-            receiverInfo: [],
-            implementerInfo: [],
-        };
+        return await this.documentService.createDocumentForm(createDocumentFormDto);
     }
     async findAllDocumentForms() {
-        return [];
+        return await this.documentService.findDocumentForms();
     }
     async findDocumentFormById(id) {
-        return null;
+        return await this.documentService.findDocumentFormById(id);
     }
     async updateDocumentFormById(id, updateDocumentFormDto) {
-        return null;
+        return await this.documentService.updateDocumentForm(id, updateDocumentFormDto);
     }
     async deleteDocumentFormById(id) {
-        return true;
+        return await this.documentService.deleteDocumentForm(id);
     }
 };
 exports.DocumentFormController = DocumentFormController;

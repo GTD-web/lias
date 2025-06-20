@@ -14,7 +14,7 @@ import { FormApprovalStep } from './form-approval-step.entity';
 import { Employee } from './employee.entity';
 import { ApprovalLineType } from 'src/common/enums/approval.enum';
 
-@Entity('form-approval-lines')
+@Entity('form_approval_lines')
 export class FormApprovalLine {
     @PrimaryGeneratedColumn('uuid')
     formApprovalLineId: string;
@@ -36,7 +36,7 @@ export class FormApprovalLine {
     @Column({ comment: '결재 라인 사용 여부', default: true })
     isActive: boolean;
 
-    @Column({ comment: '결재 라인 정렬 순서', default: 0 })
+    @Column({ comment: '결재 라인 정렬 순서', nullable: true })
     order: number;
 
     @CreateDateColumn({ type: 'timestamp with time zone' })

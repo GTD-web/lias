@@ -29,6 +29,12 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentImplementer.prototype, "rank", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        comment: '정렬 순서',
+    }),
+    __metadata("design:type", Number)
+], DocumentImplementer.prototype, "order", void 0);
+__decorate([
     (0, typeorm_1.Column)({ nullable: true, comment: '시행 일자' }),
     __metadata("design:type", Date)
 ], DocumentImplementer.prototype, "implementDate", void 0);
@@ -51,6 +57,6 @@ __decorate([
     __metadata("design:type", document_entity_1.Document)
 ], DocumentImplementer.prototype, "document", void 0);
 exports.DocumentImplementer = DocumentImplementer = __decorate([
-    (0, typeorm_1.Entity)('document-implementers')
+    (0, typeorm_1.Entity)('document_implementers')
 ], DocumentImplementer);
 //# sourceMappingURL=document-implementer.entity.js.map

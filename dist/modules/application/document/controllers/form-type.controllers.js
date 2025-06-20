@@ -23,23 +23,19 @@ let FormTypeController = class FormTypeController {
         this.documentService = documentService;
     }
     async createFormType(createDocumentTypeDto) {
-        return {
-            documentTypeId: '1',
-            name: 'VACATION',
-            documentNumberCode: 'VAC-001',
-        };
+        return await this.documentService.createFormType(createDocumentTypeDto);
     }
     async findAllFormTypes() {
-        return [];
+        return await this.documentService.findFormTypes();
     }
     async findFormTypeById(id) {
-        return null;
+        return await this.documentService.findFormTypeById(id);
     }
     async updateFormTypeById(id, updateDocumentTypeDto) {
-        return null;
+        return await this.documentService.updateFormType(id, updateDocumentTypeDto);
     }
     async deleteFormTypeById(id) {
-        return true;
+        return await this.documentService.deleteFormType(id);
     }
 };
 exports.FormTypeController = FormTypeController;

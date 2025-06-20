@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateDocumentTypeDto {
     @IsString()
@@ -21,7 +21,16 @@ export class CreateDocumentTypeDto {
     documentNumberCode: string;
 }
 
-export class UpdateDocumentTypeDto extends PartialType(CreateDocumentTypeDto) {}
+export class UpdateDocumentTypeDto extends PartialType(CreateDocumentTypeDto) {
+    @IsUUID()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '문서 타입 ID',
+        example: 'uuid',
+        required: true,
+    })
+    documentTypeId: string;
+}
 
 export class DocumentTypeResponseDto {
     @ApiProperty({

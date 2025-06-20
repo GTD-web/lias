@@ -7,6 +7,8 @@ import {
     FormApprovalLineResponseDto,
     UpdateFormApprovalLineDto,
 } from '../dtos/approval-line.dto';
+import { Employee } from '../../../../database/entities/employee.entity';
+import { User } from '../../../../common/decorators/user.decorator';
 
 @ApiTags('결재선')
 @ApiBearerAuth()
@@ -22,9 +24,10 @@ export class ApprovalLineController {
         type: FormApprovalLineResponseDto,
     })
     async createApprovalLine(
+        @User() user: Employee,
         @Body() createFormApprovalLineDto: CreateFormApprovalLineDto,
     ): Promise<FormApprovalLineResponseDto> {
-        const approvalLine = await this.documentService.createApprovalLine(createFormApprovalLineDto);
+        const approvalLine = await this.documentService.createApprovalLine(user, createFormApprovalLineDto);
         return approvalLine;
     }
 
@@ -47,7 +50,7 @@ export class ApprovalLineController {
         type: FormApprovalLineResponseDto,
     })
     async findApprovalLineById(@Param('id') id: string): Promise<FormApprovalLineResponseDto> {
-        return null;
+        return await this.documentService.findApprovalLineById(id);
     }
 
     @Patch(':id')
@@ -58,10 +61,12 @@ export class ApprovalLineController {
         type: FormApprovalLineResponseDto,
     })
     async updateApprovalLineById(
+        @User() user: Employee,
         @Param('id') id: string,
         @Body() updateFormApprovalLineDto: UpdateFormApprovalLineDto,
     ): Promise<FormApprovalLineResponseDto> {
-        return null;
+        const approvalLine = await this.documentService.updateApprovalLine(user, updateFormApprovalLineDto);
+        return approvalLine;
     }
 
     @Delete(':id')
@@ -72,6 +77,6 @@ export class ApprovalLineController {
         type: 'boolean',
     })
     async deleteApprovalLineById(@Param('id') id: string): Promise<boolean> {
-        return true;
+        return await this.documentService.deleteApprovalLine(id);
     }
 }

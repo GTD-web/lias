@@ -13,7 +13,7 @@ import { FormApprovalLine } from './form-approval-line.entity';
 import { Employee } from './employee.entity';
 import { ApprovalStepType, ApproverType, DepartmentScopeType } from 'src/common/enums/approval.enum';
 
-@Entity('form-approval-steps')
+@Entity('form_approval_steps')
 export class FormApprovalStep {
     @PrimaryGeneratedColumn('uuid')
     formApprovalStepId: string;

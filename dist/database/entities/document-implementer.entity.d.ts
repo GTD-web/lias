@@ -4,6 +4,7 @@ export declare class DocumentImplementer {
     documentImplementerId: string;
     name: string;
     rank: string;
+    order: number;
     implementDate: Date;
     implementerId: string;
     implementer: Employee;

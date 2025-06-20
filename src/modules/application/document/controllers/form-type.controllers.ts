@@ -18,11 +18,7 @@ export class FormTypeController {
         type: DocumentTypeResponseDto,
     })
     async createFormType(@Body() createDocumentTypeDto: CreateDocumentTypeDto): Promise<DocumentTypeResponseDto> {
-        return {
-            documentTypeId: '1',
-            name: 'VACATION',
-            documentNumberCode: 'VAC-001',
-        };
+        return await this.documentService.createFormType(createDocumentTypeDto);
     }
 
     @Get('')
@@ -33,7 +29,7 @@ export class FormTypeController {
         type: [DocumentTypeResponseDto],
     })
     async findAllFormTypes(): Promise<DocumentTypeResponseDto[]> {
-        return [];
+        return await this.documentService.findFormTypes();
     }
 
     @Get(':id')
@@ -44,7 +40,7 @@ export class FormTypeController {
         type: DocumentTypeResponseDto,
     })
     async findFormTypeById(@Param('id') id: string): Promise<DocumentTypeResponseDto> {
-        return null;
+        return await this.documentService.findFormTypeById(id);
     }
 
     @Patch(':id')
@@ -58,7 +54,7 @@ export class FormTypeController {
         @Param('id') id: string,
         @Body() updateDocumentTypeDto: UpdateDocumentTypeDto,
     ): Promise<DocumentTypeResponseDto> {
-        return null;
+        return await this.documentService.updateFormType(id, updateDocumentTypeDto);
     }
 
     @Delete(':id')
@@ -69,6 +65,6 @@ export class FormTypeController {
         type: 'boolean',
     })
     async deleteFormTypeById(@Param('id') id: string): Promise<boolean> {
-        return true;
+        return await this.documentService.deleteFormType(id);
     }
 }

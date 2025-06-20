@@ -22,6 +22,12 @@ let DomainFormApprovalStepRepository = class DomainFormApprovalStepRepository ex
     constructor(repository) {
         super(repository);
     }
+    async deleteByFormApprovalLineId(formApprovalLineId, repositoryOptions) {
+        const repository = repositoryOptions?.queryRunner
+            ? repositoryOptions.queryRunner.manager.getRepository(this.repository.target)
+            : this.repository;
+        await repository.delete({ formApprovalLine: { formApprovalLineId } });
+    }
 };
 exports.DomainFormApprovalStepRepository = DomainFormApprovalStepRepository;
 exports.DomainFormApprovalStepRepository = DomainFormApprovalStepRepository = __decorate([

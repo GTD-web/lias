@@ -18,25 +18,28 @@ const swagger_1 = require("@nestjs/swagger");
 const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
 const document_service_1 = require("../document.service");
 const approval_line_dto_1 = require("../dtos/approval-line.dto");
+const employee_entity_1 = require("../../../../database/entities/employee.entity");
+const user_decorator_1 = require("../../../../common/decorators/user.decorator");
 let ApprovalLineController = class ApprovalLineController {
     constructor(documentService) {
         this.documentService = documentService;
     }
-    async createApprovalLine(createFormApprovalLineDto) {
-        const approvalLine = await this.documentService.createApprovalLine(createFormApprovalLineDto);
+    async createApprovalLine(user, createFormApprovalLineDto) {
+        const approvalLine = await this.documentService.createApprovalLine(user, createFormApprovalLineDto);
         return approvalLine;
     }
     async findAllApprovalLines() {
         return await this.documentService.findApprovalLines();
     }
     async findApprovalLineById(id) {
-        return null;
+        return await this.documentService.findApprovalLineById(id);
     }
-    async updateApprovalLineById(id, updateFormApprovalLineDto) {
-        return null;
+    async updateApprovalLineById(user, id, updateFormApprovalLineDto) {
+        const approvalLine = await this.documentService.updateApprovalLine(user, updateFormApprovalLineDto);
+        return approvalLine;
     }
     async deleteApprovalLineById(id) {
-        return true;
+        return await this.documentService.deleteApprovalLine(id);
     }
 };
 exports.ApprovalLineController = ApprovalLineController;
@@ -48,9 +51,11 @@ __decorate([
         description: '결재선을 성공적으로 생성했습니다.',
         type: approval_line_dto_1.FormApprovalLineResponseDto,
     }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [approval_line_dto_1.CreateFormApprovalLineDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee,
+        approval_line_dto_1.CreateFormApprovalLineDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalLineController.prototype, "createApprovalLine", null);
 __decorate([
@@ -86,10 +91,11 @@ __decorate([
         description: '결재선을 성공적으로 수정했습니다.',
         type: approval_line_dto_1.FormApprovalLineResponseDto,
     }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, approval_line_dto_1.UpdateFormApprovalLineDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, String, approval_line_dto_1.UpdateFormApprovalLineDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalLineController.prototype, "updateApprovalLineById", null);
 __decorate([

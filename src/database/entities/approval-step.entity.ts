@@ -13,7 +13,7 @@ import { Employee } from './employee.entity';
 import { Document } from './document.entity';
 import { ApprovalStepType } from 'src/common/enums/approval.enum';
 
-@Entity('approval-steps')
+@Entity('approval_steps')
 export class ApprovalStep {
     @PrimaryGeneratedColumn('uuid')
     approvalStepId: string;

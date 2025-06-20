@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 't
 import { Employee } from './employee.entity';
 import { Document } from './document.entity';
 
-@Entity('document-referencers')
+@Entity('document_referencers')
 export class DocumentReferencer {
     @PrimaryGeneratedColumn('uuid')
     documentReferencerId: string;
@@ -12,6 +12,11 @@ export class DocumentReferencer {
 
     @Column({ comment: '직급' })
     rank: string;
+
+    @Column({
+        comment: '정렬 순서',
+    })
+    order: number;
 
     @Column({ nullable: true, comment: '참조자' })
     referencerId: string;

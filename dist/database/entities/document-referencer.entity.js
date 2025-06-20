@@ -29,6 +29,12 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentReferencer.prototype, "rank", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        comment: '정렬 순서',
+    }),
+    __metadata("design:type", Number)
+], DocumentReferencer.prototype, "order", void 0);
+__decorate([
     (0, typeorm_1.Column)({ nullable: true, comment: '참조자' }),
     __metadata("design:type", String)
 ], DocumentReferencer.prototype, "referencerId", void 0);
@@ -47,6 +53,6 @@ __decorate([
     __metadata("design:type", document_entity_1.Document)
 ], DocumentReferencer.prototype, "document", void 0);
 exports.DocumentReferencer = DocumentReferencer = __decorate([
-    (0, typeorm_1.Entity)('document-referencers')
+    (0, typeorm_1.Entity)('document_referencers')
 ], DocumentReferencer);
 //# sourceMappingURL=document-referencer.entity.js.map

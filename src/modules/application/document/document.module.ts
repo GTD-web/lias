@@ -9,19 +9,25 @@ import { DocumentFormController } from './controllers/document-form.controller';
 import { FormTypeController } from './controllers/form-type.controllers';
 import { ApprovalLineController } from './controllers/approval-line.controller';
 import { DocumentService } from './document.service';
-import { CreateApprovalLineUseCase } from './usecases/create-approval-line.usecase';
-import { FindApprovalLinesUseCase } from './usecases/find-approval-lines.usecase';
+import * as ApprovalLineUsecases from './usecases/approval-line';
+import * as FormTypeUsecases from './usecases/form-type';
+import * as DocumentFormUsecases from './usecases/document-form';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([DocumentForm, DocumentType, FormApprovalLine, FormApprovalStep]),
+        // TypeOrmModule.forFeature([DocumentForm, DocumentType, FormApprovalLine, FormApprovalStep]),
         DomainDocumentFormModule,
         DomainDocumentTypeModule,
         DomainFormApprovalLineModule,
         DomainFormApprovalStepModule,
     ],
     controllers: [ApprovalLineController, FormTypeController, DocumentFormController],
-    providers: [DocumentService, CreateApprovalLineUseCase, FindApprovalLinesUseCase],
+    providers: [
+        DocumentService,
+        ...Object.values(ApprovalLineUsecases),
+        ...Object.values(FormTypeUsecases),
+        ...Object.values(DocumentFormUsecases),
+    ],
     exports: [],
 })
 export class DocumentModule {

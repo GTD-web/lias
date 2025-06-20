@@ -19,30 +19,7 @@ export class DocumentFormController {
         type: DocumentFormResponseDto,
     })
     async createDocumentForm(@Body() createDocumentFormDto: CreateDocumentFormDto): Promise<DocumentFormResponseDto> {
-        return {
-            documentFormId: '1',
-            name: '휴가신청서',
-            description: '휴가 신청을 위한 문서 양식입니다.',
-            template: '<div>문서 양식 템플릿</div>',
-            documentType: {
-                documentTypeId: '1',
-                name: 'VACATION',
-                documentNumberCode: 'VAC-001',
-            },
-            formApprovalLine: {
-                formApprovalLineId: '1',
-                name: '결재선 1',
-                description: '결재선 1 설명',
-                type: ApprovalLineType.COMMON,
-                isActive: true,
-                order: 1,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                formApprovalSteps: [],
-            },
-            receiverInfo: [],
-            implementerInfo: [],
-        };
+        return await this.documentService.createDocumentForm(createDocumentFormDto);
     }
 
     @Get('')
@@ -53,7 +30,7 @@ export class DocumentFormController {
         type: [DocumentFormResponseDto],
     })
     async findAllDocumentForms(): Promise<DocumentFormResponseDto[]> {
-        return [];
+        return await this.documentService.findDocumentForms();
     }
 
     @Get(':id')
@@ -64,7 +41,7 @@ export class DocumentFormController {
         type: DocumentFormResponseDto,
     })
     async findDocumentFormById(@Param('id') id: string): Promise<DocumentFormResponseDto> {
-        return null;
+        return await this.documentService.findDocumentFormById(id);
     }
 
     @Patch(':id')
@@ -78,7 +55,7 @@ export class DocumentFormController {
         @Param('id') id: string,
         @Body() updateDocumentFormDto: UpdateDocumentFormDto,
     ): Promise<DocumentFormResponseDto> {
-        return null;
+        return await this.documentService.updateDocumentForm(id, updateDocumentFormDto);
     }
 
     @Delete(':id')
@@ -89,6 +66,6 @@ export class DocumentFormController {
         type: 'boolean',
     })
     async deleteDocumentFormById(@Param('id') id: string): Promise<boolean> {
-        return true;
+        return await this.documentService.deleteDocumentForm(id);
     }
 }

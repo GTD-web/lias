@@ -1,4 +1,14 @@
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsNotEmpty,
+    IsNumber,
+    IsObject,
+    IsOptional,
+    IsString,
+    IsUUID,
+} from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { ApprovalLineType, ApprovalStepType, ApproverType, DepartmentScopeType } from 'src/common/enums/approval.enum';
 import { Column } from 'typeorm';
@@ -21,14 +31,25 @@ export class CreateFormApprovalStepDto {
     })
     order: number;
 
-    @IsString()
+    @IsUUID()
     @IsOptional()
     @ApiProperty({
         description: '기본 결재자 ID',
-        example: '1',
+        example: 'uuid',
         required: false,
     })
     defaultApproverId: string;
+}
+
+export class UpdateFormApprovalStepDto extends PartialType(CreateFormApprovalStepDto) {
+    @IsUUID()
+    @IsOptional()
+    @ApiProperty({
+        description: '결재선 단계 ID',
+        example: 'uuid',
+        required: false,
+    })
+    formApprovalStepId: string;
 }
 
 export class CreateFormApprovalLineDto {
@@ -61,24 +82,29 @@ export class CreateFormApprovalLineDto {
     @IsArray()
     @IsNotEmpty()
     @ApiProperty({
-        type: CreateFormApprovalStepDto,
+        type: UpdateFormApprovalStepDto,
         description: '결재선 단계',
         example: [
             {
+                formApprovalStepId: 'uuid',
                 type: '결재',
                 order: 1,
-                approverType: 'USER',
-                approverValue: '1',
-                departmentScopeType: 'SELECTED',
-                isMandatory: true,
                 defaultApproverId: '1',
             },
         ],
     })
-    formApprovalSteps: CreateFormApprovalStepDto[];
+    formApprovalSteps: UpdateFormApprovalStepDto[];
 }
 
-export class UpdateFormApprovalLineDto extends PartialType(CreateFormApprovalLineDto) {}
+export class UpdateFormApprovalLineDto extends PartialType(CreateFormApprovalLineDto) {
+    @IsUUID()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '결재선 ID',
+        example: 'uuid',
+    })
+    formApprovalLineId: string;
+}
 
 export class ApproverResponseDto {
     @ApiProperty({

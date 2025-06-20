@@ -1,2 +1,2 @@
 import * as entities from './index';
-export declare const EntityList: (typeof entities.Employee | typeof entities.Document | typeof entities.DocumentForm | typeof entities.DocumentType | typeof entities.DocumentImplementer | typeof entities.DocumentReferencer | typeof entities.FormApprovalLine | typeof entities.FormApprovalStep | typeof entities.ApprovalStep | typeof entities.File)[];
+export declare const EntityList: (typeof entities.File | typeof entities.Document | typeof entities.ApprovalStep | typeof entities.Employee | typeof entities.DocumentImplementer | typeof entities.DocumentReferencer | typeof entities.DocumentType | typeof entities.DocumentForm | typeof entities.FormApprovalLine | typeof entities.FormApprovalStep | typeof entities.Department)[];

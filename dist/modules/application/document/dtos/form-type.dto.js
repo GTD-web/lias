@@ -38,6 +38,16 @@ __decorate([
 class UpdateDocumentTypeDto extends (0, swagger_1.PartialType)(CreateDocumentTypeDto) {
 }
 exports.UpdateDocumentTypeDto = UpdateDocumentTypeDto;
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '문서 타입 ID',
+        example: 'uuid',
+        required: true,
+    }),
+    __metadata("design:type", String)
+], UpdateDocumentTypeDto.prototype, "documentTypeId", void 0);
 class DocumentTypeResponseDto {
 }
 exports.DocumentTypeResponseDto = DocumentTypeResponseDto;

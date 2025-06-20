@@ -90,6 +90,16 @@ __decorate([
 class UpdateDocumentFormDto extends (0, swagger_1.PartialType)(CreateDocumentFormDto) {
 }
 exports.UpdateDocumentFormDto = UpdateDocumentFormDto;
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '문서 양식 ID',
+        example: 'uuid',
+        required: true,
+    }),
+    __metadata("design:type", String)
+], UpdateDocumentFormDto.prototype, "documentFormId", void 0);
 class DocumentFormResponseDto {
 }
 exports.DocumentFormResponseDto = DocumentFormResponseDto;
@@ -137,8 +147,8 @@ __decorate([
 ], DocumentFormResponseDto.prototype, "implementerInfo", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
+        type: form_type_dto_1.DocumentTypeResponseDto,
         description: '문서 양식 타입 ID',
-        example: 'uuid',
     }),
     __metadata("design:type", form_type_dto_1.DocumentTypeResponseDto)
 ], DocumentFormResponseDto.prototype, "documentType", void 0);

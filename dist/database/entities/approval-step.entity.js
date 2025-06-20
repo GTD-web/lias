@@ -60,6 +60,6 @@ __decorate([
     __metadata("design:type", document_entity_1.Document)
 ], ApprovalStep.prototype, "document", void 0);
 exports.ApprovalStep = ApprovalStep = __decorate([
-    (0, typeorm_1.Entity)('approval-steps')
+    (0, typeorm_1.Entity)('approval_steps')
 ], ApprovalStep);
 //# sourceMappingURL=approval-step.entity.js.map

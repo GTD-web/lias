@@ -29,6 +29,15 @@ export class Employee {
     @Column({ nullable: true, comment: '직급' })
     rank: string;
 
+    @Column({ nullable: true, comment: '액세스 토큰' })
+    accessToken: string;
+
+    @Column({ nullable: true, comment: '토큰 만료 시간', type: 'timestamp with time zone' })
+    expiredAt: Date;
+
+    @Column({ type: 'enum', enum: Role, array: true, default: [Role.USER], comment: '사용자 역할' })
+    roles: Role[];
+
     @OneToMany(() => Document, (document) => document.drafter)
     draftDocuments: Document[];
 

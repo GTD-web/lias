@@ -12,6 +12,7 @@ export declare class CreateDocumentFormDto {
 }
 declare const UpdateDocumentFormDto_base: import("@nestjs/common").Type<Partial<CreateDocumentFormDto>>;
 export declare class UpdateDocumentFormDto extends UpdateDocumentFormDto_base {
+    documentFormId: string;
 }
 export declare class DocumentFormResponseDto {
     documentFormId: string;

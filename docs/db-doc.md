@@ -29,6 +29,7 @@ erDiagram
         uuid documentImplementerId PK
         string name 
         string rank 
+        number order 
         date implementDate 
         string implementerId 
         string documentId 
@@ -37,6 +38,7 @@ erDiagram
         uuid documentReferencerId PK
         string name 
         string rank 
+        number order 
         string referencerId 
         string documentId 
     }
@@ -100,6 +102,15 @@ erDiagram
         string department 
         string position 
         string rank 
+        string accessToken 
+        timestamp with time zone expiredAt 
+        enum roles 
+    }
+    department {
+        uuid departmentId PK
+        string departmentCode 
+        string departmentName 
+        string parentDepartmentId 
     }
     file }|--|| document : belongs_to
     approvalstep }|--|| employee : belongs_to
@@ -128,6 +139,8 @@ erDiagram
     employee ||--o{ approvalstep : has
     employee ||--o{ documentimplementer : has
     employee ||--o{ documentreferencer : has
+    department }|--|| department : belongs_to
+    department ||--o{ department : has
 `}
 />
 
@@ -143,7 +156,7 @@ erDiagram
 | createdAt | timestamp with time zone | NOT NULL |  |
 | documentId | String |  |  |
 
-### approval-steps
+### approval_steps
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
@@ -156,24 +169,26 @@ erDiagram
 | approverId | String |  | 기본 결재자 ID |
 | documentId | String | NOT NULL | 문서 ID |
 
-### document-implementers
+### document_implementers
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
 | documentImplementerId | uuid | PK, NOT NULL |  |
 | name | String | NOT NULL | 이름 |
 | rank | String | NOT NULL | 직급 |
+| order | Number | NOT NULL | 정렬 순서 |
 | implementDate | Date |  | 시행 일자 |
 | implementerId | String |  | 시행자 |
 | documentId | String |  | 문서 ID |
 
-### document-referencers
+### document_referencers
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
 | documentReferencerId | uuid | PK, NOT NULL |  |
 | name | String | NOT NULL | 이름 |
 | rank | String | NOT NULL | 직급 |
+| order | Number | NOT NULL | 정렬 순서 |
 | referencerId | String |  | 참조자 |
 | documentId | String |  | 문서 ID |
 
@@ -197,7 +212,7 @@ erDiagram
 | drafterId | String |  | 기안자 |
 | parentDocumentId | String |  |  |
 
-### document-types
+### document_types
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
@@ -218,7 +233,7 @@ erDiagram
 | formApprovalLineId | String | NOT NULL | 결재선 ID |
 | documentTypeId | String | NOT NULL | 문서 양식 타입 ID |
 
-### form-approval-lines
+### form_approval_lines
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
@@ -227,12 +242,12 @@ erDiagram
 | description | String |  | 결재 라인 설명 |
 | type | enum | NOT NULL | 결재 라인 타입 (COMMON: 공통, CUSTOM: 개인화) |
 | isActive | Boolean | NOT NULL | 결재 라인 사용 여부 |
-| order | Number | NOT NULL | 결재 라인 정렬 순서 |
+| order | Number |  | 결재 라인 정렬 순서 |
 | createdAt | timestamp with time zone | NOT NULL |  |
 | updatedAt | timestamp with time zone | NOT NULL |  |
 | employeeId | String |  | 개인화된 결재라인의 경우 사용자 ID |
 
-### form-approval-steps
+### form_approval_steps
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
@@ -255,6 +270,18 @@ erDiagram
 | department | String |  | 부서 |
 | position | String |  | 직책 |
 | rank | String |  | 직급 |
+| accessToken | String |  | 액세스 토큰 |
+| expiredAt | timestamp with time zone |  | 토큰 만료 시간 |
+| roles | enum | NOT NULL | 사용자 역할 |
+
+### departments
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|-----------|------|
+| departmentId | uuid | PK, NOT NULL |  |
+| departmentCode | String | NOT NULL, UNIQUE | 부서 코드 |
+| departmentName | String | NOT NULL | 부서 이름 |
+| parentDepartmentId | String |  | 부모 부서 ID |
 
 ## 관계 정보
 
@@ -264,21 +291,21 @@ erDiagram
 |------------|-------------|------|
 | many-to-one | () => document_entity_1.Document |  |
 
-### approval-steps 관계
+### approval_steps 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
 | many-to-one | () => employee_entity_1.Employee |  |
 | many-to-one | () => document_entity_1.Document |  |
 
-### document-implementers 관계
+### document_implementers 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
 | many-to-one | () => employee_entity_1.Employee |  |
 | many-to-one | () => document_entity_1.Document |  |
 
-### document-referencers 관계
+### document_referencers 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
@@ -297,7 +324,7 @@ erDiagram
 | one-to-many | () => Document |  |
 | one-to-many | () => file_entity_1.File |  |
 
-### document-types 관계
+### document_types 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
@@ -310,7 +337,7 @@ erDiagram
 | many-to-one | () => form_approval_line_entity_1.FormApprovalLine |  |
 | many-to-one | () => document_type_entity_1.DocumentType |  |
 
-### form-approval-lines 관계
+### form_approval_lines 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
@@ -318,7 +345,7 @@ erDiagram
 | many-to-one | () => employee_entity_1.Employee |  |
 | one-to-many | () => form_approval_step_entity_1.FormApprovalStep |  |
 
-### form-approval-steps 관계
+### form_approval_steps 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
@@ -334,4 +361,11 @@ erDiagram
 | one-to-many | () => approval_step_entity_1.ApprovalStep |  |
 | one-to-many | () => document_implementer_entity_1.DocumentImplementer |  |
 | one-to-many | () => document_referencer_entity_1.DocumentReferencer |  |
+
+### departments 관계
+
+| 관계 타입 | 대상 엔티티 | 설명 |
+|------------|-------------|------|
+| many-to-one | () => Department |  |
+| one-to-many | () => Department |  |
 

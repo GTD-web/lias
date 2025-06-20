@@ -37,7 +37,7 @@ async function bootstrap() {
     });
 
     app.setGlobalPrefix('api');
-    // app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)), new RolesGuard(app.get(Reflector)));
+    app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)), new RolesGuard(app.get(Reflector)));
     // 전역 인터셉터 등록
     app.useGlobalInterceptors(new RequestInterceptor(), new ResponseInterceptor(), new ErrorInterceptor());
     app.useGlobalPipes(new ValidationPipe({ transform: true }));

@@ -18,6 +18,9 @@ let DomainFormApprovalStepService = class DomainFormApprovalStepService extends 
         super(formApprovalStepRepository);
         this.formApprovalStepRepository = formApprovalStepRepository;
     }
+    async deleteByFormApprovalLineId(formApprovalLineId, repositoryOptions) {
+        await this.formApprovalStepRepository.deleteByFormApprovalLineId(formApprovalLineId, repositoryOptions);
+    }
 };
 exports.DomainFormApprovalStepService = DomainFormApprovalStepService;
 exports.DomainFormApprovalStepService = DomainFormApprovalStepService = __decorate([

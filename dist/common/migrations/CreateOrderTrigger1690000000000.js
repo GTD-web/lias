@@ -9,8 +9,8 @@ class CreateOrderTrigger1690000000000 {
       BEGIN
         IF NEW."order" IS NULL THEN
           SELECT COALESCE(MAX("order"), 0) + 1 INTO NEW."order"
-          FROM post
-          WHERE user_id = NEW.user_id;
+          FROM form_approval_lines
+          WHERE "employeeId" = NEW."employeeId";
         END IF;
         RETURN NEW;
       END;
@@ -18,13 +18,13 @@ class CreateOrderTrigger1690000000000 {
     `);
         await queryRunner.query(`
       CREATE TRIGGER set_order_before_insert
-      BEFORE INSERT ON post
+      BEFORE INSERT ON form_approval_lines
       FOR EACH ROW
       EXECUTE FUNCTION set_order_value();
     `);
     }
     async down(queryRunner) {
-        await queryRunner.query(`DROP TRIGGER IF EXISTS set_order_before_insert ON post;`);
+        await queryRunner.query(`DROP TRIGGER IF EXISTS set_order_before_insert ON form_approval_lines;`);
         await queryRunner.query(`DROP FUNCTION IF EXISTS set_order_value();`);
     }
 }

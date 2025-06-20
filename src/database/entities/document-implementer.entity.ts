@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 't
 import { Employee } from './employee.entity';
 import { Document } from './document.entity';
 
-@Entity('document-implementers')
+@Entity('document_implementers')
 export class DocumentImplementer {
     @PrimaryGeneratedColumn('uuid')
     documentImplementerId: string;
@@ -12,6 +12,11 @@ export class DocumentImplementer {
 
     @Column({ comment: '직급' })
     rank: string;
+
+    @Column({
+        comment: '정렬 순서',
+    })
+    order: number;
 
     @Column({ nullable: true, comment: '시행 일자' })
     implementDate: Date;

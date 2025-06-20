@@ -40,55 +40,9 @@ export declare const ERROR_MESSAGE: {
             INVALID_PASSWORD: string;
             SSO_LOGIN_FAILED: string;
         };
-        RESOURCE: {
+        APPROVAL: {
             NOT_FOUND: string;
-            INVALID_STATUS: string;
-            HAS_RESOURCES: string;
-            IS_AVAILABLE: string;
-            GROUP_ID_REQUIRED: string;
-            MANAGERS_REQUIRED: string;
-            UNSUPPORTED_TYPE: (type: string) => string;
-            FAILED_CREATE: string;
-            FAILED_UPDATE: string;
-            FAILED_DELETE: string;
-            FAILED_REORDER: string;
-            DATE_REQUIRED: string;
-            INVALID_DATE_RANGE: string;
-            TIME_RANGE_CONFLICT: string;
-        };
-        RESOURCE_GROUP: {
-            NOT_FOUND: string;
-            FAILED_REORDER: string;
-        };
-        RESOURCE_MANAGER: {
-            NOT_FOUND: string;
-        };
-        VEHICLE_INFO: {
-            NOT_FOUND: string;
-            FAILED_RETURN: string;
-        };
-        CONSUMABLE: {
-            NOT_FOUND: string;
-            UNAUTHORIZED: string;
-            ALREADY_EXISTS: string;
-        };
-        MAINTENANCE: {
-            NOT_FOUND: string;
-            UNAUTHORIZED: string;
-            INVALID_DATE: string;
-        };
-        RESERVATION: {
-            NOT_FOUND: string;
-            TIME_CONFLICT: string;
-            INVALID_DATE_RANGE: string;
-            CANNOT_UPDATE_ACCOMMODATION_TIME: string;
-            CANNOT_UPDATE_STATUS: (status: string) => string;
-            INVALID_RESOURCE_TYPE: string;
-            CANNOT_RETURN_STATUS: (status: string) => string;
-            VEHICLE_NOT_FOUND: string;
-            VEHICLE_ALREADY_RETURNED: string;
-            INVALID_MILEAGE: string;
-            RESOURCE_UNAVAILABLE: string;
+            DELETE_FAILED: string;
         };
         FILE: {
             NOT_FOUND: string;

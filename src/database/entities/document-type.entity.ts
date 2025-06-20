@@ -3,7 +3,7 @@ import { FormApprovalLine } from './form-approval-line.entity';
 import { DocumentForm } from './document-form.entity';
 import { Document } from './document.entity';
 
-@Entity('document-types')
+@Entity('document_types')
 export class DocumentType {
     @PrimaryGeneratedColumn('uuid')
     documentTypeId: string;

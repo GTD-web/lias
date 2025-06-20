@@ -18,8 +18,9 @@ const app_service_1 = require("./app.service");
 const env_config_1 = require("./configs/env.config");
 const api_doc_service_1 = require("./common/documents/api-doc.service");
 const db_doc_service_1 = require("./common/documents/db-doc.service");
-const employee_module_1 = require("./modules/application/employee/employee.module");
 const document_module_1 = require("./modules/application/document/document.module");
+const auth_module_1 = require("./modules/application/authorization/auth.module");
+const metadata_module_1 = require("./modules/application/metadata/metadata.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,9 +41,14 @@ exports.AppModule = AppModule = __decorate([
                     path: 'document',
                     module: document_module_1.DocumentModule,
                 },
+                {
+                    path: 'metadata',
+                    module: metadata_module_1.MetadataModule,
+                },
             ]),
+            auth_module_1.AuthModule,
+            metadata_module_1.MetadataModule,
             document_module_1.DocumentModule,
-            employee_module_1.EmployeeModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, api_doc_service_1.ApiDocService, db_doc_service_1.DbDocService],
