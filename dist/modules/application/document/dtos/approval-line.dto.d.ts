@@ -4,19 +4,18 @@ export declare class CreateFormApprovalStepDto {
     order: number;
     defaultApproverId: string;
 }
-declare const UpdateFormApprovalStepDto_base: import("@nestjs/common").Type<Partial<CreateFormApprovalStepDto>>;
-export declare class UpdateFormApprovalStepDto extends UpdateFormApprovalStepDto_base {
-    formApprovalStepId: string;
-}
 export declare class CreateFormApprovalLineDto {
     name: string;
     description?: string;
     type: ApprovalLineType;
-    formApprovalSteps: UpdateFormApprovalStepDto[];
+    formApprovalSteps: CreateFormApprovalStepDto[];
 }
-declare const UpdateFormApprovalLineDto_base: import("@nestjs/common").Type<Partial<CreateFormApprovalLineDto>>;
-export declare class UpdateFormApprovalLineDto extends UpdateFormApprovalLineDto_base {
+export declare class UpdateFormApprovalLineDto {
+    name?: string;
+    description?: string;
+    type?: ApprovalLineType;
     formApprovalLineId: string;
+    formApprovalSteps?: CreateFormApprovalStepDto[];
 }
 export declare class ApproverResponseDto {
     employeeId: string;
@@ -43,4 +42,3 @@ export declare class FormApprovalLineResponseDto {
     updatedAt: Date;
     formApprovalSteps: FormApprovalStepResponseDto[];
 }
-export {};

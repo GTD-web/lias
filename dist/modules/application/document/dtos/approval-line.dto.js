@@ -9,10 +9,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FormApprovalLineResponseDto = exports.FormApprovalStepResponseDto = exports.ApproverResponseDto = exports.UpdateFormApprovalLineDto = exports.CreateFormApprovalLineDto = exports.UpdateFormApprovalStepDto = exports.CreateFormApprovalStepDto = void 0;
+exports.FormApprovalLineResponseDto = exports.FormApprovalStepResponseDto = exports.ApproverResponseDto = exports.UpdateFormApprovalLineDto = exports.CreateFormApprovalLineDto = exports.CreateFormApprovalStepDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
+const class_transformer_1 = require("class-transformer");
 class CreateFormApprovalStepDto {
 }
 exports.CreateFormApprovalStepDto = CreateFormApprovalStepDto;
@@ -45,19 +46,6 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateFormApprovalStepDto.prototype, "defaultApproverId", void 0);
-class UpdateFormApprovalStepDto extends (0, swagger_1.PartialType)(CreateFormApprovalStepDto) {
-}
-exports.UpdateFormApprovalStepDto = UpdateFormApprovalStepDto;
-__decorate([
-    (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsOptional)(),
-    (0, swagger_1.ApiProperty)({
-        description: '결재선 단계 ID',
-        example: 'uuid',
-        required: false,
-    }),
-    __metadata("design:type", String)
-], UpdateFormApprovalStepDto.prototype, "formApprovalStepId", void 0);
 class CreateFormApprovalLineDto {
 }
 exports.CreateFormApprovalLineDto = CreateFormApprovalLineDto;
@@ -94,11 +82,10 @@ __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsNotEmpty)(),
     (0, swagger_1.ApiProperty)({
-        type: UpdateFormApprovalStepDto,
+        type: [CreateFormApprovalStepDto],
         description: '결재선 단계',
         example: [
             {
-                formApprovalStepId: 'uuid',
                 type: '결재',
                 order: 1,
                 defaultApproverId: '1',
@@ -107,9 +94,40 @@ __decorate([
     }),
     __metadata("design:type", Array)
 ], CreateFormApprovalLineDto.prototype, "formApprovalSteps", void 0);
-class UpdateFormApprovalLineDto extends (0, swagger_1.PartialType)(CreateFormApprovalLineDto) {
+class UpdateFormApprovalLineDto {
 }
 exports.UpdateFormApprovalLineDto = UpdateFormApprovalLineDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, swagger_1.ApiProperty)({
+        description: '결재선 이름',
+        example: '결재선 1',
+        required: false,
+    }),
+    __metadata("design:type", String)
+], UpdateFormApprovalLineDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, swagger_1.ApiProperty)({
+        description: '결재선 설명',
+        example: '결재선 1 설명',
+        required: false,
+    }),
+    __metadata("design:type", String)
+], UpdateFormApprovalLineDto.prototype, "description", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalLineType),
+    (0, class_validator_1.IsOptional)(),
+    (0, swagger_1.ApiProperty)({
+        enum: approval_enum_1.ApprovalLineType,
+        description: '결재 라인 타입 (COMMON: 공통, CUSTOM: 개인화)',
+        example: approval_enum_1.ApprovalLineType.COMMON,
+        required: false,
+    }),
+    __metadata("design:type", String)
+], UpdateFormApprovalLineDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
@@ -119,6 +137,24 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], UpdateFormApprovalLineDto.prototype, "formApprovalLineId", void 0);
+__decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => CreateFormApprovalStepDto),
+    (0, class_validator_1.IsOptional)(),
+    (0, swagger_1.ApiProperty)({
+        type: [CreateFormApprovalStepDto],
+        description: '결재선 단계',
+        example: [
+            {
+                type: '결재',
+                order: 1,
+                defaultApproverId: 'uuid',
+            },
+        ],
+    }),
+    __metadata("design:type", Array)
+], UpdateFormApprovalLineDto.prototype, "formApprovalSteps", void 0);
 class ApproverResponseDto {
 }
 exports.ApproverResponseDto = ApproverResponseDto;
@@ -263,7 +299,7 @@ __decorate([
 ], FormApprovalLineResponseDto.prototype, "updatedAt", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        type: FormApprovalStepResponseDto,
+        type: [FormApprovalStepResponseDto],
         description: '결재선 단계',
         example: [
             {

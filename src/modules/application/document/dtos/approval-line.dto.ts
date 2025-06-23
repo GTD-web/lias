@@ -8,10 +8,12 @@ import {
     IsOptional,
     IsString,
     IsUUID,
+    ValidateNested,
 } from 'class-validator';
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { ApprovalLineType, ApprovalStepType, ApproverType, DepartmentScopeType } from 'src/common/enums/approval.enum';
 import { Column } from 'typeorm';
+import { Type } from 'class-transformer';
 
 export class CreateFormApprovalStepDto {
     @IsEnum(ApprovalStepType)
@@ -39,17 +41,6 @@ export class CreateFormApprovalStepDto {
         required: false,
     })
     defaultApproverId: string;
-}
-
-export class UpdateFormApprovalStepDto extends PartialType(CreateFormApprovalStepDto) {
-    @IsUUID()
-    @IsOptional()
-    @ApiProperty({
-        description: '결재선 단계 ID',
-        example: 'uuid',
-        required: false,
-    })
-    formApprovalStepId: string;
 }
 
 export class CreateFormApprovalLineDto {
@@ -82,21 +73,48 @@ export class CreateFormApprovalLineDto {
     @IsArray()
     @IsNotEmpty()
     @ApiProperty({
-        type: UpdateFormApprovalStepDto,
+        type: [CreateFormApprovalStepDto],
         description: '결재선 단계',
         example: [
             {
-                formApprovalStepId: 'uuid',
                 type: '결재',
                 order: 1,
                 defaultApproverId: '1',
             },
         ],
     })
-    formApprovalSteps: UpdateFormApprovalStepDto[];
+    formApprovalSteps: CreateFormApprovalStepDto[];
 }
 
-export class UpdateFormApprovalLineDto extends PartialType(CreateFormApprovalLineDto) {
+export class UpdateFormApprovalLineDto {
+    @IsString()
+    @IsOptional()
+    @ApiProperty({
+        description: '결재선 이름',
+        example: '결재선 1',
+        required: false,
+    })
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    @ApiProperty({
+        description: '결재선 설명',
+        example: '결재선 1 설명',
+        required: false,
+    })
+    description?: string;
+
+    @IsEnum(ApprovalLineType)
+    @IsOptional()
+    @ApiProperty({
+        enum: ApprovalLineType,
+        description: '결재 라인 타입 (COMMON: 공통, CUSTOM: 개인화)',
+        example: ApprovalLineType.COMMON,
+        required: false,
+    })
+    type?: ApprovalLineType;
+
     @IsUUID()
     @IsNotEmpty()
     @ApiProperty({
@@ -104,6 +122,23 @@ export class UpdateFormApprovalLineDto extends PartialType(CreateFormApprovalLin
         example: 'uuid',
     })
     formApprovalLineId: string;
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateFormApprovalStepDto)
+    @IsOptional()
+    @ApiProperty({
+        type: [CreateFormApprovalStepDto],
+        description: '결재선 단계',
+        example: [
+            {
+                type: '결재',
+                order: 1,
+                defaultApproverId: 'uuid',
+            },
+        ],
+    })
+    formApprovalSteps?: CreateFormApprovalStepDto[];
 }
 
 export class ApproverResponseDto {
@@ -227,7 +262,7 @@ export class FormApprovalLineResponseDto {
     updatedAt: Date;
 
     @ApiProperty({
-        type: FormApprovalStepResponseDto,
+        type: [FormApprovalStepResponseDto],
         description: '결재선 단계',
         example: [
             {

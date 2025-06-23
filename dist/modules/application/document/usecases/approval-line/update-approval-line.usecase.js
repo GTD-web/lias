@@ -24,18 +24,17 @@ let UpdateApprovalLineUseCase = class UpdateApprovalLineUseCase {
             dto['employeeId'] = user.employeeId;
         }
         const { formApprovalSteps, ...updateData } = dto;
-        const approvalLine = await this.formApprovalLineService.update(dto.formApprovalLineId, updateData);
+        await this.formApprovalStepService.deleteByFormApprovalLineId(dto.formApprovalLineId);
         for (const stepDto of formApprovalSteps) {
-            if (stepDto.formApprovalStepId) {
-                await this.formApprovalStepService.update(stepDto.formApprovalStepId, stepDto);
-            }
-            else {
-                await this.formApprovalStepService.save({
-                    ...stepDto,
-                    formApprovalLine: approvalLine,
-                });
-            }
+            await this.formApprovalStepService.save({
+                ...stepDto,
+                formApprovalLineId: dto.formApprovalLineId,
+            });
         }
+        const approvalLine = await this.formApprovalLineService.update(dto.formApprovalLineId, updateData, {
+            relations: ['formApprovalSteps', 'formApprovalSteps.defaultApprover'],
+        });
+        console.log('approvalLine', approvalLine);
         return approvalLine;
     }
 };

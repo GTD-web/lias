@@ -14,12 +14,13 @@
   "name": "결재선 1", // 결재선 이름, ✅ Required
   "description": "결재선 1 설명", // 결재선 설명, ❌ Optional
   "type": "COMMON", // 결재 라인 타입 (COMMON: 공통, CUSTOM: 개인화), ✅ Required
-  "formApprovalSteps": {
-    "type": "결재", // 결재 단계 타입, ❌ Optional
-    "order": 1, // 결재 단계 순서, ❌ Optional
-    "defaultApproverId": "uuid", // 기본 결재자 ID, ❌ Optional
-    "formApprovalStepId": "uuid" // 결재선 단계 ID, ❌ Optional
-  } // ✅ Required
+  "formApprovalSteps": [
+    {
+      "type": "결재", // 결재 단계 타입, ✅ Required
+      "order": 1, // 결재 단계 순서, ✅ Required
+      "defaultApproverId": "uuid" // 기본 결재자 ID, ❌ Optional
+    }
+  ] // 결재선 단계, ✅ Required
 }
 ```
 
@@ -41,19 +42,21 @@
     "order": 1, // 결재선 정렬 순서, ✅ Required
     "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
     "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-    "formApprovalSteps": {
-      "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-      "type": "결재", // 결재선 단계 타입, ✅ Required
-      "order": 1, // 결재선 단계 순서, ✅ Required
-      "defaultApprover": {
-        "employeeId": "1", // 결재자 ID, ✅ Required
-        "name": "홍길동", // 결재자 이름, ✅ Required
-        "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-        "department": "1234567890", // 결재자 부서, ✅ Required
-        "position": "1234567890", // 결재자 직책, ✅ Required
-        "rank": "1234567890" // 결재자 직급, ✅ Required
-      } // ✅ Required
-    } // ✅ Required
+    "formApprovalSteps": [
+      {
+        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+        "type": "결재", // 결재선 단계 타입, ✅ Required
+        "order": 1, // 결재선 단계 순서, ✅ Required
+        "defaultApprover": {
+          "employeeId": "1", // 결재자 ID, ✅ Required
+          "name": "홍길동", // 결재자 이름, ✅ Required
+          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+          "department": "1234567890", // 결재자 부서, ✅ Required
+          "position": "1234567890", // 결재자 직책, ✅ Required
+          "rank": "1234567890" // 결재자 직급, ✅ Required
+        } // ✅ Required
+      }
+    ] // 결재선 단계, ✅ Required
   }, // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional
 }
@@ -107,19 +110,21 @@
       "order": 1, // 결재선 정렬 순서, ✅ Required
       "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
       "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-      "formApprovalSteps": {
-        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
-        "order": 1, // 결재선 단계 순서, ✅ Required
-        "defaultApprover": {
-          "employeeId": "1", // 결재자 ID, ✅ Required
-          "name": "홍길동", // 결재자 이름, ✅ Required
-          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-          "department": "1234567890", // 결재자 부서, ✅ Required
-          "position": "1234567890", // 결재자 직책, ✅ Required
-          "rank": "1234567890" // 결재자 직급, ✅ Required
-        } // ✅ Required
-      } // ✅ Required
+      "formApprovalSteps": [
+        {
+          "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "order": 1, // 결재선 단계 순서, ✅ Required
+          "defaultApprover": {
+            "employeeId": "1", // 결재자 ID, ✅ Required
+            "name": "홍길동", // 결재자 이름, ✅ Required
+            "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+            "department": "1234567890", // 결재자 부서, ✅ Required
+            "position": "1234567890", // 결재자 직책, ✅ Required
+            "rank": "1234567890" // 결재자 직급, ✅ Required
+          } // ✅ Required
+        }
+      ] // 결재선 단계, ✅ Required
     }
   ], // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional
@@ -182,19 +187,21 @@
     "order": 1, // 결재선 정렬 순서, ✅ Required
     "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
     "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-    "formApprovalSteps": {
-      "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-      "type": "결재", // 결재선 단계 타입, ✅ Required
-      "order": 1, // 결재선 단계 순서, ✅ Required
-      "defaultApprover": {
-        "employeeId": "1", // 결재자 ID, ✅ Required
-        "name": "홍길동", // 결재자 이름, ✅ Required
-        "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-        "department": "1234567890", // 결재자 부서, ✅ Required
-        "position": "1234567890", // 결재자 직책, ✅ Required
-        "rank": "1234567890" // 결재자 직급, ✅ Required
-      } // ✅ Required
-    } // ✅ Required
+    "formApprovalSteps": [
+      {
+        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+        "type": "결재", // 결재선 단계 타입, ✅ Required
+        "order": 1, // 결재선 단계 순서, ✅ Required
+        "defaultApprover": {
+          "employeeId": "1", // 결재자 ID, ✅ Required
+          "name": "홍길동", // 결재자 이름, ✅ Required
+          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+          "department": "1234567890", // 결재자 부서, ✅ Required
+          "position": "1234567890", // 결재자 직책, ✅ Required
+          "rank": "1234567890" // 결재자 직급, ✅ Required
+        } // ✅ Required
+      }
+    ] // 결재선 단계, ✅ Required
   }, // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional
 }
@@ -247,13 +254,14 @@
   "name": "결재선 1", // 결재선 이름, ❌ Optional
   "description": "결재선 1 설명", // 결재선 설명, ❌ Optional
   "type": "COMMON", // 결재 라인 타입 (COMMON: 공통, CUSTOM: 개인화), ❌ Optional
-  "formApprovalSteps": {
-    "type": "결재", // 결재 단계 타입, ❌ Optional
-    "order": 1, // 결재 단계 순서, ❌ Optional
-    "defaultApproverId": "uuid", // 기본 결재자 ID, ❌ Optional
-    "formApprovalStepId": "uuid" // 결재선 단계 ID, ❌ Optional
-  }, // ❌ Optional
-  "formApprovalLineId": "uuid" // 결재선 ID, ✅ Required
+  "formApprovalLineId": "uuid", // 결재선 ID, ✅ Required
+  "formApprovalSteps": [
+    {
+      "type": "결재", // 결재 단계 타입, ✅ Required
+      "order": 1, // 결재 단계 순서, ✅ Required
+      "defaultApproverId": "uuid" // 기본 결재자 ID, ❌ Optional
+    }
+  ] // 결재선 단계, ✅ Required
 }
 ```
 
@@ -275,19 +283,21 @@
     "order": 1, // 결재선 정렬 순서, ✅ Required
     "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
     "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-    "formApprovalSteps": {
-      "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-      "type": "결재", // 결재선 단계 타입, ✅ Required
-      "order": 1, // 결재선 단계 순서, ✅ Required
-      "defaultApprover": {
-        "employeeId": "1", // 결재자 ID, ✅ Required
-        "name": "홍길동", // 결재자 이름, ✅ Required
-        "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-        "department": "1234567890", // 결재자 부서, ✅ Required
-        "position": "1234567890", // 결재자 직책, ✅ Required
-        "rank": "1234567890" // 결재자 직급, ✅ Required
-      } // ✅ Required
-    } // ✅ Required
+    "formApprovalSteps": [
+      {
+        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+        "type": "결재", // 결재선 단계 타입, ✅ Required
+        "order": 1, // 결재선 단계 순서, ✅ Required
+        "defaultApprover": {
+          "employeeId": "1", // 결재자 ID, ✅ Required
+          "name": "홍길동", // 결재자 이름, ✅ Required
+          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+          "department": "1234567890", // 결재자 부서, ✅ Required
+          "position": "1234567890", // 결재자 직책, ✅ Required
+          "rank": "1234567890" // 결재자 직급, ✅ Required
+        } // ✅ Required
+      }
+    ] // 결재선 단계, ✅ Required
   }, // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional
 }
@@ -695,19 +705,21 @@ null
       "order": 1, // 결재선 정렬 순서, ✅ Required
       "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
       "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-      "formApprovalSteps": {
-        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
-        "order": 1, // 결재선 단계 순서, ✅ Required
-        "defaultApprover": {
-          "employeeId": "1", // 결재자 ID, ✅ Required
-          "name": "홍길동", // 결재자 이름, ✅ Required
-          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-          "department": "1234567890", // 결재자 부서, ✅ Required
-          "position": "1234567890", // 결재자 직책, ✅ Required
-          "rank": "1234567890" // 결재자 직급, ✅ Required
-        } // ✅ Required
-      } // ✅ Required
+      "formApprovalSteps": [
+        {
+          "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "order": 1, // 결재선 단계 순서, ✅ Required
+          "defaultApprover": {
+            "employeeId": "1", // 결재자 ID, ✅ Required
+            "name": "홍길동", // 결재자 이름, ✅ Required
+            "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+            "department": "1234567890", // 결재자 부서, ✅ Required
+            "position": "1234567890", // 결재자 직책, ✅ Required
+            "rank": "1234567890" // 결재자 직급, ✅ Required
+          } // ✅ Required
+        }
+      ] // 결재선 단계, ✅ Required
     } // ✅ Required
   }, // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional
@@ -774,19 +786,21 @@ null
         "order": 1, // 결재선 정렬 순서, ✅ Required
         "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
         "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-        "formApprovalSteps": {
-          "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-          "type": "결재", // 결재선 단계 타입, ✅ Required
-          "order": 1, // 결재선 단계 순서, ✅ Required
-          "defaultApprover": {
-            "employeeId": "1", // 결재자 ID, ✅ Required
-            "name": "홍길동", // 결재자 이름, ✅ Required
-            "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-            "department": "1234567890", // 결재자 부서, ✅ Required
-            "position": "1234567890", // 결재자 직책, ✅ Required
-            "rank": "1234567890" // 결재자 직급, ✅ Required
-          } // ✅ Required
-        } // ✅ Required
+        "formApprovalSteps": [
+          {
+            "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+            "type": "결재", // 결재선 단계 타입, ✅ Required
+            "order": 1, // 결재선 단계 순서, ✅ Required
+            "defaultApprover": {
+              "employeeId": "1", // 결재자 ID, ✅ Required
+              "name": "홍길동", // 결재자 이름, ✅ Required
+              "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+              "department": "1234567890", // 결재자 부서, ✅ Required
+              "position": "1234567890", // 결재자 직책, ✅ Required
+              "rank": "1234567890" // 결재자 직급, ✅ Required
+            } // ✅ Required
+          }
+        ] // 결재선 단계, ✅ Required
       } // ✅ Required
     }
   ], // ✅ Required
@@ -862,19 +876,21 @@ null
       "order": 1, // 결재선 정렬 순서, ✅ Required
       "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
       "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-      "formApprovalSteps": {
-        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
-        "order": 1, // 결재선 단계 순서, ✅ Required
-        "defaultApprover": {
-          "employeeId": "1", // 결재자 ID, ✅ Required
-          "name": "홍길동", // 결재자 이름, ✅ Required
-          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-          "department": "1234567890", // 결재자 부서, ✅ Required
-          "position": "1234567890", // 결재자 직책, ✅ Required
-          "rank": "1234567890" // 결재자 직급, ✅ Required
-        } // ✅ Required
-      } // ✅ Required
+      "formApprovalSteps": [
+        {
+          "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "order": 1, // 결재선 단계 순서, ✅ Required
+          "defaultApprover": {
+            "employeeId": "1", // 결재자 ID, ✅ Required
+            "name": "홍길동", // 결재자 이름, ✅ Required
+            "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+            "department": "1234567890", // 결재자 부서, ✅ Required
+            "position": "1234567890", // 결재자 직책, ✅ Required
+            "rank": "1234567890" // 결재자 직급, ✅ Required
+          } // ✅ Required
+        }
+      ] // 결재선 단계, ✅ Required
     } // ✅ Required
   }, // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional
@@ -966,19 +982,21 @@ null
       "order": 1, // 결재선 정렬 순서, ✅ Required
       "createdAt": "2021-01-01", // 결재선 생성일, ✅ Required
       "updatedAt": "2021-01-01", // 결재선 수정일, ✅ Required
-      "formApprovalSteps": {
-        "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
-        "order": 1, // 결재선 단계 순서, ✅ Required
-        "defaultApprover": {
-          "employeeId": "1", // 결재자 ID, ✅ Required
-          "name": "홍길동", // 결재자 이름, ✅ Required
-          "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
-          "department": "1234567890", // 결재자 부서, ✅ Required
-          "position": "1234567890", // 결재자 직책, ✅ Required
-          "rank": "1234567890" // 결재자 직급, ✅ Required
-        } // ✅ Required
-      } // ✅ Required
+      "formApprovalSteps": [
+        {
+          "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
+          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "order": 1, // 결재선 단계 순서, ✅ Required
+          "defaultApprover": {
+            "employeeId": "1", // 결재자 ID, ✅ Required
+            "name": "홍길동", // 결재자 이름, ✅ Required
+            "employeeNumber": "1234567890", // 결재자 사번, ✅ Required
+            "department": "1234567890", // 결재자 부서, ✅ Required
+            "position": "1234567890", // 결재자 직책, ✅ Required
+            "rank": "1234567890" // 결재자 직급, ✅ Required
+          } // ✅ Required
+        }
+      ] // 결재선 단계, ✅ Required
     } // ✅ Required
   }, // ✅ Required
   "message": "성공적으로 처리되었습니다." // 성공 메시지, ❌ Optional

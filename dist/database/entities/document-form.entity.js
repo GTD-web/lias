@@ -59,6 +59,6 @@ __decorate([
     __metadata("design:type", document_type_entity_1.DocumentType)
 ], DocumentForm.prototype, "documentType", void 0);
 exports.DocumentForm = DocumentForm = __decorate([
-    (0, typeorm_1.Entity)('document-forms')
+    (0, typeorm_1.Entity)('document_forms')
 ], DocumentForm);
 //# sourceMappingURL=document-form.entity.js.map

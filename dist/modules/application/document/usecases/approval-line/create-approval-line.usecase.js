@@ -23,13 +23,19 @@ let CreateApprovalLineUseCase = class CreateApprovalLineUseCase {
         if (dto.type === approval_enum_1.ApprovalLineType.CUSTOM) {
             dto['employeeId'] = user.employeeId;
         }
-        const approvalLine = await this.formApprovalLineService.save(dto);
+        let approvalLine = await this.formApprovalLineService.save(dto);
         for (const stepDto of dto.formApprovalSteps) {
             await this.formApprovalStepService.save({
                 ...stepDto,
                 formApprovalLine: approvalLine,
             });
         }
+        approvalLine = await this.formApprovalLineService.findOne({
+            where: {
+                formApprovalLineId: approvalLine.formApprovalLineId,
+            },
+            relations: ['formApprovalSteps', 'formApprovalSteps.defaultApprover'],
+        });
         return approvalLine;
     }
 };

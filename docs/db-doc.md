@@ -220,7 +220,7 @@ erDiagram
 | name | String | NOT NULL | 문서 타입 이름 |
 | documentNumberCode | String | NOT NULL | 문서 번호 코드 (ex. 휴가, 출결, 출신 등 |
 
-### document-forms
+### document_forms
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
@@ -330,7 +330,7 @@ erDiagram
 |------------|-------------|------|
 | one-to-many | () => document_form_entity_1.DocumentForm |  |
 
-### document-forms 관계
+### document_forms 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|

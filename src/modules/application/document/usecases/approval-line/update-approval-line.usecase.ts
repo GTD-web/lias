@@ -20,20 +20,22 @@ export class UpdateApprovalLineUseCase {
         }
 
         const { formApprovalSteps, ...updateData } = dto;
-        const approvalLine = await this.formApprovalLineService.update(dto.formApprovalLineId, updateData);
 
+        // 기존 결재 단계 모두 삭제
+        await this.formApprovalStepService.deleteByFormApprovalLineId(dto.formApprovalLineId);
+
+        // 새로운 결재 단계 생성
         for (const stepDto of formApprovalSteps) {
-            if (stepDto.formApprovalStepId) {
-                await this.formApprovalStepService.update(stepDto.formApprovalStepId, stepDto);
-            } else {
-                await this.formApprovalStepService.save({
-                    ...stepDto,
-                    // defaultApproverId: '7d3784a8-7246-4fbc-a912-5c118c3777d7',
-                    formApprovalLine: approvalLine,
-                });
-            }
+            await this.formApprovalStepService.save({
+                ...stepDto,
+                formApprovalLineId: dto.formApprovalLineId,
+            });
         }
+        const approvalLine = await this.formApprovalLineService.update(dto.formApprovalLineId, updateData, {
+            relations: ['formApprovalSteps', 'formApprovalSteps.defaultApprover'],
+        });
 
+        console.log('approvalLine', approvalLine);
         return approvalLine;
     }
 }

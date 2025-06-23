@@ -13,8 +13,6 @@ export enum DepartmentScopeType {
 export enum ApprovalStepType {
     AGREEMENT = 'AGREEMENT',
     APPROVAL = 'APPROVAL',
-    // EXECUTION = 'EXECUTION',
-    // REFERENCE = 'REFERENCE',
 }
 
 export enum ApprovalStatus {

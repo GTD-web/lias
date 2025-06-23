@@ -8,7 +8,7 @@ export class FindApprovalLinesUseCase {
 
     async execute(): Promise<FormApprovalLineResponseDto[]> {
         const approvalLines = await this.formApprovalLineService.findAll({
-            relations: ['formApprovalSteps'],
+            relations: ['formApprovalSteps', 'formApprovalSteps.defaultApprover'],
         });
 
         console.log('approvalLines', approvalLines);
