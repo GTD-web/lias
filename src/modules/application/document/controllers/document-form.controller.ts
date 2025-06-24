@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiDataResponse } from '../../../../common/decorators/api-responses.decorator';
 import { DocumentService } from '../document.service';
 import { CreateDocumentFormDto, DocumentFormResponseDto, UpdateDocumentFormDto } from '../dtos/document-form.dto';
 import { ApprovalLineType } from 'src/common/enums/approval.enum';
+import { PaginationQueryDto } from 'src/common/dtos/paginate-query.dto';
+import { PaginationData, PaginationMetaDto } from 'src/common/dtos/paginate-response.dto';
 
 @ApiTags('문서양식')
 @ApiBearerAuth()
@@ -28,9 +30,13 @@ export class DocumentFormController {
         status: 200,
         description: '문서양식 목록을 성공적으로 조회했습니다.',
         type: [DocumentFormResponseDto],
+        isPaginated: true,
     })
-    async findAllDocumentForms(): Promise<DocumentFormResponseDto[]> {
-        return await this.documentService.findDocumentForms();
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'search', required: false, type: String })
+    async findAllDocumentForms(@Query() query: PaginationQueryDto): Promise<PaginationData<DocumentFormResponseDto>> {
+        return await this.documentService.findDocumentForms(query);
     }
 
     @Get(':id')
@@ -41,6 +47,7 @@ export class DocumentFormController {
         type: DocumentFormResponseDto,
     })
     async findDocumentFormById(@Param('id') id: string): Promise<DocumentFormResponseDto> {
+        console.log('id', id);
         return await this.documentService.findDocumentFormById(id);
     }
 

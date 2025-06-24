@@ -27,6 +27,9 @@ let BaseService = class BaseService {
     async findOne(options) {
         return this.repository.findOne(options);
     }
+    async findAndCount(options) {
+        return this.repository.findAndCount(options);
+    }
     async update(entityId, entity, options) {
         return this.repository.update(entityId, entity, options);
     }

@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
 const document_service_1 = require("../document.service");
 const document_form_dto_1 = require("../dtos/document-form.dto");
+const paginate_query_dto_1 = require("../../../../common/dtos/paginate-query.dto");
 let DocumentFormController = class DocumentFormController {
     constructor(documentService) {
         this.documentService = documentService;
@@ -25,10 +26,11 @@ let DocumentFormController = class DocumentFormController {
     async createDocumentForm(createDocumentFormDto) {
         return await this.documentService.createDocumentForm(createDocumentFormDto);
     }
-    async findAllDocumentForms() {
-        return await this.documentService.findDocumentForms();
+    async findAllDocumentForms(query) {
+        return await this.documentService.findDocumentForms(query);
     }
     async findDocumentFormById(id) {
+        console.log('id', id);
         return await this.documentService.findDocumentFormById(id);
     }
     async updateDocumentFormById(id, updateDocumentFormDto) {
@@ -59,9 +61,14 @@ __decorate([
         status: 200,
         description: '문서양식 목록을 성공적으로 조회했습니다.',
         type: [document_form_dto_1.DocumentFormResponseDto],
+        isPaginated: true,
     }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
+    __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [paginate_query_dto_1.PaginationQueryDto]),
     __metadata("design:returntype", Promise)
 ], DocumentFormController.prototype, "findAllDocumentForms", null);
 __decorate([

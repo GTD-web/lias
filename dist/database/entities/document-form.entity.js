@@ -41,7 +41,7 @@ __decorate([
     __metadata("design:type", Array)
 ], DocumentForm.prototype, "implementerInfo", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재선 ID' }),
+    (0, typeorm_1.Column)({ comment: '결재선 ID', nullable: true }),
     __metadata("design:type", String)
 ], DocumentForm.prototype, "formApprovalLineId", void 0);
 __decorate([

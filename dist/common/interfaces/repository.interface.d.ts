@@ -14,6 +14,7 @@ export interface IRepository<T extends ObjectLiteral> {
     save(entity: DeepPartial<T>, repositoryOptions?: IRepositoryOptions<T>): Promise<T>;
     findOne(repositoryOptions?: IRepositoryOptions<T>): Promise<T | null>;
     findAll(repositoryOptions?: IRepositoryOptions<T>): Promise<T[]>;
+    findAndCount(repositoryOptions?: IRepositoryOptions<T>): Promise<[T[], number]>;
     update(entityId: string, entity: Partial<T>, repositoryOptions?: IRepositoryOptions<T>): Promise<T>;
     delete(entityId: string, repositoryOptions?: IRepositoryOptions<T>): Promise<void>;
 }

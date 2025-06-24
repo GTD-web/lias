@@ -12,16 +12,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FindApprovalLinesUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const form_approval_line_service_1 = require("../../../../domain/form-approval-line/form-approval-line.service");
+const approval_enum_1 = require("../../../../../common/enums/approval.enum");
 let FindApprovalLinesUseCase = class FindApprovalLinesUseCase {
     constructor(formApprovalLineService) {
         this.formApprovalLineService = formApprovalLineService;
     }
-    async execute() {
-        const approvalLines = await this.formApprovalLineService.findAll({
+    async execute(page, limit, type) {
+        console.log('page', page);
+        console.log('limit', limit);
+        console.log('type', type);
+        const [approvalLines, total] = await this.formApprovalLineService.findAndCount({
+            where: {
+                type: type || approval_enum_1.ApprovalLineType.COMMON,
+            },
             relations: ['formApprovalSteps', 'formApprovalSteps.defaultApprover'],
+            order: {
+                formApprovalSteps: {
+                    order: 'ASC',
+                },
+            },
+            skip: (page - 1) * limit,
+            take: limit,
         });
-        console.log('approvalLines', approvalLines);
-        return approvalLines;
+        const meta = {
+            total,
+            page,
+            limit,
+            hasNext: total > page * limit,
+        };
+        return {
+            items: approvalLines,
+            meta,
+        };
     }
 };
 exports.FindApprovalLinesUseCase = FindApprovalLinesUseCase;

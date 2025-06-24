@@ -107,6 +107,12 @@ let ApiDocService = ApiDocService_1 = class ApiDocService {
                         content += `${indent}  ${this.renderSchemaJson(prop.items, indentLevel + 2).trim()}`;
                         content += `\n${indent}]${isLast ? '' : ','}`;
                     }
+                    else if (prop.items.type === 'array' && prop.items.items) {
+                        content += `${indent}"${key}": [`;
+                        content += '\n';
+                        content += `${indent}  ${this.renderSchemaJson(prop.items.items, indentLevel + 2).trim()}`;
+                        content += `\n${indent}]${isLast ? '' : ','}`;
+                    }
                     else {
                         const example = this.getExampleValue(prop.items);
                         content += `${example}]${isLast ? '' : ','}`;

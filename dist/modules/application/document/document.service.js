@@ -47,8 +47,8 @@ let DocumentService = class DocumentService {
     async createApprovalLine(user, dto) {
         return await this.createApprovalLineUseCase.execute(user, dto);
     }
-    async findApprovalLines() {
-        return await this.findApprovalLinesUseCase.execute();
+    async findApprovalLines(page, limit, type) {
+        return await this.findApprovalLinesUseCase.execute(page, limit, type);
     }
     async findApprovalLineById(id) {
         return await this.findApprovalLineByIdUseCase.execute(id);
@@ -77,8 +77,8 @@ let DocumentService = class DocumentService {
     async createDocumentForm(dto) {
         return await this.createDocumentFormUseCase.execute(dto);
     }
-    async findDocumentForms() {
-        return await this.findDocumentFormsUseCase.execute();
+    async findDocumentForms(query) {
+        return await this.findDocumentFormsUseCase.execute(query);
     }
     async findDocumentFormById(id) {
         return await this.findDocumentFormByIdUseCase.execute(id);

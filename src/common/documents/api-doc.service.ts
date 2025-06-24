@@ -111,6 +111,11 @@ export class ApiDocService {
                         content += '\n';
                         content += `${indent}  ${this.renderSchemaJson(prop.items, indentLevel + 2).trim()}`;
                         content += `\n${indent}]${isLast ? '' : ','}`;
+                    } else if (prop.items.type === 'array' && prop.items.items) {
+                        content += `${indent}"${key}": [`;
+                        content += '\n';
+                        content += `${indent}  ${this.renderSchemaJson(prop.items.items, indentLevel + 2).trim()}`;
+                        content += `\n${indent}]${isLast ? '' : ','}`;
                     } else {
                         // 기본 타입 배열의 경우
                         const example = this.getExampleValue(prop.items);

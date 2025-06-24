@@ -16,7 +16,7 @@ const swagger_1 = require("@nestjs/swagger");
 class PaginationQueryDto {
     constructor() {
         this.page = 1;
-        this.limit = 100;
+        this.limit = 10;
     }
     getOffset() {
         return (this.page - 1) * this.limit;
@@ -40,7 +40,7 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '한 페이지당 항목 수',
         type: Number,
-        default: 100,
+        default: 10,
         minimum: 1,
         maximum: 100,
     }),

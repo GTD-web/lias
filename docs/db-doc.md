@@ -230,7 +230,7 @@ erDiagram
 | template | text | NOT NULL | 문서 양식 html |
 | receiverInfo | jsonb |  | 수신 및 참조자 정보 객체 |
 | implementerInfo | jsonb |  | 시행자 정보 객체 |
-| formApprovalLineId | String | NOT NULL | 결재선 ID |
+| formApprovalLineId | String |  | 결재선 ID |
 | documentTypeId | String | NOT NULL | 문서 양식 타입 ID |
 
 ### form_approval_lines

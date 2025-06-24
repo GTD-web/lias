@@ -27,7 +27,7 @@ const ApiCommonErrors = () =>
 export const ApiDataResponse = (options: {
     status?: number;
     description: string;
-    type?: 'string' | 'number' | 'boolean' | Array<any> | Function;
+    type?: 'string' | 'number' | 'boolean' | Array<any> | object;
     isPaginated?: boolean;
 }) => {
     if (!options.type) {
@@ -42,7 +42,6 @@ export const ApiDataResponse = (options: {
     const isArray = Array.isArray(options.type);
     const isObject = typeof options.type !== 'string';
     const type = isArray ? options.type[0] : options.type;
-
     let property;
 
     switch (typeof options.type) {

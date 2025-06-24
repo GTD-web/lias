@@ -9,11 +9,41 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentFormResponseDto = exports.UpdateDocumentFormDto = exports.CreateDocumentFormDto = void 0;
+exports.DocumentFormResponseDto = exports.UpdateDocumentFormDto = exports.CreateDocumentFormDto = exports.EmployeeInfoDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const approval_line_dto_1 = require("./approval-line.dto");
 const form_type_dto_1 = require("./form-type.dto");
+class EmployeeInfoDto {
+}
+exports.EmployeeInfoDto = EmployeeInfoDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '직원 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], EmployeeInfoDto.prototype, "employeeId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '직원 이름',
+        example: '홍길동',
+    }),
+    __metadata("design:type", String)
+], EmployeeInfoDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({
+        description: '직원 직급',
+        example: '사원',
+    }),
+    __metadata("design:type", String)
+], EmployeeInfoDto.prototype, "rank", void 0);
 class CreateDocumentFormDto {
 }
 exports.CreateDocumentFormDto = CreateDocumentFormDto;
@@ -49,21 +79,23 @@ __decorate([
 ], CreateDocumentFormDto.prototype, "template", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     (0, swagger_1.ApiProperty)({
         description: '수신 및 참조자 정보 객체',
+        type: [EmployeeInfoDto],
         example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-        required: true,
+        required: false,
     }),
     __metadata("design:type", Array)
 ], CreateDocumentFormDto.prototype, "receiverInfo", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     (0, swagger_1.ApiProperty)({
         description: '시행자 정보 객체',
+        type: [EmployeeInfoDto],
         example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-        required: true,
+        required: false,
     }),
     __metadata("design:type", Array)
 ], CreateDocumentFormDto.prototype, "implementerInfo", void 0);
@@ -79,11 +111,11 @@ __decorate([
 ], CreateDocumentFormDto.prototype, "documentTypeId", void 0);
 __decorate([
     (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     (0, swagger_1.ApiProperty)({
         description: '결재선 ID',
         example: 'uuid',
-        required: true,
+        required: false,
     }),
     __metadata("design:type", String)
 ], CreateDocumentFormDto.prototype, "formApprovalLineId", void 0);

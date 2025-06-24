@@ -20,6 +20,8 @@ const document_service_1 = require("../document.service");
 const approval_line_dto_1 = require("../dtos/approval-line.dto");
 const employee_entity_1 = require("../../../../database/entities/employee.entity");
 const user_decorator_1 = require("../../../../common/decorators/user.decorator");
+const paginate_query_dto_1 = require("../../../../common/dtos/paginate-query.dto");
+const approval_enum_1 = require("../../../../common/enums/approval.enum");
 let ApprovalLineController = class ApprovalLineController {
     constructor(documentService) {
         this.documentService = documentService;
@@ -28,8 +30,8 @@ let ApprovalLineController = class ApprovalLineController {
         const approvalLine = await this.documentService.createApprovalLine(user, createFormApprovalLineDto);
         return approvalLine;
     }
-    async findAllApprovalLines() {
-        return await this.documentService.findApprovalLines();
+    async findAllApprovalLines(query, type) {
+        return await this.documentService.findApprovalLines(query.page, query.limit, type);
     }
     async findApprovalLineById(id) {
         return await this.documentService.findApprovalLineById(id);
@@ -65,9 +67,34 @@ __decorate([
         status: 200,
         description: '결재선 목록을 성공적으로 조회했습니다.',
         type: [approval_line_dto_1.FormApprovalLineResponseDto],
+        isPaginated: true,
     }),
+    (0, swagger_1.ApiQuery)({
+        name: 'page',
+        type: Number,
+        required: false,
+        description: '페이지 번호',
+        example: 1,
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'limit',
+        type: Number,
+        required: false,
+        description: '페이지당 아이템 수',
+        example: 10,
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'type',
+        type: String,
+        enum: approval_enum_1.ApprovalLineType,
+        required: false,
+        description: '결재선 타입',
+        example: 'COMMON',
+    }),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [paginate_query_dto_1.PaginationQueryDto, String]),
     __metadata("design:returntype", Promise)
 ], ApprovalLineController.prototype, "findAllApprovalLines", null);
 __decorate([

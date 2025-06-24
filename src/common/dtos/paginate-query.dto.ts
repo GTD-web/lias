@@ -18,7 +18,7 @@ export class PaginationQueryDto {
     @ApiPropertyOptional({
         description: '한 페이지당 항목 수',
         type: Number,
-        default: 100,
+        default: 10,
         minimum: 1,
         maximum: 100,
     })
@@ -27,7 +27,7 @@ export class PaginationQueryDto {
     @Min(1)
     @Max(100)
     @Type(() => Number)
-    limit?: number = 100;
+    limit?: number = 10;
 
     /**
      * 오프셋 계산 헬퍼 메서드

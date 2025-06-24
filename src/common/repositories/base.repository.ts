@@ -48,6 +48,13 @@ export abstract class BaseRepository<T extends ObjectLiteral> implements IReposi
         });
     }
 
+    async findAndCount(repositoryOptions?: IRepositoryOptions<T>): Promise<[T[], number]> {
+        const repository = repositoryOptions?.queryRunner
+            ? repositoryOptions.queryRunner.manager.getRepository(this.repository.target)
+            : this.repository;
+        return repository.findAndCount(repositoryOptions);
+    }
+
     async update(entityId: string, entityData: Partial<T>, repositoryOptions?: IRepositoryOptions<T>): Promise<T> {
         const repository = repositoryOptions?.queryRunner
             ? repositoryOptions.queryRunner.manager.getRepository(this.repository.target)

@@ -16,11 +16,21 @@ let FindDocumentFormsUseCase = class FindDocumentFormsUseCase {
     constructor(documentFormService) {
         this.documentFormService = documentFormService;
     }
-    async execute() {
-        const documentForms = await this.documentFormService.findAll({
+    async execute(query) {
+        const [documentForms, total] = await this.documentFormService.findAndCount({
             relations: ['documentType', 'formApprovalLine', 'formApprovalLine.formApprovalSteps'],
+            skip: (query.page - 1) * query.limit,
+            take: query.limit,
         });
-        return documentForms;
+        const meta = {
+            total,
+            page: query.page,
+            limit: query.limit,
+        };
+        return {
+            items: documentForms,
+            meta,
+        };
     }
 };
 exports.FindDocumentFormsUseCase = FindDocumentFormsUseCase;

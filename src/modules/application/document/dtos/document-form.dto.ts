@@ -4,6 +4,32 @@ import { FormApprovalLineResponseDto } from './approval-line.dto';
 import { DocumentTypeResponseDto } from './form-type.dto';
 import { ImplementerInfo, ReferencerInfo } from 'src/common/types/entity.type';
 
+export class EmployeeInfoDto {
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '직원 ID',
+        example: 'uuid',
+    })
+    employeeId: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '직원 이름',
+        example: '홍길동',
+    })
+    name: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: '직원 직급',
+        example: '사원',
+    })
+    rank: string;
+}
+
 export class CreateDocumentFormDto {
     @IsString()
     @IsNotEmpty()
@@ -33,22 +59,24 @@ export class CreateDocumentFormDto {
     template: string;
 
     @IsArray()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         description: '수신 및 참조자 정보 객체',
+        type: [EmployeeInfoDto],
         example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-        required: true,
+        required: false,
     })
-    receiverInfo: ReferencerInfo[];
+    receiverInfo: EmployeeInfoDto[];
 
     @IsArray()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         description: '시행자 정보 객체',
+        type: [EmployeeInfoDto],
         example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-        required: true,
+        required: false,
     })
-    implementerInfo: ImplementerInfo[];
+    implementerInfo: EmployeeInfoDto[];
 
     @IsUUID()
     @IsNotEmpty()
@@ -60,11 +88,11 @@ export class CreateDocumentFormDto {
     documentTypeId: string;
 
     @IsUUID()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         description: '결재선 ID',
         example: 'uuid',
-        required: true,
+        required: false,
     })
     formApprovalLineId: string;
 }

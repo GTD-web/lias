@@ -21,7 +21,12 @@ let FindApprovalLineByIdUseCase = class FindApprovalLineByIdUseCase {
             where: {
                 formApprovalLineId: id,
             },
-            relations: ['formApprovalSteps'],
+            relations: ['formApprovalSteps', 'formApprovalSteps.defaultApprover'],
+            order: {
+                formApprovalSteps: {
+                    order: 'ASC',
+                },
+            },
         });
         return approvalLine;
     }

@@ -9,6 +9,7 @@ export declare abstract class BaseService<T extends ObjectLiteral> implements IS
     save(entity: DeepPartial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     findAll(options?: IRepositoryOptions<T>): Promise<T[]>;
     findOne(options: IRepositoryOptions<T>): Promise<T | null>;
+    findAndCount(options?: IRepositoryOptions<T>): Promise<[T[], number]>;
     update(entityId: string, entity: Partial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     delete(entityId: string, options?: IRepositoryOptions<T>): Promise<void>;
 }

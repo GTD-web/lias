@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiDataResponse } from '../../../../common/decorators/api-responses.decorator';
 import { DocumentService } from '../document.service';
 import {
@@ -9,6 +9,9 @@ import {
 } from '../dtos/approval-line.dto';
 import { Employee } from '../../../../database/entities/employee.entity';
 import { User } from '../../../../common/decorators/user.decorator';
+import { PaginationData } from '../../../../common/dtos/paginate-response.dto';
+import { PaginationQueryDto } from 'src/common/dtos/paginate-query.dto';
+import { ApprovalLineType } from '../../../../common/enums/approval.enum';
 
 @ApiTags('결재선')
 @ApiBearerAuth()
@@ -37,9 +40,35 @@ export class ApprovalLineController {
         status: 200,
         description: '결재선 목록을 성공적으로 조회했습니다.',
         type: [FormApprovalLineResponseDto],
+        isPaginated: true,
     })
-    async findAllApprovalLines(): Promise<FormApprovalLineResponseDto[]> {
-        return await this.documentService.findApprovalLines();
+    @ApiQuery({
+        name: 'page',
+        type: Number,
+        required: false,
+        description: '페이지 번호',
+        example: 1,
+    })
+    @ApiQuery({
+        name: 'limit',
+        type: Number,
+        required: false,
+        description: '페이지당 아이템 수',
+        example: 10,
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        enum: ApprovalLineType,
+        required: false,
+        description: '결재선 타입',
+        example: 'COMMON',
+    })
+    async findAllApprovalLines(
+        @Query() query: PaginationQueryDto,
+        @Query('type') type?: ApprovalLineType,
+    ): Promise<PaginationData<FormApprovalLineResponseDto>> {
+        return await this.documentService.findApprovalLines(query.page, query.limit, type);
     }
 
     @Get(':id')

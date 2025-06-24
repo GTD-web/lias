@@ -25,6 +25,9 @@ import { CreateDocumentFormUseCase } from './usecases/document-form/create-docum
 import { FindDocumentFormsUseCase } from './usecases/document-form/find-document-forms.usecase';
 import { UpdateDocumentFormUseCase } from './usecases/document-form/update-document-form.usecase';
 import { DeleteDocumentFormUseCase } from './usecases/document-form/delete-document-form.usecase';
+import { PaginationData } from '../../../common/dtos/paginate-response.dto';
+import { ApprovalLineType } from 'src/common/enums/approval.enum';
+import { PaginationQueryDto } from 'src/common/dtos/paginate-query.dto';
 
 @Injectable()
 export class DocumentService {
@@ -50,8 +53,12 @@ export class DocumentService {
         return await this.createApprovalLineUseCase.execute(user, dto);
     }
 
-    async findApprovalLines(): Promise<FormApprovalLineResponseDto[]> {
-        return await this.findApprovalLinesUseCase.execute();
+    async findApprovalLines(
+        page: number,
+        limit: number,
+        type?: ApprovalLineType,
+    ): Promise<PaginationData<FormApprovalLineResponseDto>> {
+        return await this.findApprovalLinesUseCase.execute(page, limit, type);
     }
 
     async findApprovalLineById(id: string): Promise<FormApprovalLineResponseDto> {
@@ -90,8 +97,8 @@ export class DocumentService {
         return await this.createDocumentFormUseCase.execute(dto);
     }
 
-    async findDocumentForms(): Promise<DocumentFormResponseDto[]> {
-        return await this.findDocumentFormsUseCase.execute();
+    async findDocumentForms(query: PaginationQueryDto): Promise<PaginationData<DocumentFormResponseDto>> {
+        return await this.findDocumentFormsUseCase.execute(query);
     }
 
     async findDocumentFormById(id: string): Promise<DocumentFormResponseDto> {

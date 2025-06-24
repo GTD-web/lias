@@ -16,6 +16,9 @@ import { CreateDocumentFormUseCase } from './usecases/document-form/create-docum
 import { FindDocumentFormsUseCase } from './usecases/document-form/find-document-forms.usecase';
 import { UpdateDocumentFormUseCase } from './usecases/document-form/update-document-form.usecase';
 import { DeleteDocumentFormUseCase } from './usecases/document-form/delete-document-form.usecase';
+import { PaginationData } from '../../../common/dtos/paginate-response.dto';
+import { ApprovalLineType } from 'src/common/enums/approval.enum';
+import { PaginationQueryDto } from 'src/common/dtos/paginate-query.dto';
 export declare class DocumentService {
     private readonly createApprovalLineUseCase;
     private readonly findApprovalLinesUseCase;
@@ -34,7 +37,7 @@ export declare class DocumentService {
     private readonly deleteDocumentFormUseCase;
     constructor(createApprovalLineUseCase: CreateApprovalLineUseCase, findApprovalLinesUseCase: FindApprovalLinesUseCase, findApprovalLineByIdUseCase: FindApprovalLineByIdUseCase, updateApprovalLineUseCase: UpdateApprovalLineUseCase, deleteApprovalLineUseCase: DeleteApprovalLineUseCase, createFormTypeUseCase: CreateFormTypeUseCase, findFormTypesUseCase: FindFormTypesUseCase, findFormTypeByIdUseCase: FindFormTypeByIdUseCase, updateFormTypeUseCase: UpdateFormTypeUseCase, deleteFormTypeUseCase: DeleteFormTypeUseCase, createDocumentFormUseCase: CreateDocumentFormUseCase, findDocumentFormsUseCase: FindDocumentFormsUseCase, findDocumentFormByIdUseCase: FindDocumentFormByIdUseCase, updateDocumentFormUseCase: UpdateDocumentFormUseCase, deleteDocumentFormUseCase: DeleteDocumentFormUseCase);
     createApprovalLine(user: Employee, dto: CreateFormApprovalLineDto): Promise<FormApprovalLineResponseDto>;
-    findApprovalLines(): Promise<FormApprovalLineResponseDto[]>;
+    findApprovalLines(page: number, limit: number, type?: ApprovalLineType): Promise<PaginationData<FormApprovalLineResponseDto>>;
     findApprovalLineById(id: string): Promise<FormApprovalLineResponseDto>;
     updateApprovalLine(user: Employee, dto: UpdateFormApprovalLineDto): Promise<FormApprovalLineResponseDto>;
     deleteApprovalLine(id: string): Promise<boolean>;
@@ -44,7 +47,7 @@ export declare class DocumentService {
     updateFormType(id: string, dto: UpdateDocumentTypeDto): Promise<DocumentTypeResponseDto>;
     deleteFormType(id: string): Promise<boolean>;
     createDocumentForm(dto: CreateDocumentFormDto): Promise<DocumentFormResponseDto>;
-    findDocumentForms(): Promise<DocumentFormResponseDto[]>;
+    findDocumentForms(query: PaginationQueryDto): Promise<PaginationData<DocumentFormResponseDto>>;
     findDocumentFormById(id: string): Promise<DocumentFormResponseDto>;
     updateDocumentForm(id: string, dto: UpdateDocumentFormDto): Promise<DocumentFormResponseDto>;
     deleteDocumentForm(id: string): Promise<boolean>;
