@@ -1,4 +1,4 @@
-import { ApprovalStepType } from 'src/common/enums/approval.enum';
+import { ApprovalStatus, ApprovalStepType } from 'src/common/enums/approval.enum';
 export declare class CreateApprovalStepDto {
     type: ApprovalStepType;
     order: number;
@@ -45,7 +45,7 @@ export declare class ApprovalResponseDto {
     documentType: string;
     title: string;
     content: string;
-    status: string;
+    status: ApprovalStatus;
     retentionPeriod: string;
     retentionPeriodUnit: string;
     retentionStartDate: Date;
