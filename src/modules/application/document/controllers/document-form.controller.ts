@@ -4,8 +4,10 @@ import { ApiDataResponse } from '../../../../common/decorators/api-responses.dec
 import { DocumentService } from '../document.service';
 import { CreateDocumentFormDto, DocumentFormResponseDto, UpdateDocumentFormDto } from '../dtos/document-form.dto';
 import { ApprovalLineType } from 'src/common/enums/approval.enum';
-import { PaginationQueryDto } from 'src/common/dtos/paginate-query.dto';
-import { PaginationData, PaginationMetaDto } from 'src/common/dtos/paginate-response.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { PaginationData, PaginationMetaDto } from 'src/common/dtos/pagination-response.dto';
+import { Employee } from 'src/database/entities/employee.entity';
+import { User } from 'src/common/decorators/user.decorator';
 
 @ApiTags('문서양식')
 @ApiBearerAuth()
@@ -46,9 +48,9 @@ export class DocumentFormController {
         description: '문서양식을 성공적으로 상세 조회했습니다.',
         type: DocumentFormResponseDto,
     })
-    async findDocumentFormById(@Param('id') id: string): Promise<DocumentFormResponseDto> {
+    async findDocumentFormById(@User() user: Employee, @Param('id') id: string): Promise<DocumentFormResponseDto> {
         console.log('id', id);
-        return await this.documentService.findDocumentFormById(id);
+        return await this.documentService.findDocumentFormById(id, user);
     }
 
     @Patch(':id')

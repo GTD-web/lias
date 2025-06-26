@@ -187,8 +187,8 @@ export class FormApprovalStepResponseDto {
     formApprovalStepId: string;
 
     @ApiProperty({
-        description: '결재선 단계 타입',
-        example: '결재',
+        description: `결재선 단계 타입, ${Object.values(ApprovalStepType).join(', ')}`,
+        example: ApprovalStepType.AGREEMENT,
     })
     type: ApprovalStepType;
 

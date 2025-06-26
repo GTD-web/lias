@@ -13,6 +13,8 @@ export enum DepartmentScopeType {
 export enum ApprovalStepType {
     AGREEMENT = 'AGREEMENT',
     APPROVAL = 'APPROVAL',
+    IMPLEMENTATION = 'IMPLEMENTATION',
+    REFERENCE = 'REFERENCE',
 }
 
 export enum ApprovalStatus {
@@ -25,4 +27,10 @@ export enum ApprovalStatus {
 export enum ApprovalLineType {
     COMMON = 'COMMON',
     CUSTOM = 'CUSTOM',
+}
+
+export enum AutoFillType {
+    NONE = 'NONE',
+    DRAFTER_ONLY = 'DRAFTER_ONLY',
+    DRAFTER_SUPERIOR = 'DRAFTER_SUPERIOR',
 }

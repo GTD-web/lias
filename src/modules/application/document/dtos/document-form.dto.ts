@@ -1,8 +1,8 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { FormApprovalLineResponseDto } from './approval-line.dto';
 import { DocumentTypeResponseDto } from './form-type.dto';
-import { ImplementerInfo, ReferencerInfo } from 'src/common/types/entity.type';
+import { AutoFillType } from 'src/common/enums/approval.enum';
 
 export class EmployeeInfoDto {
     @IsString()
@@ -58,25 +58,14 @@ export class CreateDocumentFormDto {
     })
     template: string;
 
-    @IsArray()
+    @IsEnum(AutoFillType)
     @IsOptional()
     @ApiProperty({
-        description: '수신 및 참조자 정보 객체',
-        type: [EmployeeInfoDto],
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        description: '자동 채우기 타입',
+        example: AutoFillType.NONE,
         required: false,
     })
-    receiverInfo: EmployeeInfoDto[];
-
-    @IsArray()
-    @IsOptional()
-    @ApiProperty({
-        description: '시행자 정보 객체',
-        type: [EmployeeInfoDto],
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-        required: false,
-    })
-    implementerInfo: EmployeeInfoDto[];
+    autoFillType: AutoFillType;
 
     @IsUUID()
     @IsNotEmpty()
@@ -134,16 +123,10 @@ export class DocumentFormResponseDto {
     template: string;
 
     @ApiProperty({
-        description: '수신 및 참조자 정보 객체',
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        description: '자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR)',
+        example: AutoFillType.NONE,
     })
-    receiverInfo: ReferencerInfo[];
-
-    @ApiProperty({
-        description: '시행자 정보 객체',
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-    })
-    implementerInfo: ImplementerInfo[];
+    autoFillType: AutoFillType;
 
     @ApiProperty({
         type: DocumentTypeResponseDto,

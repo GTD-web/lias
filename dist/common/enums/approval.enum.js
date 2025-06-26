@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApprovalLineType = exports.ApprovalStatus = exports.ApprovalStepType = exports.DepartmentScopeType = exports.ApproverType = void 0;
+exports.AutoFillType = exports.ApprovalLineType = exports.ApprovalStatus = exports.ApprovalStepType = exports.DepartmentScopeType = exports.ApproverType = void 0;
 var ApproverType;
 (function (ApproverType) {
     ApproverType["USER"] = "USER";
@@ -15,6 +15,8 @@ var ApprovalStepType;
 (function (ApprovalStepType) {
     ApprovalStepType["AGREEMENT"] = "AGREEMENT";
     ApprovalStepType["APPROVAL"] = "APPROVAL";
+    ApprovalStepType["IMPLEMENTATION"] = "IMPLEMENTATION";
+    ApprovalStepType["REFERENCE"] = "REFERENCE";
 })(ApprovalStepType || (exports.ApprovalStepType = ApprovalStepType = {}));
 var ApprovalStatus;
 (function (ApprovalStatus) {
@@ -28,4 +30,10 @@ var ApprovalLineType;
     ApprovalLineType["COMMON"] = "COMMON";
     ApprovalLineType["CUSTOM"] = "CUSTOM";
 })(ApprovalLineType || (exports.ApprovalLineType = ApprovalLineType = {}));
+var AutoFillType;
+(function (AutoFillType) {
+    AutoFillType["NONE"] = "NONE";
+    AutoFillType["DRAFTER_ONLY"] = "DRAFTER_ONLY";
+    AutoFillType["DRAFTER_SUPERIOR"] = "DRAFTER_SUPERIOR";
+})(AutoFillType || (exports.AutoFillType = AutoFillType = {}));
 //# sourceMappingURL=approval.enum.js.map

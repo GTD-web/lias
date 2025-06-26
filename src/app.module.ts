@@ -12,6 +12,7 @@ import { DbDocService } from './common/documents/db-doc.service';
 import { DocumentModule } from './modules/application/document/document.module';
 import { AuthModule } from './modules/application/authorization/auth.module';
 import { MetadataModule } from './modules/application/metadata/metadata.module';
+import { ApprovalModule } from './modules/application/approval/approval.module';
 
 @Module({
     imports: [
@@ -33,11 +34,16 @@ import { MetadataModule } from './modules/application/metadata/metadata.module';
                 path: 'metadata',
                 module: MetadataModule,
             },
+            {
+                path: 'approval',
+                module: ApprovalModule,
+            },
         ]),
 
         AuthModule,
         MetadataModule,
         DocumentModule,
+        ApprovalModule,
     ],
     controllers: [AppController],
     providers: [AppService, ApiDocService, DbDocService],

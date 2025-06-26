@@ -1,5 +1,5 @@
-export { PaginationQueryDto } from './paginate-query.dto';
-export { PaginationMetaDto } from './paginate-response.dto';
+export { PaginationQueryDto } from './pagination-query.dto';
+export { PaginationMetaDto } from './pagination-response.dto';
 export { ErrorResponseDto, BaseResponseDto } from './response.dto';
 export * from '../../modules/application/authorization/dtos/index';
 export * from '../../modules/application/metadata/dtos/index';

@@ -19,6 +19,8 @@ const document_service_1 = require("./document.service");
 const ApprovalLineUsecases = require("./usecases/approval-line");
 const FormTypeUsecases = require("./usecases/form-type");
 const DocumentFormUsecases = require("./usecases/document-form");
+const department_module_1 = require("../../domain/department/department.module");
+const employee_module_1 = require("../../domain/employee/employee.module");
 let DocumentModule = class DocumentModule {
     configure(consumer) {
         consumer.apply().forRoutes({
@@ -35,6 +37,8 @@ exports.DocumentModule = DocumentModule = __decorate([
             document_type_module_1.DomainDocumentTypeModule,
             form_approval_line_module_1.DomainFormApprovalLineModule,
             form_approval_step_module_1.DomainFormApprovalStepModule,
+            department_module_1.DomainDepartmentModule,
+            employee_module_1.DomainEmployeeModule,
         ],
         controllers: [approval_line_controller_1.ApprovalLineController, form_type_controllers_1.FormTypeController, document_form_controller_1.DocumentFormController],
         providers: [

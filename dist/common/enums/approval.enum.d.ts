@@ -8,7 +8,9 @@ export declare enum DepartmentScopeType {
 }
 export declare enum ApprovalStepType {
     AGREEMENT = "AGREEMENT",
-    APPROVAL = "APPROVAL"
+    APPROVAL = "APPROVAL",
+    IMPLEMENTATION = "IMPLEMENTATION",
+    REFERENCE = "REFERENCE"
 }
 export declare enum ApprovalStatus {
     PENDING = "PENDING",
@@ -19,4 +21,9 @@ export declare enum ApprovalStatus {
 export declare enum ApprovalLineType {
     COMMON = "COMMON",
     CUSTOM = "CUSTOM"
+}
+export declare enum AutoFillType {
+    NONE = "NONE",
+    DRAFTER_ONLY = "DRAFTER_ONLY",
+    DRAFTER_SUPERIOR = "DRAFTER_SUPERIOR"
 }

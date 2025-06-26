@@ -22,13 +22,17 @@ __decorate([
     __metadata("design:type", String)
 ], ApprovalStep.prototype, "approvalStepId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등)' }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조)' }),
     __metadata("design:type", String)
 ], ApprovalStep.prototype, "type", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: '결재 단계 순서' }),
     __metadata("design:type", Number)
 ], ApprovalStep.prototype, "order", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: '결재 여부', default: false }),
+    __metadata("design:type", Boolean)
+], ApprovalStep.prototype, "isApproved", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'timestamp with time zone', comment: '결재 일시', nullable: true }),
     __metadata("design:type", Date)

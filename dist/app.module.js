@@ -21,6 +21,7 @@ const db_doc_service_1 = require("./common/documents/db-doc.service");
 const document_module_1 = require("./modules/application/document/document.module");
 const auth_module_1 = require("./modules/application/authorization/auth.module");
 const metadata_module_1 = require("./modules/application/metadata/metadata.module");
+const approval_module_1 = require("./modules/application/approval/approval.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -45,10 +46,15 @@ exports.AppModule = AppModule = __decorate([
                     path: 'metadata',
                     module: metadata_module_1.MetadataModule,
                 },
+                {
+                    path: 'approval',
+                    module: approval_module_1.ApprovalModule,
+                },
             ]),
             auth_module_1.AuthModule,
             metadata_module_1.MetadataModule,
             document_module_1.DocumentModule,
+            approval_module_1.ApprovalModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, api_doc_service_1.ApiDocService, db_doc_service_1.DbDocService],

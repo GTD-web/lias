@@ -13,10 +13,17 @@ exports.DomainApprovalStepService = void 0;
 const common_1 = require("@nestjs/common");
 const approval_step_repository_1 = require("./approval-step.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const date_util_1 = require("../../../common/utils/date.util");
 let DomainApprovalStepService = class DomainApprovalStepService extends base_service_1.BaseService {
     constructor(approvalStepRepository) {
         super(approvalStepRepository);
         this.approvalStepRepository = approvalStepRepository;
+    }
+    async approve(id, queryRunner) {
+        return await this.approvalStepRepository.update(id, { isApproved: true, approvedDate: date_util_1.DateUtil.now().toDate() }, { queryRunner });
+    }
+    async reject(id, queryRunner) {
+        return await this.approvalStepRepository.update(id, { isApproved: false, approvedDate: date_util_1.DateUtil.now().toDate() }, { queryRunner });
     }
 };
 exports.DomainApprovalStepService = DomainApprovalStepService;

@@ -14,8 +14,7 @@ const typeorm_1 = require("typeorm");
 const employee_entity_1 = require("./employee.entity");
 const file_entity_1 = require("./file.entity");
 const approval_step_entity_1 = require("./approval-step.entity");
-const document_implementer_entity_1 = require("./document-implementer.entity");
-const document_referencer_entity_1 = require("./document-referencer.entity");
+const approval_enum_1 = require("../../common/enums/approval.enum");
 let Document = class Document {
 };
 exports.Document = Document;
@@ -40,9 +39,13 @@ __decorate([
     __metadata("design:type", String)
 ], Document.prototype, "content", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '문서 상태' }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStatus, comment: '문서 상태', default: approval_enum_1.ApprovalStatus.PENDING }),
     __metadata("design:type", String)
 ], Document.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, comment: '문서 비고' }),
+    __metadata("design:type", String)
+], Document.prototype, "comment", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, comment: '보존 연한 (ex. 10년, 영구보관)' }),
     __metadata("design:type", String)
@@ -80,14 +83,6 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'drafterId' }),
     __metadata("design:type", employee_entity_1.Employee)
 ], Document.prototype, "drafter", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => document_implementer_entity_1.DocumentImplementer, (documentImplementer) => documentImplementer.implementer),
-    __metadata("design:type", Array)
-], Document.prototype, "implementers", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => document_referencer_entity_1.DocumentReferencer, (documentReferencer) => documentReferencer.referencer),
-    __metadata("design:type", Array)
-], Document.prototype, "referencers", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => approval_step_entity_1.ApprovalStep, (approvalStep) => approvalStep.document),
     __metadata("design:type", Array)

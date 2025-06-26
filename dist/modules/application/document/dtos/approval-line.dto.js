@@ -212,8 +212,8 @@ __decorate([
 ], FormApprovalStepResponseDto.prototype, "formApprovalStepId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '결재선 단계 타입',
-        example: '결재',
+        description: `결재선 단계 타입, ${Object.values(approval_enum_1.ApprovalStepType).join(', ')}`,
+        example: approval_enum_1.ApprovalStepType.AGREEMENT,
     }),
     __metadata("design:type", String)
 ], FormApprovalStepResponseDto.prototype, "type", void 0);

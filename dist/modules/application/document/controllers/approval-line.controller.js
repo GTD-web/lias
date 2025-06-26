@@ -20,7 +20,7 @@ const document_service_1 = require("../document.service");
 const approval_line_dto_1 = require("../dtos/approval-line.dto");
 const employee_entity_1 = require("../../../../database/entities/employee.entity");
 const user_decorator_1 = require("../../../../common/decorators/user.decorator");
-const paginate_query_dto_1 = require("../../../../common/dtos/paginate-query.dto");
+const pagination_query_dto_1 = require("../../../../common/dtos/pagination-query.dto");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 let ApprovalLineController = class ApprovalLineController {
     constructor(documentService) {
@@ -94,7 +94,7 @@ __decorate([
     __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [paginate_query_dto_1.PaginationQueryDto, String]),
+    __metadata("design:paramtypes", [pagination_query_dto_1.PaginationQueryDto, String]),
     __metadata("design:returntype", Promise)
 ], ApprovalLineController.prototype, "findAllApprovalLines", null);
 __decorate([

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DomainFormApprovalLineService } from '../../../../domain/form-approval-line/form-approval-line.service';
 import { FormApprovalLineResponseDto, FormApprovalStepResponseDto } from '../../dtos';
-import { PaginationData } from 'src/common/dtos/paginate-response.dto';
+import { PaginationData } from 'src/common/dtos/pagination-response.dto';
 import { ApprovalLineType } from 'src/common/enums/approval.enum';
 
 @Injectable()

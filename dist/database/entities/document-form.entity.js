@@ -13,6 +13,7 @@ exports.DocumentForm = void 0;
 const typeorm_1 = require("typeorm");
 const form_approval_line_entity_1 = require("./form-approval-line.entity");
 const document_type_entity_1 = require("./document-type.entity");
+const approval_enum_1 = require("../../common/enums/approval.enum");
 let DocumentForm = class DocumentForm {
 };
 exports.DocumentForm = DocumentForm;
@@ -33,13 +34,15 @@ __decorate([
     __metadata("design:type", String)
 ], DocumentForm.prototype, "template", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', comment: '수신 및 참조자 정보 객체', nullable: true }),
-    __metadata("design:type", Array)
-], DocumentForm.prototype, "receiverInfo", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', comment: '시행자 정보 객체', nullable: true }),
-    __metadata("design:type", Array)
-], DocumentForm.prototype, "implementerInfo", void 0);
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: approval_enum_1.AutoFillType,
+        comment: '자동 채우기 타입',
+        nullable: true,
+        default: approval_enum_1.AutoFillType.NONE,
+    }),
+    __metadata("design:type", String)
+], DocumentForm.prototype, "autoFillType", void 0);
 __decorate([
     (0, typeorm_1.Column)({ comment: '결재선 ID', nullable: true }),
     __metadata("design:type", String)

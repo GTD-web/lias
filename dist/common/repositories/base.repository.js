@@ -58,7 +58,15 @@ let BaseRepository = class BaseRepository {
         const repository = repositoryOptions?.queryRunner
             ? repositoryOptions.queryRunner.manager.getRepository(this.repository.target)
             : this.repository;
-        return repository.findAndCount(repositoryOptions);
+        return repository.findAndCount({
+            where: repositoryOptions?.where,
+            relations: repositoryOptions?.relations,
+            select: repositoryOptions?.select,
+            order: repositoryOptions?.order,
+            skip: repositoryOptions?.skip,
+            take: repositoryOptions?.take,
+            withDeleted: repositoryOptions?.withDeleted,
+        });
     }
     async update(entityId, entityData, repositoryOptions) {
         const repository = repositoryOptions?.queryRunner

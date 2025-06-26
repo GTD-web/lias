@@ -15,8 +15,6 @@ const role_type_enum_1 = require("../../common/enums/role-type.enum");
 const document_entity_1 = require("./document.entity");
 const form_approval_step_entity_1 = require("./form-approval-step.entity");
 const approval_step_entity_1 = require("./approval-step.entity");
-const document_implementer_entity_1 = require("./document-implementer.entity");
-const document_referencer_entity_1 = require("./document-referencer.entity");
 let Employee = class Employee {
 };
 exports.Employee = Employee;
@@ -72,14 +70,6 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => approval_step_entity_1.ApprovalStep, (approvalStep) => approvalStep.approver),
     __metadata("design:type", Array)
 ], Employee.prototype, "approvers", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => document_implementer_entity_1.DocumentImplementer, (documentImplementer) => documentImplementer.implementer),
-    __metadata("design:type", Array)
-], Employee.prototype, "implementDocuments", void 0);
-__decorate([
-    (0, typeorm_1.OneToMany)(() => document_referencer_entity_1.DocumentReferencer, (documentReferencer) => documentReferencer.referencer),
-    __metadata("design:type", Array)
-], Employee.prototype, "referencedDocuments", void 0);
 exports.Employee = Employee = __decorate([
     (0, typeorm_1.Entity)('employees')
 ], Employee);

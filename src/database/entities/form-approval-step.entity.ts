@@ -18,7 +18,7 @@ export class FormApprovalStep {
     @PrimaryGeneratedColumn('uuid')
     formApprovalStepId: string;
 
-    @Column({ type: 'enum', enum: ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재)' })
+    @Column({ type: 'enum', enum: ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조)' })
     type: ApprovalStepType;
 
     @Column({ comment: '결재 단계 순서' })

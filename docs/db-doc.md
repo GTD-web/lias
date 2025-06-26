@@ -19,27 +19,11 @@ erDiagram
         uuid approvalStepId PK
         enum type 
         number order 
+        boolean isApproved 
         timestamp with time zone approvedDate 
         timestamp with time zone createdAt 
         timestamp with time zone updatedAt 
         string approverId 
-        string documentId 
-    }
-    documentimplementer {
-        uuid documentImplementerId PK
-        string name 
-        string rank 
-        number order 
-        date implementDate 
-        string implementerId 
-        string documentId 
-    }
-    documentreferencer {
-        uuid documentReferencerId PK
-        string name 
-        string rank 
-        number order 
-        string referencerId 
         string documentId 
     }
     document {
@@ -48,7 +32,8 @@ erDiagram
         string documentType 
         string title 
         text content 
-        string status 
+        enum status 
+        text comment 
         string retentionPeriod 
         string retentionPeriodUnit 
         date retentionStartDate 
@@ -69,8 +54,7 @@ erDiagram
         string name 
         string description 
         text template 
-        jsonb receiverInfo 
-        jsonb implementerInfo 
+        enum autoFillType 
         string formApprovalLineId 
         string documentTypeId 
     }
@@ -115,13 +99,7 @@ erDiagram
     file }|--|| document : belongs_to
     approvalstep }|--|| employee : belongs_to
     approvalstep }|--|| document : belongs_to
-    documentimplementer }|--|| employee : belongs_to
-    documentimplementer }|--|| document : belongs_to
-    documentreferencer }|--|| employee : belongs_to
-    documentreferencer }|--|| document : belongs_to
     document }|--|| employee : belongs_to
-    document ||--o{ documentimplementer : has
-    document ||--o{ documentreferencer : has
     document ||--o{ approvalstep : has
     document }|--|| document : belongs_to
     document ||--o{ document : has
@@ -137,8 +115,6 @@ erDiagram
     employee ||--o{ document : has
     employee ||--o{ formapprovalstep : has
     employee ||--o{ approvalstep : has
-    employee ||--o{ documentimplementer : has
-    employee ||--o{ documentreferencer : has
     department }|--|| department : belongs_to
     department ||--o{ department : has
 `}
@@ -161,36 +137,14 @@ erDiagram
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
 | approvalStepId | uuid | PK, NOT NULL |  |
-| type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재, 시행, 참조 등) |
+| type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재, 시행, 참조) |
 | order | Number | NOT NULL | 결재 단계 순서 |
+| isApproved | Boolean | NOT NULL | 결재 여부 |
 | approvedDate | timestamp with time zone |  | 결재 일시 |
 | createdAt | timestamp with time zone | NOT NULL |  |
 | updatedAt | timestamp with time zone | NOT NULL |  |
 | approverId | String |  | 기본 결재자 ID |
 | documentId | String | NOT NULL | 문서 ID |
-
-### document_implementers
-
-| 컬럼명 | 타입 | 제약조건 | 설명 |
-|--------|------|-----------|------|
-| documentImplementerId | uuid | PK, NOT NULL |  |
-| name | String | NOT NULL | 이름 |
-| rank | String | NOT NULL | 직급 |
-| order | Number | NOT NULL | 정렬 순서 |
-| implementDate | Date |  | 시행 일자 |
-| implementerId | String |  | 시행자 |
-| documentId | String |  | 문서 ID |
-
-### document_referencers
-
-| 컬럼명 | 타입 | 제약조건 | 설명 |
-|--------|------|-----------|------|
-| documentReferencerId | uuid | PK, NOT NULL |  |
-| name | String | NOT NULL | 이름 |
-| rank | String | NOT NULL | 직급 |
-| order | Number | NOT NULL | 정렬 순서 |
-| referencerId | String |  | 참조자 |
-| documentId | String |  | 문서 ID |
 
 ### documents
 
@@ -201,7 +155,8 @@ erDiagram
 | documentType | String | NOT NULL | 문서(품의) 유형 |
 | title | String | NOT NULL | 문서 제목 |
 | content | text | NOT NULL | 문서 내용 |
-| status | String | NOT NULL | 문서 상태 |
+| status | enum | NOT NULL | 문서 상태 |
+| comment | text |  | 문서 비고 |
 | retentionPeriod | String |  | 보존 연한 (ex. 10년, 영구보관) |
 | retentionPeriodUnit | String |  | 보존 연한 단위 (ex. 년, 월, 일) |
 | retentionStartDate | Date |  | 보존 연한 시작일 |
@@ -228,8 +183,7 @@ erDiagram
 | name | String | NOT NULL | 문서 양식 이름 |
 | description | String |  | 문서 양식 설명 |
 | template | text | NOT NULL | 문서 양식 html |
-| receiverInfo | jsonb |  | 수신 및 참조자 정보 객체 |
-| implementerInfo | jsonb |  | 시행자 정보 객체 |
+| autoFillType | enum |  | 자동 채우기 타입 |
 | formApprovalLineId | String |  | 결재선 ID |
 | documentTypeId | String | NOT NULL | 문서 양식 타입 ID |
 
@@ -252,7 +206,7 @@ erDiagram
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|-----------|------|
 | formApprovalStepId | uuid | PK, NOT NULL |  |
-| type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재) |
+| type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재, 시행, 참조) |
 | order | Number | NOT NULL | 결재 단계 순서 |
 | createdAt | timestamp with time zone | NOT NULL |  |
 | updatedAt | timestamp with time zone | NOT NULL |  |
@@ -298,27 +252,11 @@ erDiagram
 | many-to-one | () => employee_entity_1.Employee |  |
 | many-to-one | () => document_entity_1.Document |  |
 
-### document_implementers 관계
-
-| 관계 타입 | 대상 엔티티 | 설명 |
-|------------|-------------|------|
-| many-to-one | () => employee_entity_1.Employee |  |
-| many-to-one | () => document_entity_1.Document |  |
-
-### document_referencers 관계
-
-| 관계 타입 | 대상 엔티티 | 설명 |
-|------------|-------------|------|
-| many-to-one | () => employee_entity_1.Employee |  |
-| many-to-one | () => document_entity_1.Document |  |
-
 ### documents 관계
 
 | 관계 타입 | 대상 엔티티 | 설명 |
 |------------|-------------|------|
 | many-to-one | () => employee_entity_1.Employee |  |
-| one-to-many | () => document_implementer_entity_1.DocumentImplementer |  |
-| one-to-many | () => document_referencer_entity_1.DocumentReferencer |  |
 | one-to-many | () => approval_step_entity_1.ApprovalStep |  |
 | many-to-one | () => Document |  |
 | one-to-many | () => Document |  |
@@ -359,8 +297,6 @@ erDiagram
 | one-to-many | () => document_entity_1.Document |  |
 | one-to-many | () => form_approval_step_entity_1.FormApprovalStep |  |
 | one-to-many | () => approval_step_entity_1.ApprovalStep |  |
-| one-to-many | () => document_implementer_entity_1.DocumentImplementer |  |
-| one-to-many | () => document_referencer_entity_1.DocumentReferencer |  |
 
 ### departments 관계
 

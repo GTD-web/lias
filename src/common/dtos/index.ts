@@ -1,6 +1,6 @@
 // Common
-export { PaginationQueryDto } from './paginate-query.dto';
-export { PaginationMetaDto } from './paginate-response.dto';
+export { PaginationQueryDto } from './pagination-query.dto';
+export { PaginationMetaDto } from './pagination-response.dto';
 export { ErrorResponseDto, BaseResponseDto } from './response.dto';
 
 // Authorization

@@ -80,8 +80,8 @@ let DocumentService = class DocumentService {
     async findDocumentForms(query) {
         return await this.findDocumentFormsUseCase.execute(query);
     }
-    async findDocumentFormById(id) {
-        return await this.findDocumentFormByIdUseCase.execute(id);
+    async findDocumentFormById(id, user) {
+        return await this.findDocumentFormByIdUseCase.execute(id, user);
     }
     async updateDocumentForm(id, dto) {
         return await this.updateDocumentFormUseCase.execute(id, dto);

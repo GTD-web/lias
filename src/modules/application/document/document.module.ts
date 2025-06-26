@@ -12,6 +12,8 @@ import { DocumentService } from './document.service';
 import * as ApprovalLineUsecases from './usecases/approval-line';
 import * as FormTypeUsecases from './usecases/form-type';
 import * as DocumentFormUsecases from './usecases/document-form';
+import { DomainDepartmentModule } from 'src/modules/domain/department/department.module';
+import { DomainEmployeeModule } from 'src/modules/domain/employee/employee.module';
 
 @Module({
     imports: [
@@ -20,6 +22,8 @@ import * as DocumentFormUsecases from './usecases/document-form';
         DomainDocumentTypeModule,
         DomainFormApprovalLineModule,
         DomainFormApprovalStepModule,
+        DomainDepartmentModule,
+        DomainEmployeeModule,
     ],
     controllers: [ApprovalLineController, FormTypeController, DocumentFormController],
     providers: [

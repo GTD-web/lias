@@ -22,7 +22,7 @@ __decorate([
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "formApprovalStepId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재)' }),
+    (0, typeorm_1.Column)({ type: 'enum', enum: approval_enum_1.ApprovalStepType, comment: '결재 단계 타입 (ex. 합의, 결재, 시행, 참조)' }),
     __metadata("design:type", String)
 ], FormApprovalStep.prototype, "type", void 0);
 __decorate([

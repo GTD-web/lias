@@ -9,7 +9,7 @@ import {
     ApiUnauthorizedResponse,
     getSchemaPath,
 } from '@nestjs/swagger';
-import { PaginationMetaDto } from '../dtos/paginate-response.dto';
+import { PaginationMetaDto } from '../dtos/pagination-response.dto';
 import { ErrorResponseDto, BaseResponseDto } from '../dtos/response.dto';
 
 // 공통 에러 응답 데코레이터

@@ -16,9 +16,8 @@ const axios_1 = require("axios");
 let GetDepartmentInfoUsecase = class GetDepartmentInfoUsecase {
     constructor() { }
     async execute() {
-        let url = `${process.env.METADATA_MANAGER_URL}/api/departments?hierarchy=true`;
+        const url = `${process.env.METADATA_MANAGER_URL}/api/departments?hierarchy=true`;
         const result = await axios_1.default.get(url);
-        console.log(result.data);
         return result.data.map((department) => new mms_department_response_dto_1.MMSDepartmentResponseDto(department));
     }
 };

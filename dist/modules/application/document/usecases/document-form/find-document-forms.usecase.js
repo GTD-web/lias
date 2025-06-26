@@ -18,7 +18,12 @@ let FindDocumentFormsUseCase = class FindDocumentFormsUseCase {
     }
     async execute(query) {
         const [documentForms, total] = await this.documentFormService.findAndCount({
-            relations: ['documentType', 'formApprovalLine', 'formApprovalLine.formApprovalSteps'],
+            relations: [
+                'documentType',
+                'formApprovalLine',
+                'formApprovalLine.formApprovalSteps',
+                'formApprovalLine.formApprovalSteps.defaultApprover',
+            ],
             skip: (query.page - 1) * query.limit,
             take: query.limit,
         });

@@ -45,7 +45,7 @@
     "formApprovalSteps": [
       {
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
+        "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
@@ -127,7 +127,7 @@
         "formApprovalSteps": [
           {
             "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-            "type": "결재", // 결재선 단계 타입, ✅ Required
+            "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
             "order": 1, // 결재선 단계 순서, ✅ Required
             "defaultApprover": {
               "employeeId": "1", // 결재자 ID, ✅ Required
@@ -211,7 +211,7 @@
     "formApprovalSteps": [
       {
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
+        "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
@@ -307,7 +307,7 @@
     "formApprovalSteps": [
       {
         "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-        "type": "결재", // 결재선 단계 타입, ✅ Required
+        "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
         "order": 1, // 결재선 단계 순서, ✅ Required
         "defaultApprover": {
           "employeeId": "1", // 결재자 ID, ✅ Required
@@ -689,20 +689,7 @@ null
   "name": "휴가신청서", // 문서 양식 이름, ✅ Required
   "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ❌ Optional
   "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
-  "receiverInfo": [
-    {
-      "employeeId": "uuid", // 직원 ID, ✅ Required
-      "name": "홍길동", // 직원 이름, ✅ Required
-      "rank": "사원" // 직원 직급, ✅ Required
-    }
-  ], // 수신 및 참조자 정보 객체, ❌ Optional
-  "implementerInfo": [
-    {
-      "employeeId": "uuid", // 직원 ID, ✅ Required
-      "name": "홍길동", // 직원 이름, ✅ Required
-      "rank": "사원" // 직원 직급, ✅ Required
-    }
-  ], // 시행자 정보 객체, ❌ Optional
+  "autoFillType": "NONE", // 자동 채우기 타입, ❌ Optional
   "documentTypeId": "uuid", // 문서 양식 타입 ID, ✅ Required
   "formApprovalLineId": "uuid" // 결재선 ID, ❌ Optional
 }
@@ -722,8 +709,7 @@ null
     "name": "휴가신청서", // 문서 양식 이름, ✅ Required
     "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
     "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
-    "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
-    "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
+    "autoFillType": "NONE", // 자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR), ✅ Required
     "documentType": {
       "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
       "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -741,7 +727,7 @@ null
       "formApprovalSteps": [
         {
           "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
           "order": 1, // 결재선 단계 순서, ✅ Required
           "defaultApprover": {
             "employeeId": "1", // 결재자 ID, ✅ Required
@@ -817,8 +803,7 @@ null
         "name": "휴가신청서", // 문서 양식 이름, ✅ Required
         "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
         "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
-        "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
-        "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
+        "autoFillType": "NONE", // 자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR), ✅ Required
         "documentType": {
           "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
           "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -836,7 +821,7 @@ null
           "formApprovalSteps": [
             {
               "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-              "type": "결재", // 결재선 단계 타입, ✅ Required
+              "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
               "order": 1, // 결재선 단계 순서, ✅ Required
               "defaultApprover": {
                 "employeeId": "1", // 결재자 ID, ✅ Required
@@ -914,8 +899,7 @@ null
     "name": "휴가신청서", // 문서 양식 이름, ✅ Required
     "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
     "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
-    "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
-    "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
+    "autoFillType": "NONE", // 자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR), ✅ Required
     "documentType": {
       "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
       "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -933,7 +917,7 @@ null
       "formApprovalSteps": [
         {
           "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
           "order": 1, // 결재선 단계 순서, ✅ Required
           "defaultApprover": {
             "employeeId": "1", // 결재자 ID, ✅ Required
@@ -998,20 +982,7 @@ null
   "name": "휴가신청서", // 문서 양식 이름, ❌ Optional
   "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ❌ Optional
   "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ❌ Optional
-  "receiverInfo": [
-    {
-      "employeeId": "uuid", // 직원 ID, ✅ Required
-      "name": "홍길동", // 직원 이름, ✅ Required
-      "rank": "사원" // 직원 직급, ✅ Required
-    }
-  ], // 수신 및 참조자 정보 객체, ❌ Optional
-  "implementerInfo": [
-    {
-      "employeeId": "uuid", // 직원 ID, ✅ Required
-      "name": "홍길동", // 직원 이름, ✅ Required
-      "rank": "사원" // 직원 직급, ✅ Required
-    }
-  ], // 시행자 정보 객체, ❌ Optional
+  "autoFillType": "NONE", // 자동 채우기 타입, ❌ Optional
   "documentTypeId": "uuid", // 문서 양식 타입 ID, ❌ Optional
   "formApprovalLineId": "uuid", // 결재선 ID, ❌ Optional
   "documentFormId": "uuid" // 문서 양식 ID, ✅ Required
@@ -1032,8 +1003,7 @@ null
     "name": "휴가신청서", // 문서 양식 이름, ✅ Required
     "description": "휴가 신청을 위한 문서 양식입니다.", // 문서 양식 설명, ✅ Required
     "template": "<div>문서 양식 템플릿</div>", // 문서 양식 html, ✅ Required
-    "receiverInfo": [""], // 수신 및 참조자 정보 객체, ✅ Required
-    "implementerInfo": [""], // 시행자 정보 객체, ✅ Required
+    "autoFillType": "NONE", // 자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR), ✅ Required
     "documentType": {
       "documentTypeId": "uuid", // 문서 타입 ID, ✅ Required
       "name": "VACATION", // 문서 타입 이름, ✅ Required
@@ -1051,7 +1021,7 @@ null
       "formApprovalSteps": [
         {
           "formApprovalStepId": "1", // 결재선 단계 ID, ✅ Required
-          "type": "결재", // 결재선 단계 타입, ✅ Required
+          "type": "AGREEMENT", // 결재선 단계 타입, AGREEMENT, APPROVAL, IMPLEMENTATION, REFERENCE, ✅ Required
           "order": 1, // 결재선 단계 순서, ✅ Required
           "defaultApprover": {
             "employeeId": "1", // 결재자 ID, ✅ Required

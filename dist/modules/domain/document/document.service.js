@@ -13,10 +13,17 @@ exports.DomainDocumentService = void 0;
 const common_1 = require("@nestjs/common");
 const document_repository_1 = require("./document.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const approval_enum_1 = require("../../../common/enums/approval.enum");
 let DomainDocumentService = class DomainDocumentService extends base_service_1.BaseService {
     constructor(documentRepository) {
         super(documentRepository);
         this.documentRepository = documentRepository;
+    }
+    async approve(id, queryRunner) {
+        return await this.documentRepository.update(id, { status: approval_enum_1.ApprovalStatus.APPROVED }, { queryRunner });
+    }
+    async reject(id, queryRunner) {
+        return await this.documentRepository.update(id, { status: approval_enum_1.ApprovalStatus.REJECTED }, { queryRunner });
     }
 };
 exports.DomainDocumentService = DomainDocumentService;

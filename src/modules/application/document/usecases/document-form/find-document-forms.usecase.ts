@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DomainDocumentFormService } from '../../../../domain/document-form/document-form.service';
 import { DocumentFormResponseDto } from '../../dtos/document-form.dto';
-import { PaginationQueryDto } from 'src/common/dtos/paginate-query.dto';
-import { PaginationData } from 'src/common/dtos/paginate-response.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { PaginationData } from 'src/common/dtos/pagination-response.dto';
 
 @Injectable()
 export class FindDocumentFormsUseCase {
@@ -13,7 +13,12 @@ export class FindDocumentFormsUseCase {
             // where: {
             //     name: Like(`%${query.search}%`),
             // },
-            relations: ['documentType', 'formApprovalLine', 'formApprovalLine.formApprovalSteps'],
+            relations: [
+                'documentType',
+                'formApprovalLine',
+                'formApprovalLine.formApprovalSteps',
+                'formApprovalLine.formApprovalSteps.defaultApprover',
+            ],
             skip: (query.page - 1) * query.limit,
             take: query.limit,
         });

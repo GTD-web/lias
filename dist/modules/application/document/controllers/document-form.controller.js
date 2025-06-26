@@ -18,7 +18,9 @@ const swagger_1 = require("@nestjs/swagger");
 const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
 const document_service_1 = require("../document.service");
 const document_form_dto_1 = require("../dtos/document-form.dto");
-const paginate_query_dto_1 = require("../../../../common/dtos/paginate-query.dto");
+const pagination_query_dto_1 = require("../../../../common/dtos/pagination-query.dto");
+const employee_entity_1 = require("../../../../database/entities/employee.entity");
+const user_decorator_1 = require("../../../../common/decorators/user.decorator");
 let DocumentFormController = class DocumentFormController {
     constructor(documentService) {
         this.documentService = documentService;
@@ -29,9 +31,9 @@ let DocumentFormController = class DocumentFormController {
     async findAllDocumentForms(query) {
         return await this.documentService.findDocumentForms(query);
     }
-    async findDocumentFormById(id) {
+    async findDocumentFormById(user, id) {
         console.log('id', id);
-        return await this.documentService.findDocumentFormById(id);
+        return await this.documentService.findDocumentFormById(id, user);
     }
     async updateDocumentFormById(id, updateDocumentFormDto) {
         return await this.documentService.updateDocumentForm(id, updateDocumentFormDto);
@@ -68,7 +70,7 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'search', required: false, type: String }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [paginate_query_dto_1.PaginationQueryDto]),
+    __metadata("design:paramtypes", [pagination_query_dto_1.PaginationQueryDto]),
     __metadata("design:returntype", Promise)
 ], DocumentFormController.prototype, "findAllDocumentForms", null);
 __decorate([
@@ -79,9 +81,10 @@ __decorate([
         description: '문서양식을 성공적으로 상세 조회했습니다.',
         type: document_form_dto_1.DocumentFormResponseDto,
     }),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, String]),
     __metadata("design:returntype", Promise)
 ], DocumentFormController.prototype, "findDocumentFormById", null);
 __decorate([

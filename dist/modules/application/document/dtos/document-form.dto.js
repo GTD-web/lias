@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const approval_line_dto_1 = require("./approval-line.dto");
 const form_type_dto_1 = require("./form-type.dto");
+const approval_enum_1 = require("../../../../common/enums/approval.enum");
 class EmployeeInfoDto {
 }
 exports.EmployeeInfoDto = EmployeeInfoDto;
@@ -78,27 +79,15 @@ __decorate([
     __metadata("design:type", String)
 ], CreateDocumentFormDto.prototype, "template", void 0);
 __decorate([
-    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsEnum)(approval_enum_1.AutoFillType),
     (0, class_validator_1.IsOptional)(),
     (0, swagger_1.ApiProperty)({
-        description: '수신 및 참조자 정보 객체',
-        type: [EmployeeInfoDto],
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        description: '자동 채우기 타입',
+        example: approval_enum_1.AutoFillType.NONE,
         required: false,
     }),
-    __metadata("design:type", Array)
-], CreateDocumentFormDto.prototype, "receiverInfo", void 0);
-__decorate([
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsOptional)(),
-    (0, swagger_1.ApiProperty)({
-        description: '시행자 정보 객체',
-        type: [EmployeeInfoDto],
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-        required: false,
-    }),
-    __metadata("design:type", Array)
-], CreateDocumentFormDto.prototype, "implementerInfo", void 0);
+    __metadata("design:type", String)
+], CreateDocumentFormDto.prototype, "autoFillType", void 0);
 __decorate([
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
@@ -165,18 +154,11 @@ __decorate([
 ], DocumentFormResponseDto.prototype, "template", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '수신 및 참조자 정보 객체',
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
+        description: '자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR)',
+        example: approval_enum_1.AutoFillType.NONE,
     }),
-    __metadata("design:type", Array)
-], DocumentFormResponseDto.prototype, "receiverInfo", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '시행자 정보 객체',
-        example: [{ employeeId: 'uuid', name: '홍길동', rank: '사원' }],
-    }),
-    __metadata("design:type", Array)
-], DocumentFormResponseDto.prototype, "implementerInfo", void 0);
+    __metadata("design:type", String)
+], DocumentFormResponseDto.prototype, "autoFillType", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         type: form_type_dto_1.DocumentTypeResponseDto,

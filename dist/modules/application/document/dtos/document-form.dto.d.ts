@@ -1,6 +1,6 @@
 import { FormApprovalLineResponseDto } from './approval-line.dto';
 import { DocumentTypeResponseDto } from './form-type.dto';
-import { ImplementerInfo, ReferencerInfo } from 'src/common/types/entity.type';
+import { AutoFillType } from 'src/common/enums/approval.enum';
 export declare class EmployeeInfoDto {
     employeeId: string;
     name: string;
@@ -10,8 +10,7 @@ export declare class CreateDocumentFormDto {
     name: string;
     description: string;
     template: string;
-    receiverInfo: EmployeeInfoDto[];
-    implementerInfo: EmployeeInfoDto[];
+    autoFillType: AutoFillType;
     documentTypeId: string;
     formApprovalLineId: string;
 }
@@ -24,8 +23,7 @@ export declare class DocumentFormResponseDto {
     name: string;
     description: string;
     template: string;
-    receiverInfo: ReferencerInfo[];
-    implementerInfo: ImplementerInfo[];
+    autoFillType: AutoFillType;
     documentType: DocumentTypeResponseDto;
     formApprovalLine: FormApprovalLineResponseDto;
 }

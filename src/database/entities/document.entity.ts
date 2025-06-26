@@ -11,8 +11,7 @@ import {
 import { Employee } from './employee.entity';
 import { File } from './file.entity';
 import { ApprovalStep } from './approval-step.entity';
-import { DocumentImplementer } from './document-implementer.entity';
-import { DocumentReferencer } from './document-referencer.entity';
+import { ApprovalStatus } from 'src/common/enums/approval.enum';
 
 @Entity('documents')
 export class Document {
@@ -31,8 +30,11 @@ export class Document {
     @Column({ type: 'text', comment: '문서 내용' })
     content: string;
 
-    @Column({ comment: '문서 상태' })
-    status: string;
+    @Column({ type: 'enum', enum: ApprovalStatus, comment: '문서 상태', default: ApprovalStatus.PENDING })
+    status: ApprovalStatus;
+
+    @Column({ type: 'text', nullable: true, comment: '문서 비고' })
+    comment: string;
 
     @Column({ nullable: true, comment: '보존 연한 (ex. 10년, 영구보관)' })
     retentionPeriod: string;
@@ -63,13 +65,6 @@ export class Document {
     @ManyToOne(() => Employee, (employee) => employee.draftDocuments)
     @JoinColumn({ name: 'drafterId' })
     drafter: Employee;
-
-    // document implementer
-    @OneToMany(() => DocumentImplementer, (documentImplementer) => documentImplementer.implementer)
-    implementers: DocumentImplementer[];
-
-    @OneToMany(() => DocumentReferencer, (documentReferencer) => documentReferencer.referencer)
-    referencers: DocumentReferencer[];
 
     // approval steps
     @OneToMany(() => ApprovalStep, (approvalStep) => approvalStep.document)
