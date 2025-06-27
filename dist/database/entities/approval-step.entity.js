@@ -38,6 +38,10 @@ __decorate([
     __metadata("design:type", Date)
 ], ApprovalStep.prototype, "approvedDate", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ comment: '현재 단계 여부', default: false }),
+    __metadata("design:type", Boolean)
+], ApprovalStep.prototype, "isCurrent", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ type: 'timestamp with time zone' }),
     __metadata("design:type", Date)
 ], ApprovalStep.prototype, "createdAt", void 0);

@@ -7,4 +7,5 @@ export declare class DomainApprovalStepService extends BaseService<ApprovalStep>
     constructor(approvalStepRepository: DomainApprovalStepRepository);
     approve(id: string, queryRunner?: QueryRunner): Promise<ApprovalStep>;
     reject(id: string, queryRunner?: QueryRunner): Promise<ApprovalStep>;
+    setCurrent(id: string, queryRunner?: QueryRunner): Promise<ApprovalStep>;
 }

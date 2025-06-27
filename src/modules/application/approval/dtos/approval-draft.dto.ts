@@ -117,8 +117,14 @@ export class ApprovalStepResponseDto {
     @ApiProperty({ description: '결재 단계 순서' })
     order: number;
 
+    @ApiProperty({ description: '결재 여부' })
+    isApproved: boolean;
+
     @ApiProperty({ description: '결재 일시' })
     approvedDate: Date;
+
+    @ApiProperty({ description: '현재 단계 여부' })
+    isCurrent: boolean;
 
     @ApiProperty({ description: '생성일' })
     createdAt: Date;
@@ -175,6 +181,9 @@ export class ApprovalResponseDto {
 
     @ApiProperty({ description: '결재 단계 정보 객체', type: [ApprovalStepResponseDto] })
     approvalSteps: ApprovalStepResponseDto[];
+
+    @ApiProperty({ description: '현재 결재 단계', type: ApprovalStepResponseDto, required: false })
+    currentStep?: ApprovalStepResponseDto;
 
     @ApiProperty({ description: '부모 문서', type: ApprovalResponseDto })
     parentDocument: ApprovalResponseDto;

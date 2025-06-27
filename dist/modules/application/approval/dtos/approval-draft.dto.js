@@ -158,9 +158,17 @@ __decorate([
     __metadata("design:type", Number)
 ], ApprovalStepResponseDto.prototype, "order", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: '결재 여부' }),
+    __metadata("design:type", Boolean)
+], ApprovalStepResponseDto.prototype, "isApproved", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ description: '결재 일시' }),
     __metadata("design:type", Date)
 ], ApprovalStepResponseDto.prototype, "approvedDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '현재 단계 여부' }),
+    __metadata("design:type", Boolean)
+], ApprovalStepResponseDto.prototype, "isCurrent", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: '생성일' }),
     __metadata("design:type", Date)
@@ -236,6 +244,10 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: '결재 단계 정보 객체', type: [ApprovalStepResponseDto] }),
     __metadata("design:type", Array)
 ], ApprovalResponseDto.prototype, "approvalSteps", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '현재 결재 단계', type: ApprovalStepResponseDto, required: false }),
+    __metadata("design:type", ApprovalStepResponseDto)
+], ApprovalResponseDto.prototype, "currentStep", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: '부모 문서', type: ApprovalResponseDto }),
     __metadata("design:type", ApprovalResponseDto)

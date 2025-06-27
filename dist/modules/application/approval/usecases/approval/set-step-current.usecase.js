@@ -9,20 +9,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApproveDocumentUseCase = void 0;
+exports.SetStepCurrentUseCase = void 0;
 const common_1 = require("@nestjs/common");
-const document_service_1 = require("../../../../domain/document/document.service");
-let ApproveDocumentUseCase = class ApproveDocumentUseCase {
-    constructor(documentService) {
-        this.documentService = documentService;
+const approval_step_service_1 = require("../../../../domain/approval-step/approval-step.service");
+let SetStepCurrentUseCase = class SetStepCurrentUseCase {
+    constructor(approvalStepService) {
+        this.approvalStepService = approvalStepService;
     }
     async execute(id) {
-        return await this.documentService.approve(id);
+        return await this.approvalStepService.setCurrent(id);
     }
 };
-exports.ApproveDocumentUseCase = ApproveDocumentUseCase;
-exports.ApproveDocumentUseCase = ApproveDocumentUseCase = __decorate([
+exports.SetStepCurrentUseCase = SetStepCurrentUseCase;
+exports.SetStepCurrentUseCase = SetStepCurrentUseCase = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [document_service_1.DomainDocumentService])
-], ApproveDocumentUseCase);
-//# sourceMappingURL=approve-document.usecase%20copy.js.map
+    __metadata("design:paramtypes", [approval_step_service_1.DomainApprovalStepService])
+], SetStepCurrentUseCase);
+//# sourceMappingURL=set-step-current.usecase.js.map

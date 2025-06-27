@@ -34,7 +34,9 @@ export declare class EmployeeResponseDto {
 export declare class ApprovalStepResponseDto {
     type: ApprovalStepType;
     order: number;
+    isApproved: boolean;
     approvedDate: Date;
+    isCurrent: boolean;
     createdAt: Date;
     updatedAt: Date;
     approver: EmployeeResponseDto;
@@ -55,6 +57,7 @@ export declare class ApprovalResponseDto {
     updatedAt: Date;
     drafter: EmployeeResponseDto;
     approvalSteps: ApprovalStepResponseDto[];
+    currentStep?: ApprovalStepResponseDto;
     parentDocument: ApprovalResponseDto;
     files: FileDto[];
 }

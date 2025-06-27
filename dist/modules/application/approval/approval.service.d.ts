@@ -6,7 +6,7 @@ import { UpdateDraftUseCase } from './usecases/document/update-draft.usecase';
 import { DeleteDraftUseCase } from './usecases/document/delete-draft.usecase';
 import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { PaginationData } from 'src/common/dtos/pagination-response.dto';
-import { ApprovalStatus, ApprovalStepType } from 'src/common/enums/approval.enum';
+import { ApprovalStatus, ApprovalStepType, DocumentListType } from 'src/common/enums/approval.enum';
 import { Employee } from 'src/database/entities';
 import { ApproveStepUseCase } from './usecases/approval/approve-step.usecase';
 import { ApproveDocumentUseCase } from './usecases/approval/approve-document.usecase';
@@ -14,6 +14,8 @@ import { CheckStepsUseCase } from './usecases/approval/check-steps.usecase';
 import { GetMyStepUseCase } from './usecases/approval/get-my-step.usecase';
 import { RejectStepUseCase } from './usecases/approval/reject-step.usecase';
 import { RejectDocumentUseCase } from './usecases/approval/reject-document.usecase';
+import { SetStepCurrentUseCase } from './usecases/approval/set-step-current.usecase';
+import { GetApprovalDocumentsUseCase } from './usecases/approval/get-approval-documents.usecase';
 export declare class ApprovalService {
     private readonly createDraftUseCase;
     private readonly getApprovalListUseCase;
@@ -26,7 +28,9 @@ export declare class ApprovalService {
     private readonly getMyStepUseCase;
     private readonly rejectStepUseCase;
     private readonly rejectDocumentUseCase;
-    constructor(createDraftUseCase: CreateDraftUseCase, getApprovalListUseCase: GetApprovalListUseCase, getDraftUseCase: GetDraftUseCase, updateDraftUseCase: UpdateDraftUseCase, deleteDraftUseCase: DeleteDraftUseCase, approveStepUseCase: ApproveStepUseCase, approveDocumentUseCase: ApproveDocumentUseCase, checkStepsUseCase: CheckStepsUseCase, getMyStepUseCase: GetMyStepUseCase, rejectStepUseCase: RejectStepUseCase, rejectDocumentUseCase: RejectDocumentUseCase);
+    private readonly setStepCurrentUseCase;
+    private readonly getApprovalDocumentsUseCase;
+    constructor(createDraftUseCase: CreateDraftUseCase, getApprovalListUseCase: GetApprovalListUseCase, getDraftUseCase: GetDraftUseCase, updateDraftUseCase: UpdateDraftUseCase, deleteDraftUseCase: DeleteDraftUseCase, approveStepUseCase: ApproveStepUseCase, approveDocumentUseCase: ApproveDocumentUseCase, checkStepsUseCase: CheckStepsUseCase, getMyStepUseCase: GetMyStepUseCase, rejectStepUseCase: RejectStepUseCase, rejectDocumentUseCase: RejectDocumentUseCase, setStepCurrentUseCase: SetStepCurrentUseCase, getApprovalDocumentsUseCase: GetApprovalDocumentsUseCase);
     createDraft(user: Employee, draftData: CreateDraftDocumentDto): Promise<ApprovalResponseDto>;
     getDraftList(user: Employee, query: PaginationQueryDto, status: ApprovalStatus | ApprovalStatus[], stepType: ApprovalStepType | ApprovalStepType[]): Promise<PaginationData<ApprovalResponseDto>>;
     getDraft(id: string): Promise<ApprovalResponseDto>;
@@ -36,4 +40,6 @@ export declare class ApprovalService {
     reject(user: Employee, documentId: string): Promise<void>;
     implementation(user: Employee, documentId: string): Promise<void>;
     reference(user: Employee, documentId: string): Promise<void>;
+    getApprovalDocuments(user: Employee, query: PaginationQueryDto, listType: DocumentListType): Promise<PaginationData<ApprovalResponseDto>>;
+    createTestData(): Promise<void>;
 }

@@ -19,5 +19,7 @@ __exportStar(require("./approve-document.usecase"), exports);
 __exportStar(require("./reject-step.usecase"), exports);
 __exportStar(require("./reject-document.usecase"), exports);
 __exportStar(require("./check-steps.usecase"), exports);
+__exportStar(require("./set-step-current.usecase"), exports);
 __exportStar(require("./get-my-step.usecase"), exports);
+__exportStar(require("./get-approval-documents.usecase"), exports);
 //# sourceMappingURL=index.js.map

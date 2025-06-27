@@ -30,6 +30,9 @@ export class ApprovalStep {
     @Column({ type: 'timestamp with time zone', comment: '결재 일시', nullable: true })
     approvedDate: Date;
 
+    @Column({ comment: '현재 단계 여부', default: false })
+    isCurrent: boolean;
+
     @CreateDateColumn({ type: 'timestamp with time zone' })
     createdAt: Date;
 

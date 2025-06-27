@@ -27,3 +27,12 @@ export declare enum AutoFillType {
     DRAFTER_ONLY = "DRAFTER_ONLY",
     DRAFTER_SUPERIOR = "DRAFTER_SUPERIOR"
 }
+export declare enum DocumentListType {
+    DRAFTED = "drafted",
+    PENDING_APPROVAL = "pending_approval",
+    PENDING_AGREEMENT = "pending_agreement",
+    APPROVED = "approved",
+    REJECTED = "rejected",
+    RECEIVED_REFERENCE = "received_reference",
+    IMPLEMENTATION = "implementation"
+}

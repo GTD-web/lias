@@ -23,8 +23,10 @@ const check_steps_usecase_1 = require("./usecases/approval/check-steps.usecase")
 const get_my_step_usecase_1 = require("./usecases/approval/get-my-step.usecase");
 const reject_step_usecase_1 = require("./usecases/approval/reject-step.usecase");
 const reject_document_usecase_1 = require("./usecases/approval/reject-document.usecase");
+const set_step_current_usecase_1 = require("./usecases/approval/set-step-current.usecase");
+const get_approval_documents_usecase_1 = require("./usecases/approval/get-approval-documents.usecase");
 let ApprovalService = class ApprovalService {
-    constructor(createDraftUseCase, getApprovalListUseCase, getDraftUseCase, updateDraftUseCase, deleteDraftUseCase, approveStepUseCase, approveDocumentUseCase, checkStepsUseCase, getMyStepUseCase, rejectStepUseCase, rejectDocumentUseCase) {
+    constructor(createDraftUseCase, getApprovalListUseCase, getDraftUseCase, updateDraftUseCase, deleteDraftUseCase, approveStepUseCase, approveDocumentUseCase, checkStepsUseCase, getMyStepUseCase, rejectStepUseCase, rejectDocumentUseCase, setStepCurrentUseCase, getApprovalDocumentsUseCase) {
         this.createDraftUseCase = createDraftUseCase;
         this.getApprovalListUseCase = getApprovalListUseCase;
         this.getDraftUseCase = getDraftUseCase;
@@ -36,6 +38,8 @@ let ApprovalService = class ApprovalService {
         this.getMyStepUseCase = getMyStepUseCase;
         this.rejectStepUseCase = rejectStepUseCase;
         this.rejectDocumentUseCase = rejectDocumentUseCase;
+        this.setStepCurrentUseCase = setStepCurrentUseCase;
+        this.getApprovalDocumentsUseCase = getApprovalDocumentsUseCase;
     }
     async createDraft(user, draftData) {
         return this.createDraftUseCase.execute(user, draftData);
@@ -64,6 +68,7 @@ let ApprovalService = class ApprovalService {
             console.log('다음 단계로 알림보내기');
             const nextStep = allStepsApproved[0];
             console.log('nextStep', nextStep);
+            await this.setStepCurrentUseCase.execute(nextStep.approvalStepId);
         }
         else {
             await this.approveDocumentUseCase.execute(documentId);
@@ -82,6 +87,10 @@ let ApprovalService = class ApprovalService {
         if (myStep.type !== approval_enum_1.ApprovalStepType.IMPLEMENTATION) {
             throw new common_1.BadRequestException('시행 단계가 아닙니다.');
         }
+        const [allStepsApproved, total] = await this.checkStepsUseCase.execute(documentId);
+        if (total > 0) {
+            throw new common_1.BadRequestException('모든 결재단계가 승인되지 않았습니다.');
+        }
         await this.approveStepUseCase.execute(myStep.approvalStepId);
     }
     async reference(user, documentId) {
@@ -90,6 +99,12 @@ let ApprovalService = class ApprovalService {
             throw new common_1.BadRequestException('열람 단계가 아닙니다.');
         }
         await this.approveStepUseCase.execute(myStep.approvalStepId);
+    }
+    async getApprovalDocuments(user, query, listType) {
+        return this.getApprovalDocumentsUseCase.execute(user, query, listType);
+    }
+    async createTestData() {
+        throw new common_1.BadRequestException('랜덤 문서 생성은 /api/v2/approval/random-documents 엔드포인트를 사용하세요.');
     }
 };
 exports.ApprovalService = ApprovalService;
@@ -105,6 +120,8 @@ exports.ApprovalService = ApprovalService = __decorate([
         check_steps_usecase_1.CheckStepsUseCase,
         get_my_step_usecase_1.GetMyStepUseCase,
         reject_step_usecase_1.RejectStepUseCase,
-        reject_document_usecase_1.RejectDocumentUseCase])
+        reject_document_usecase_1.RejectDocumentUseCase,
+        set_step_current_usecase_1.SetStepCurrentUseCase,
+        get_approval_documents_usecase_1.GetApprovalDocumentsUseCase])
 ], ApprovalService);
 //# sourceMappingURL=approval.service.js.map

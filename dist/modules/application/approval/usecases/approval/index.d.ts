@@ -3,4 +3,6 @@ export * from './approve-document.usecase';
 export * from './reject-step.usecase';
 export * from './reject-document.usecase';
 export * from './check-steps.usecase';
+export * from './set-step-current.usecase';
 export * from './get-my-step.usecase';
+export * from './get-approval-documents.usecase';

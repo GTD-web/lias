@@ -7,6 +7,7 @@ export declare class ApprovalStep {
     order: number;
     isApproved: boolean;
     approvedDate: Date;
+    isCurrent: boolean;
     createdAt: Date;
     updatedAt: Date;
     approverId: string;

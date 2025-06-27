@@ -20,10 +20,13 @@ let DomainApprovalStepService = class DomainApprovalStepService extends base_ser
         this.approvalStepRepository = approvalStepRepository;
     }
     async approve(id, queryRunner) {
-        return await this.approvalStepRepository.update(id, { isApproved: true, approvedDate: date_util_1.DateUtil.now().toDate() }, { queryRunner });
+        return await this.approvalStepRepository.update(id, { isApproved: true, approvedDate: date_util_1.DateUtil.now().toDate(), isCurrent: false }, { queryRunner });
     }
     async reject(id, queryRunner) {
-        return await this.approvalStepRepository.update(id, { isApproved: false, approvedDate: date_util_1.DateUtil.now().toDate() }, { queryRunner });
+        return await this.approvalStepRepository.update(id, { isApproved: false, approvedDate: date_util_1.DateUtil.now().toDate(), isCurrent: false }, { queryRunner });
+    }
+    async setCurrent(id, queryRunner) {
+        return await this.approvalStepRepository.update(id, { isCurrent: true }, { queryRunner });
     }
 };
 exports.DomainApprovalStepService = DomainApprovalStepService;

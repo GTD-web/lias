@@ -21,6 +21,7 @@ erDiagram
         number order 
         boolean isApproved 
         timestamp with time zone approvedDate 
+        boolean isCurrent 
         timestamp with time zone createdAt 
         timestamp with time zone updatedAt 
         string approverId 
@@ -141,6 +142,7 @@ erDiagram
 | order | Number | NOT NULL | 결재 단계 순서 |
 | isApproved | Boolean | NOT NULL | 결재 여부 |
 | approvedDate | timestamp with time zone |  | 결재 일시 |
+| isCurrent | Boolean | NOT NULL | 현재 단계 여부 |
 | createdAt | timestamp with time zone | NOT NULL |  |
 | updatedAt | timestamp with time zone | NOT NULL |  |
 | approverId | String |  | 기본 결재자 ID |

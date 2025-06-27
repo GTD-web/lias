@@ -14,7 +14,7 @@ export class DomainApprovalStepService extends BaseService<ApprovalStep> {
     async approve(id: string, queryRunner?: QueryRunner): Promise<ApprovalStep> {
         return await this.approvalStepRepository.update(
             id,
-            { isApproved: true, approvedDate: DateUtil.now().toDate() },
+            { isApproved: true, approvedDate: DateUtil.now().toDate(), isCurrent: false },
             { queryRunner },
         );
     }
@@ -22,8 +22,12 @@ export class DomainApprovalStepService extends BaseService<ApprovalStep> {
     async reject(id: string, queryRunner?: QueryRunner): Promise<ApprovalStep> {
         return await this.approvalStepRepository.update(
             id,
-            { isApproved: false, approvedDate: DateUtil.now().toDate() },
+            { isApproved: false, approvedDate: DateUtil.now().toDate(), isCurrent: false },
             { queryRunner },
         );
+    }
+
+    async setCurrent(id: string, queryRunner?: QueryRunner): Promise<ApprovalStep> {
+        return await this.approvalStepRepository.update(id, { isCurrent: true }, { queryRunner });
     }
 }
