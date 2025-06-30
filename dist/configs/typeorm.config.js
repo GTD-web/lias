@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.typeOrmConfig = void 0;
-const entities_1 = require("../database/entities");
+const list_1 = require("../database/entities/list");
 const path_1 = require("path");
 const typeOrmConfig = (configService) => {
     return {
@@ -11,9 +11,10 @@ const typeOrmConfig = (configService) => {
         username: configService.get('database.username'),
         password: configService.get('database.password'),
         database: configService.get('database.database'),
-        entities: entities_1.Entities,
+        entities: list_1.EntityList,
         schema: 'public',
-        migrations: [(0, path_1.join)(__dirname, 'libs/migrations/*.ts')],
+        synchronize: configService.get('NODE_ENV') === 'local',
+        migrations: [(0, path_1.join)(__dirname, '../common/migrations/*.ts')],
         migrationsRun: configService.get('database.port') === 6543,
         ssl: configService.get('database.port') === 6543,
         extra: {

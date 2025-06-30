@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.File = void 0;
 const typeorm_1 = require("typeorm");
+const document_entity_1 = require("./document.entity");
 let File = class File {
 };
 exports.File = File;
@@ -18,6 +19,27 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], File.prototype, "fileId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ comment: '파일 이름' }),
+    __metadata("design:type", String)
+], File.prototype, "fileName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ unique: true, comment: '파일 경로' }),
+    __metadata("design:type", String)
+], File.prototype, "filePath", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)({ type: 'timestamp with time zone' }),
+    __metadata("design:type", Date)
+], File.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], File.prototype, "documentId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => document_entity_1.Document, (document) => document.files),
+    (0, typeorm_1.JoinColumn)({ name: 'documentId' }),
+    __metadata("design:type", document_entity_1.Document)
+], File.prototype, "document", void 0);
 exports.File = File = __decorate([
     (0, typeorm_1.Entity)('files')
 ], File);

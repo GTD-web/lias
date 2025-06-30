@@ -1,5 +1,9 @@
-import { Employee } from './employee.entity';
-import { File } from './file.entity';
-
-export { Employee, File };
-export const Entities = [Employee, File];
+export { Employee } from './employee.entity';
+export { Department } from './department.entity ';
+export { Document } from './document.entity';
+export { DocumentForm } from './document-form.entity';
+export { DocumentType } from './document-type.entity';
+export { FormApprovalLine } from './form-approval-line.entity';
+export { FormApprovalStep } from './form-approval-step.entity';
+export { ApprovalStep } from './approval-step.entity';
+export { File } from './file.entity';

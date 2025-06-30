@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FIREBASE_CONFIG = exports.APP_CONFIG = exports.WEB_PUSH_CONFIG = exports.JWT_CONFIG = exports.ENV = void 0;
+exports.FIREBASE_CONFIG = exports.APP_CONFIG = exports.WEB_PUSH_CONFIG = exports.JWT_CONFIG = exports.DB_Config = exports.ENV = void 0;
 const dotenv_1 = require("dotenv");
 const config_1 = require("@nestjs/config");
 (0, dotenv_1.config)();
 exports.ENV = process.env;
-exports.default = (0, config_1.registerAs)('database', () => {
+exports.DB_Config = (0, config_1.registerAs)('database', () => {
     return {
         host: process.env.POSTGRES_HOST || 'localhost',
         port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
@@ -28,9 +28,7 @@ exports.WEB_PUSH_CONFIG = (0, config_1.registerAs)('webPush', () => {
 });
 exports.APP_CONFIG = (0, config_1.registerAs)('app', () => {
     return {
-        url: process.env.NODE_ENV === 'production'
-            ? 'http://localhost:5001'
-            : 'http://localhost:3000',
+        url: process.env.NODE_ENV === 'production' ? 'http://localhost:5001' : 'http://localhost:3000',
         port: process.env.NODE_ENV === 'production' ? 5001 : 3000,
         storage: {
             type: process.env.NODE_ENV,

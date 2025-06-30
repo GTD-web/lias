@@ -5,6 +5,7 @@ export interface IService<T extends ObjectLiteral> {
     save(entity: DeepPartial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     findAll(options?: IRepositoryOptions<T>): Promise<T[]>;
     findOne(options: IRepositoryOptions<T>): Promise<T | null>;
+    findAndCount(options?: IRepositoryOptions<T>): Promise<[T[], number]>;
     update(id: string, entity: Partial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     delete(id: string, options?: IRepositoryOptions<T>): Promise<void>;
 }

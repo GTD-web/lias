@@ -24,6 +24,10 @@ export abstract class BaseService<T extends ObjectLiteral> implements IService<T
         return this.repository.findOne(options);
     }
 
+    async findAndCount(options?: IRepositoryOptions<T>): Promise<[T[], number]> {
+        return this.repository.findAndCount(options);
+    }
+
     async update(entityId: string, entity: Partial<T>, options?: IRepositoryOptions<T>): Promise<T> {
         return this.repository.update(entityId, entity, options);
     }

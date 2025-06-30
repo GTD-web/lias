@@ -10,7 +10,7 @@ export function setupSwagger(app: INestApplication, dtos: any[]) {
         .build();
 
     const document = SwaggerModule.createDocument(app, config, {
-        // extraModels: [BaseResponseDto, PaginationData, ...dtos],
+        extraModels: [...dtos],
     });
 
     SwaggerModule.setup('api-docs', app, document, {
@@ -25,15 +25,15 @@ export function setupSwagger(app: INestApplication, dtos: any[]) {
         ],
 
         swaggerOptions: {
-            tagsSorter: (a: string, b: string) => {
-                const isAEnglish = /^[A-Za-z]/.test(a);
-                const isBEnglish = /^[A-Za-z]/.test(b);
+            // tagsSorter: (a: string, b: string) => {
+            //     const isAEnglish = /^[A-Za-z]/.test(a);
+            //     const isBEnglish = /^[A-Za-z]/.test(b);
 
-                if (isAEnglish && !isBEnglish) return -1; // 알파벳(A-Z) 먼저
-                if (!isAEnglish && isBEnglish) return 1; // 한글(가-힣) 뒤로
+            //     if (isAEnglish && !isBEnglish) return -1; // 알파벳(A-Z) 먼저
+            //     if (!isAEnglish && isBEnglish) return 1; // 한글(가-힣) 뒤로
 
-                return a.localeCompare(b, 'en'); // 같은 언어일 경우 알파벳순 정렬
-            },
+            //     return a.localeCompare(b, 'en'); // 같은 언어일 경우 알파벳순 정렬
+            // },
             docExpansion: 'none',
 
             persistAuthorization: true,
