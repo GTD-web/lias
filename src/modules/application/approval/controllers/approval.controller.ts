@@ -9,6 +9,7 @@ import { ApprovalResponseDto } from '../dtos/approval-draft.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { DocumentListType } from 'src/common/enums/approval.enum';
 import { ApiDataResponse } from 'src/common/decorators/api-responses.decorator';
+import { CreateDraftDocumentDto } from '../dtos';
 
 @ApiTags('결재 관리')
 @Controller('')
@@ -16,6 +17,13 @@ import { ApiDataResponse } from 'src/common/decorators/api-responses.decorator';
 @ApiBearerAuth()
 export class ApprovalController {
     constructor(private readonly approvalService: ApprovalService) {}
+
+    @Post('document')
+    @ApiOperation({ summary: '기안 문서 생성' })
+    @ApiResponse({ status: 201, description: '기안 문서 생성 성공', type: String })
+    async createDraft(@User() user: Employee, @Body() draftData: CreateDraftDocumentDto): Promise<string> {
+        return this.approvalService.createDraft(user, draftData);
+    }
 
     // 승인, 반려
     @Post(':documentId/approve')

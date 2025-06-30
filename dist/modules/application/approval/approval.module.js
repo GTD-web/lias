@@ -9,7 +9,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApprovalModule = void 0;
 const common_1 = require("@nestjs/common");
 const approval_service_1 = require("./approval.service");
-const document_controller_1 = require("./controllers/document.controller");
 const typeorm_1 = require("@nestjs/typeorm");
 const document_entity_1 = require("../../../database/entities/document.entity");
 const document_module_1 = require("../../domain/document/document.module");
@@ -26,7 +25,6 @@ const document_form_entity_1 = require("../../../database/entities/document-form
 const department_entity_1 = require("../../../database/entities/department.entity ");
 const file_entity_1 = require("../../../database/entities/file.entity");
 const ApprovalUsecases = require("./usecases/approval");
-const DocumentUsecases = require("./usecases/document");
 const approval_controller_1 = require("./controllers/approval.controller");
 const create_random_documents_usecase_1 = require("./usecases/test/create-random-documents.usecase");
 const random_documents_controller_1 = require("./controllers/random-documents.controller");
@@ -45,13 +43,8 @@ exports.ApprovalModule = ApprovalModule = __decorate([
             department_module_1.DomainDepartmentModule,
             file_module_1.DomainFileModule,
         ],
-        controllers: [document_controller_1.ApprovalDraftController, approval_controller_1.ApprovalController, random_documents_controller_1.RandomDocumentsController],
-        providers: [
-            approval_service_1.ApprovalService,
-            ...Object.values(ApprovalUsecases),
-            ...Object.values(DocumentUsecases),
-            create_random_documents_usecase_1.CreateRandomDocumentsUseCase,
-        ],
+        controllers: [approval_controller_1.ApprovalController, random_documents_controller_1.RandomDocumentsController],
+        providers: [approval_service_1.ApprovalService, ...Object.values(ApprovalUsecases), create_random_documents_usecase_1.CreateRandomDocumentsUseCase],
         exports: [approval_service_1.ApprovalService],
     })
 ], ApprovalModule);

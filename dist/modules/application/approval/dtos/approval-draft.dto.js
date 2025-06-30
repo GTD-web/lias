@@ -106,12 +106,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateDraftDocumentDto.prototype, "parentDocumentId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: '파일 정보 객체', type: [FileDto], required: false }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Array)
-], CreateDraftDocumentDto.prototype, "files", void 0);
 class UpdateDraftDocumentDto extends CreateDraftDocumentDto {
 }
 exports.UpdateDraftDocumentDto = UpdateDraftDocumentDto;

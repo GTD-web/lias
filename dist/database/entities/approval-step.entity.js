@@ -30,7 +30,7 @@ __decorate([
     __metadata("design:type", Number)
 ], ApprovalStep.prototype, "order", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '결재 여부', default: false }),
+    (0, typeorm_1.Column)({ comment: '결재 승인 여부 (승인: true, 반려: false, 미결재: null)', nullable: true }),
     __metadata("design:type", Boolean)
 ], ApprovalStep.prototype, "isApproved", void 0);
 __decorate([

@@ -23,9 +23,13 @@ const approval_draft_dto_1 = require("../dtos/approval-draft.dto");
 const pagination_query_dto_1 = require("../../../../common/dtos/pagination-query.dto");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const api_responses_decorator_1 = require("../../../../common/decorators/api-responses.decorator");
+const dtos_1 = require("../dtos");
 let ApprovalController = class ApprovalController {
     constructor(approvalService) {
         this.approvalService = approvalService;
+    }
+    async createDraft(user, draftData) {
+        return this.approvalService.createDraft(user, draftData);
     }
     async approve(documentId, user) {
         await this.approvalService.approve(user, documentId);
@@ -44,6 +48,16 @@ let ApprovalController = class ApprovalController {
     }
 };
 exports.ApprovalController = ApprovalController;
+__decorate([
+    (0, common_1.Post)('document'),
+    (0, swagger_1.ApiOperation)({ summary: '기안 문서 생성' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: '기안 문서 생성 성공', type: String }),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [entities_1.Employee, dtos_1.CreateDraftDocumentDto]),
+    __metadata("design:returntype", Promise)
+], ApprovalController.prototype, "createDraft", null);
 __decorate([
     (0, common_1.Post)(':documentId/approve'),
     (0, swagger_1.ApiOperation)({ summary: '결재 승인' }),

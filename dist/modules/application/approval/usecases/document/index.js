@@ -14,9 +14,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./create-draft.usecase"), exports);
-__exportStar(require("./get-approval-list.usecase"), exports);
-__exportStar(require("./get-draft.usecase"), exports);
-__exportStar(require("./update-draft.usecase"), exports);
-__exportStar(require("./delete-draft.usecase"), exports);
+__exportStar(require("../approval/create-draft.usecase"), exports);
 //# sourceMappingURL=index.js.map

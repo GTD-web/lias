@@ -140,7 +140,7 @@ erDiagram
 | approvalStepId | uuid | PK, NOT NULL |  |
 | type | enum | NOT NULL | 결재 단계 타입 (ex. 합의, 결재, 시행, 참조) |
 | order | Number | NOT NULL | 결재 단계 순서 |
-| isApproved | Boolean | NOT NULL | 결재 여부 |
+| isApproved | Boolean |  | 결재 승인 여부 (승인: true, 반려: false, 미결재: null) |
 | approvedDate | timestamp with time zone |  | 결재 일시 |
 | isCurrent | Boolean | NOT NULL | 현재 단계 여부 |
 | createdAt | timestamp with time zone | NOT NULL |  |

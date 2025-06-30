@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ApprovalService } from './approval.service';
-import { ApprovalDraftController } from './controllers/document.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Document } from 'src/database/entities/document.entity';
 import { DomainDocumentModule } from '../../domain/document/document.module';
@@ -17,7 +16,6 @@ import { DocumentForm } from 'src/database/entities/document-form.entity';
 import { Department } from 'src/database/entities/department.entity ';
 import { File } from 'src/database/entities/file.entity';
 import * as ApprovalUsecases from './usecases/approval';
-import * as DocumentUsecases from './usecases/document';
 import { ApprovalController } from './controllers/approval.controller';
 import { CreateRandomDocumentsUseCase } from './usecases/test/create-random-documents.usecase';
 import { RandomDocumentsController } from './controllers/random-documents.controller';
@@ -33,13 +31,8 @@ import { RandomDocumentsController } from './controllers/random-documents.contro
         DomainDepartmentModule,
         DomainFileModule,
     ],
-    controllers: [ApprovalDraftController, ApprovalController, RandomDocumentsController],
-    providers: [
-        ApprovalService,
-        ...Object.values(ApprovalUsecases),
-        ...Object.values(DocumentUsecases),
-        CreateRandomDocumentsUseCase,
-    ],
+    controllers: [ApprovalController, RandomDocumentsController],
+    providers: [ApprovalService, ...Object.values(ApprovalUsecases), CreateRandomDocumentsUseCase],
     exports: [ApprovalService],
 })
 export class ApprovalModule {}

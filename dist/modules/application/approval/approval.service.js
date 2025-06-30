@@ -11,11 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApprovalService = void 0;
 const common_1 = require("@nestjs/common");
-const create_draft_usecase_1 = require("./usecases/document/create-draft.usecase");
-const get_approval_list_usecase_1 = require("./usecases/document/get-approval-list.usecase");
-const get_draft_usecase_1 = require("./usecases/document/get-draft.usecase");
-const update_draft_usecase_1 = require("./usecases/document/update-draft.usecase");
-const delete_draft_usecase_1 = require("./usecases/document/delete-draft.usecase");
+const create_draft_usecase_1 = require("./usecases/approval/create-draft.usecase");
 const approval_enum_1 = require("../../../common/enums/approval.enum");
 const approve_step_usecase_1 = require("./usecases/approval/approve-step.usecase");
 const approve_document_usecase_1 = require("./usecases/approval/approve-document.usecase");
@@ -25,13 +21,12 @@ const reject_step_usecase_1 = require("./usecases/approval/reject-step.usecase")
 const reject_document_usecase_1 = require("./usecases/approval/reject-document.usecase");
 const set_step_current_usecase_1 = require("./usecases/approval/set-step-current.usecase");
 const get_approval_documents_usecase_1 = require("./usecases/approval/get-approval-documents.usecase");
+const typeorm_1 = require("typeorm");
+const create_approve_step_usecase_1 = require("./usecases/approval/create-approve-step.usecase");
 let ApprovalService = class ApprovalService {
-    constructor(createDraftUseCase, getApprovalListUseCase, getDraftUseCase, updateDraftUseCase, deleteDraftUseCase, approveStepUseCase, approveDocumentUseCase, checkStepsUseCase, getMyStepUseCase, rejectStepUseCase, rejectDocumentUseCase, setStepCurrentUseCase, getApprovalDocumentsUseCase) {
+    constructor(dataSource, createDraftUseCase, approveStepUseCase, approveDocumentUseCase, checkStepsUseCase, getMyStepUseCase, rejectStepUseCase, rejectDocumentUseCase, setStepCurrentUseCase, getApprovalDocumentsUseCase, createApproveStepUseCase) {
+        this.dataSource = dataSource;
         this.createDraftUseCase = createDraftUseCase;
-        this.getApprovalListUseCase = getApprovalListUseCase;
-        this.getDraftUseCase = getDraftUseCase;
-        this.updateDraftUseCase = updateDraftUseCase;
-        this.deleteDraftUseCase = deleteDraftUseCase;
         this.approveStepUseCase = approveStepUseCase;
         this.approveDocumentUseCase = approveDocumentUseCase;
         this.checkStepsUseCase = checkStepsUseCase;
@@ -40,21 +35,31 @@ let ApprovalService = class ApprovalService {
         this.rejectDocumentUseCase = rejectDocumentUseCase;
         this.setStepCurrentUseCase = setStepCurrentUseCase;
         this.getApprovalDocumentsUseCase = getApprovalDocumentsUseCase;
+        this.createApproveStepUseCase = createApproveStepUseCase;
     }
     async createDraft(user, draftData) {
-        return this.createDraftUseCase.execute(user, draftData);
-    }
-    async getDraftList(user, query, status, stepType) {
-        return this.getApprovalListUseCase.execute(user, query, status, stepType);
-    }
-    async getDraft(id) {
-        return this.getDraftUseCase.execute(id);
-    }
-    async updateDraft(id, draftData) {
-        return this.updateDraftUseCase.execute(id, draftData);
-    }
-    async deleteDraft(id) {
-        return this.deleteDraftUseCase.execute(id);
+        const queryRunner = this.dataSource.createQueryRunner();
+        try {
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
+            const document = await this.createDraftUseCase.execute(user, draftData, queryRunner);
+            const approvalSteps = [];
+            if (draftData.approvalSteps && draftData.approvalSteps.length > 0) {
+                for (const step of draftData.approvalSteps) {
+                    const approvalStep = await this.createApproveStepUseCase.execute(document.documentId, step, queryRunner);
+                    approvalSteps.push(approvalStep);
+                }
+            }
+            await queryRunner.commitTransaction();
+            return document.documentId;
+        }
+        catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        }
+        finally {
+            await queryRunner.release();
+        }
     }
     async approve(user, documentId) {
         const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
@@ -110,11 +115,8 @@ let ApprovalService = class ApprovalService {
 exports.ApprovalService = ApprovalService;
 exports.ApprovalService = ApprovalService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [create_draft_usecase_1.CreateDraftUseCase,
-        get_approval_list_usecase_1.GetApprovalListUseCase,
-        get_draft_usecase_1.GetDraftUseCase,
-        update_draft_usecase_1.UpdateDraftUseCase,
-        delete_draft_usecase_1.DeleteDraftUseCase,
+    __metadata("design:paramtypes", [typeorm_1.DataSource,
+        create_draft_usecase_1.CreateDraftUseCase,
         approve_step_usecase_1.ApproveStepUseCase,
         approve_document_usecase_1.ApproveDocumentUseCase,
         check_steps_usecase_1.CheckStepsUseCase,
@@ -122,6 +124,7 @@ exports.ApprovalService = ApprovalService = __decorate([
         reject_step_usecase_1.RejectStepUseCase,
         reject_document_usecase_1.RejectDocumentUseCase,
         set_step_current_usecase_1.SetStepCurrentUseCase,
-        get_approval_documents_usecase_1.GetApprovalDocumentsUseCase])
+        get_approval_documents_usecase_1.GetApprovalDocumentsUseCase,
+        create_approve_step_usecase_1.CreateApproveStepUseCase])
 ], ApprovalService);
 //# sourceMappingURL=approval.service.js.map

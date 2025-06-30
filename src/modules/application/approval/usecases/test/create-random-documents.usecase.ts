@@ -391,7 +391,7 @@ export class CreateRandomDocumentsUseCase {
                     type: ApprovalStepType.AGREEMENT,
                     order: order++,
                     approverId: emp.employeeId,
-                    isApproved: false,
+                    isApproved: null,
                     approvedDate: null,
                     isCurrent: false,
                 }),
@@ -405,7 +405,7 @@ export class CreateRandomDocumentsUseCase {
                     type: ApprovalStepType.APPROVAL,
                     order: order++,
                     approverId: emp.employeeId,
-                    isApproved: false,
+                    isApproved: null,
                     approvedDate: null,
                     isCurrent: false,
                 }),
@@ -419,7 +419,7 @@ export class CreateRandomDocumentsUseCase {
                     type: ApprovalStepType.IMPLEMENTATION,
                     order: order++,
                     approverId: emp.employeeId,
-                    isApproved: false,
+                    isApproved: null,
                     approvedDate: null,
                     isCurrent: false,
                 }),
@@ -433,7 +433,7 @@ export class CreateRandomDocumentsUseCase {
                     type: ApprovalStepType.REFERENCE,
                     order: order++,
                     approverId: emp.employeeId,
-                    isApproved: false,
+                    isApproved: null,
                     approvedDate: null,
                     isCurrent: false,
                 }),
@@ -443,10 +443,7 @@ export class CreateRandomDocumentsUseCase {
         // === 상태별 후처리 ===
         // 결재/합의/시행 단계만 대상으로 처리
         const mainSteps = steps.filter(
-            (s) =>
-                s.type === ApprovalStepType.AGREEMENT ||
-                s.type === ApprovalStepType.APPROVAL ||
-                s.type === ApprovalStepType.IMPLEMENTATION,
+            (s) => s.type === ApprovalStepType.AGREEMENT || s.type === ApprovalStepType.APPROVAL,
         );
         let currentStepIndex = 0;
         if (document.status === ApprovalStatus.APPROVED) {

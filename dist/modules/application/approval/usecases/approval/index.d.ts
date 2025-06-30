@@ -6,3 +6,5 @@ export * from './check-steps.usecase';
 export * from './set-step-current.usecase';
 export * from './get-my-step.usecase';
 export * from './get-approval-documents.usecase';
+export * from './create-draft.usecase';
+export * from './create-approve-step.usecase';

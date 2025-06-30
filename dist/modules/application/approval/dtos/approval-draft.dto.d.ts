@@ -18,7 +18,6 @@ export declare class CreateDraftDocumentDto {
     drafterId: string;
     approvalSteps: CreateApprovalStepDto[];
     parentDocumentId?: string;
-    files: FileDto[];
 }
 export declare class UpdateDraftDocumentDto extends CreateDraftDocumentDto {
 }

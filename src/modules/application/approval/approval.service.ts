@@ -1,14 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ApprovalResponseDto, CreateDraftDocumentDto, UpdateDraftDocumentDto } from './dtos';
-import { CreateDraftUseCase } from './usecases/document/create-draft.usecase';
-import { GetApprovalListUseCase } from './usecases/document/get-approval-list.usecase';
-import { GetDraftUseCase } from './usecases/document/get-draft.usecase';
-import { UpdateDraftUseCase } from './usecases/document/update-draft.usecase';
-import { DeleteDraftUseCase } from './usecases/document/delete-draft.usecase';
+import { CreateDraftUseCase } from './usecases/approval/create-draft.usecase';
 import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { PaginationData } from 'src/common/dtos/pagination-response.dto';
-import { ApprovalStatus, ApprovalStepType, DocumentListType } from 'src/common/enums/approval.enum';
-import { Employee, Document } from 'src/database/entities';
+import { ApprovalStepType, DocumentListType } from 'src/common/enums/approval.enum';
+import { Employee } from 'src/database/entities';
 import { ApproveStepUseCase } from './usecases/approval/approve-step.usecase';
 import { ApproveDocumentUseCase } from './usecases/approval/approve-document.usecase';
 import { CheckStepsUseCase } from './usecases/approval/check-steps.usecase';
@@ -17,15 +13,15 @@ import { RejectStepUseCase } from './usecases/approval/reject-step.usecase';
 import { RejectDocumentUseCase } from './usecases/approval/reject-document.usecase';
 import { SetStepCurrentUseCase } from './usecases/approval/set-step-current.usecase';
 import { GetApprovalDocumentsUseCase } from './usecases/approval/get-approval-documents.usecase';
+import { DataSource, QueryRunner } from 'typeorm';
+import { CreateApproveStepUseCase } from './usecases/approval/create-approve-step.usecase';
 
 @Injectable()
 export class ApprovalService {
     constructor(
+        private readonly dataSource: DataSource,
+
         private readonly createDraftUseCase: CreateDraftUseCase,
-        private readonly getApprovalListUseCase: GetApprovalListUseCase,
-        private readonly getDraftUseCase: GetDraftUseCase,
-        private readonly updateDraftUseCase: UpdateDraftUseCase,
-        private readonly deleteDraftUseCase: DeleteDraftUseCase,
         private readonly approveStepUseCase: ApproveStepUseCase,
         private readonly approveDocumentUseCase: ApproveDocumentUseCase,
         private readonly checkStepsUseCase: CheckStepsUseCase,
@@ -34,37 +30,60 @@ export class ApprovalService {
         private readonly rejectDocumentUseCase: RejectDocumentUseCase,
         private readonly setStepCurrentUseCase: SetStepCurrentUseCase,
         private readonly getApprovalDocumentsUseCase: GetApprovalDocumentsUseCase,
+        private readonly createApproveStepUseCase: CreateApproveStepUseCase,
     ) {} // 필요한 repository 주입
 
     // 기안 문서 CRUD 메서드들
-    async createDraft(user: Employee, draftData: CreateDraftDocumentDto): Promise<ApprovalResponseDto> {
+    async createDraft(user: Employee, draftData: CreateDraftDocumentDto): Promise<string> {
         // 기안 문서 생성 로직
-        return this.createDraftUseCase.execute(user, draftData);
-    }
+        const queryRunner = this.dataSource.createQueryRunner();
 
-    async getDraftList(
-        user: Employee,
-        query: PaginationQueryDto,
-        status: ApprovalStatus | ApprovalStatus[],
-        stepType: ApprovalStepType | ApprovalStepType[],
-    ): Promise<PaginationData<ApprovalResponseDto>> {
-        // 기안 문서 목록 조회 로직
-        return this.getApprovalListUseCase.execute(user, query, status, stepType);
-    }
+        try {
+            // 트랜잭션 시작
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
 
-    async getDraft(id: string): Promise<ApprovalResponseDto> {
-        // 기안 문서 조회 로직
-        return this.getDraftUseCase.execute(id);
-    }
+            const document = await this.createDraftUseCase.execute(user, draftData, queryRunner);
 
-    async updateDraft(id: string, draftData: UpdateDraftDocumentDto): Promise<ApprovalResponseDto> {
-        // 기안 문서 수정 로직
-        return this.updateDraftUseCase.execute(id, draftData);
-    }
+            // 2. 결재 단계 데이터 생성 (문서 ID 추가)
+            const approvalSteps = [];
+            if (draftData.approvalSteps && draftData.approvalSteps.length > 0) {
+                for (const step of draftData.approvalSteps) {
+                    const approvalStep = await this.createApproveStepUseCase.execute(
+                        document.documentId,
+                        step,
+                        queryRunner,
+                    );
+                    approvalSteps.push(approvalStep);
+                }
+            }
 
-    async deleteDraft(id: string): Promise<void> {
-        // 기안 문서 삭제 로직
-        return this.deleteDraftUseCase.execute(id);
+            // 3. 파일 데이터 생성 (문서 ID 추가)
+            // if (draftData.files && draftData.files.length > 0) {
+            //     const filesData = draftData.files.map((file) => ({
+            //         ...file,
+            //         documentId: document.documentId, // 생성된 문서 ID 추가
+            //     }));
+
+            //     await Promise.all(
+            //         filesData.map((fileData) =>
+            //             this.domainFileService.update(fileData.fileId, fileData, { queryRunner }),
+            //         ),
+            //     );
+            // }
+
+            // 트랜잭션 커밋
+            await queryRunner.commitTransaction();
+
+            return document.documentId;
+        } catch (error) {
+            // 트랜잭션 롤백
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            // queryRunner 해제
+            await queryRunner.release();
+        }
     }
 
     async approve(user: Employee, documentId: string): Promise<void> {

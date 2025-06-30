@@ -22,4 +22,6 @@ __exportStar(require("./check-steps.usecase"), exports);
 __exportStar(require("./set-step-current.usecase"), exports);
 __exportStar(require("./get-my-step.usecase"), exports);
 __exportStar(require("./get-approval-documents.usecase"), exports);
+__exportStar(require("./create-draft.usecase"), exports);
+__exportStar(require("./create-approve-step.usecase"), exports);
 //# sourceMappingURL=index.js.map

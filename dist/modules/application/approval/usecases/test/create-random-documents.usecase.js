@@ -315,7 +315,7 @@ let CreateRandomDocumentsUseCase = class CreateRandomDocumentsUseCase {
                 type: approval_enum_1.ApprovalStepType.AGREEMENT,
                 order: order++,
                 approverId: emp.employeeId,
-                isApproved: false,
+                isApproved: null,
                 approvedDate: null,
                 isCurrent: false,
             }));
@@ -327,7 +327,7 @@ let CreateRandomDocumentsUseCase = class CreateRandomDocumentsUseCase {
                 type: approval_enum_1.ApprovalStepType.APPROVAL,
                 order: order++,
                 approverId: emp.employeeId,
-                isApproved: false,
+                isApproved: null,
                 approvedDate: null,
                 isCurrent: false,
             }));
@@ -339,7 +339,7 @@ let CreateRandomDocumentsUseCase = class CreateRandomDocumentsUseCase {
                 type: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
                 order: order++,
                 approverId: emp.employeeId,
-                isApproved: false,
+                isApproved: null,
                 approvedDate: null,
                 isCurrent: false,
             }));
@@ -351,14 +351,12 @@ let CreateRandomDocumentsUseCase = class CreateRandomDocumentsUseCase {
                 type: approval_enum_1.ApprovalStepType.REFERENCE,
                 order: order++,
                 approverId: emp.employeeId,
-                isApproved: false,
+                isApproved: null,
                 approvedDate: null,
                 isCurrent: false,
             }));
         }
-        const mainSteps = steps.filter((s) => s.type === approval_enum_1.ApprovalStepType.AGREEMENT ||
-            s.type === approval_enum_1.ApprovalStepType.APPROVAL ||
-            s.type === approval_enum_1.ApprovalStepType.IMPLEMENTATION);
+        const mainSteps = steps.filter((s) => s.type === approval_enum_1.ApprovalStepType.AGREEMENT || s.type === approval_enum_1.ApprovalStepType.APPROVAL);
         let currentStepIndex = 0;
         if (document.status === approval_enum_1.ApprovalStatus.APPROVED) {
             currentStepIndex = -1;

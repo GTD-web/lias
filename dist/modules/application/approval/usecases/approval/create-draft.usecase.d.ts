@@ -1,14 +1,14 @@
 import { DataSource, QueryRunner } from 'typeorm';
-import { ApprovalResponseDto, CreateDraftDocumentDto } from '../../dtos';
+import { CreateDraftDocumentDto } from '../../dtos';
 import { DomainDocumentService } from 'src/modules/domain/document/document.service';
 import { DomainApprovalStepService } from 'src/modules/domain/approval-step/approval-step.service';
 import { DomainFileService } from 'src/modules/domain/file/file.service';
-import { Employee } from 'src/database/entities/employee.entity';
+import { Document, Employee } from 'src/database/entities';
 export declare class CreateDraftUseCase {
     private readonly dataSource;
     private readonly domainDocumentService;
     private readonly domainApprovalStepService;
     private readonly domainFileService;
     constructor(dataSource: DataSource, domainDocumentService: DomainDocumentService, domainApprovalStepService: DomainApprovalStepService, domainFileService: DomainFileService);
-    execute(user: Employee, draftData: CreateDraftDocumentDto, queryRunner: QueryRunner): Promise<ApprovalResponseDto>;
+    execute(user: Employee, draftData: CreateDraftDocumentDto, queryRunner: QueryRunner): Promise<Document>;
 }

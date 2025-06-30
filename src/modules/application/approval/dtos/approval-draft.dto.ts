@@ -79,10 +79,10 @@ export class CreateDraftDocumentDto {
     @IsOptional()
     parentDocumentId?: string;
 
-    @ApiProperty({ description: '파일 정보 객체', type: [FileDto], required: false })
-    @IsArray()
-    @IsOptional()
-    files: FileDto[];
+    // @ApiProperty({ description: '파일 정보 객체', type: [FileDto], required: false })
+    // @IsArray()
+    // @IsOptional()
+    // files: FileDto[];
 }
 
 export class UpdateDraftDocumentDto extends CreateDraftDocumentDto {}

@@ -24,7 +24,7 @@ export class ApprovalStep {
     @Column({ comment: '결재 단계 순서' })
     order: number;
 
-    @Column({ comment: '결재 여부', default: false })
+    @Column({ comment: '결재 승인 여부 (승인: true, 반려: false, 미결재: null)', nullable: true })
     isApproved: boolean;
 
     @Column({ type: 'timestamp with time zone', comment: '결재 일시', nullable: true })
