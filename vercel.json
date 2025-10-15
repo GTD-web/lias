@@ -1,16 +1,24 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "dist/main.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/main.js",
-      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
-    }
-  ]
+    "version": 2,
+    "builds": [
+        {
+            "src": "dist/main.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "dist/main.js",
+            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        }
+    ],
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "fluid": true,
+    "functions": {
+        "api/**": {
+            "maxDuration": 800
+        }
+    },
+    "crons": [{ "path": "/api/webhook/sync", "schedule": "*/10 * * * *" }]
 }

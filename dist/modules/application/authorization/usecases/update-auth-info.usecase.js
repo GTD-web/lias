@@ -27,7 +27,7 @@ let UpdateAuthInfoUsecase = class UpdateAuthInfoUsecase {
         employee.department = ssoResponse.department;
         employee.position = ssoResponse.position;
         employee.rank = ssoResponse.rank;
-        return await this.employeeService.update(employee.employeeId, employee);
+        return await this.employeeService.update(employee.id, employee);
     }
 };
 exports.UpdateAuthInfoUsecase = UpdateAuthInfoUsecase;

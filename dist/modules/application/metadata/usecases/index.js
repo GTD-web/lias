@@ -19,4 +19,6 @@ __exportStar(require("./getEmployeeInfo.usecase"), exports);
 __exportStar(require("./syncDepartment.usecase"), exports);
 __exportStar(require("./syncEmployee.usecase"), exports);
 __exportStar(require("./findAllEmployeesByDepartment.usecase"), exports);
+__exportStar(require("./getExportAllData.usecase"), exports);
+__exportStar(require("./syncAllMetadata.usecase"), exports);
 //# sourceMappingURL=index.js.map

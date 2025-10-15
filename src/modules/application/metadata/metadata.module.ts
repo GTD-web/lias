@@ -5,10 +5,19 @@ import { MetadataWebhookController } from './controllers/webhook.controller';
 
 import { DomainEmployeeModule } from 'src/modules/domain/employee/employee.module';
 import { DomainDepartmentModule } from 'src/modules/domain/department/department.module';
+import { DomainPositionModule } from 'src/modules/domain/position/position.module';
+import { DomainRankModule } from 'src/modules/domain/rank/rank.module';
+import { DomainEmployeeDepartmentPositionModule } from 'src/modules/domain/employee-department-position/employee-department-position.module';
 import * as usecases from './usecases';
 
 @Module({
-    imports: [DomainEmployeeModule, DomainDepartmentModule],
+    imports: [
+        DomainEmployeeModule,
+        DomainDepartmentModule,
+        DomainPositionModule,
+        DomainRankModule,
+        DomainEmployeeDepartmentPositionModule,
+    ],
     controllers: [MetadataController, MetadataWebhookController],
     providers: [MetadataService, ...Object.values(usecases)],
     exports: [MetadataService],

@@ -13,6 +13,9 @@ const metadata_controller_1 = require("./controllers/metadata.controller");
 const webhook_controller_1 = require("./controllers/webhook.controller");
 const employee_module_1 = require("../../domain/employee/employee.module");
 const department_module_1 = require("../../domain/department/department.module");
+const position_module_1 = require("../../domain/position/position.module");
+const rank_module_1 = require("../../domain/rank/rank.module");
+const employee_department_position_module_1 = require("../../domain/employee-department-position/employee-department-position.module");
 const usecases = require("./usecases");
 let MetadataModule = class MetadataModule {
     configure(consumer) {
@@ -25,7 +28,13 @@ let MetadataModule = class MetadataModule {
 exports.MetadataModule = MetadataModule;
 exports.MetadataModule = MetadataModule = __decorate([
     (0, common_1.Module)({
-        imports: [employee_module_1.DomainEmployeeModule, department_module_1.DomainDepartmentModule],
+        imports: [
+            employee_module_1.DomainEmployeeModule,
+            department_module_1.DomainDepartmentModule,
+            position_module_1.DomainPositionModule,
+            rank_module_1.DomainRankModule,
+            employee_department_position_module_1.DomainEmployeeDepartmentPositionModule,
+        ],
         controllers: [metadata_controller_1.MetadataController, webhook_controller_1.MetadataWebhookController],
         providers: [metadata_service_1.MetadataService, ...Object.values(usecases)],
         exports: [metadata_service_1.MetadataService],

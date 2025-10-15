@@ -183,6 +183,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: '결재자 부서',
         example: '1234567890',
+        required: false,
     }),
     __metadata("design:type", String)
 ], ApproverResponseDto.prototype, "department", void 0);
@@ -190,6 +191,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: '결재자 직책',
         example: '1234567890',
+        required: false,
     }),
     __metadata("design:type", String)
 ], ApproverResponseDto.prototype, "position", void 0);
@@ -197,6 +199,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: '결재자 직급',
         example: '1234567890',
+        required: false,
     }),
     __metadata("design:type", String)
 ], ApproverResponseDto.prototype, "rank", void 0);

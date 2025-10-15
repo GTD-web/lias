@@ -34,7 +34,7 @@ let CreateDraftUseCase = class CreateDraftUseCase {
         const formattedCount = nextCount.toString().padStart(4, '0');
         const document = await this.domainDocumentService.save({
             ...draftData,
-            drafterId: user.employeeId,
+            drafterId: user.id,
             status: approval_enum_1.ApprovalStatus.PENDING,
             documentNumber: `${draftData.documentNumber}-${year}-${formattedCount}`,
         }, { queryRunner });

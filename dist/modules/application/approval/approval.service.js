@@ -62,7 +62,7 @@ let ApprovalService = class ApprovalService {
         }
     }
     async approve(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
         if (myStep.type === approval_enum_1.ApprovalStepType.IMPLEMENTATION || myStep.type === approval_enum_1.ApprovalStepType.REFERENCE) {
             throw new common_1.BadRequestException('결재 단계가 아닙니다.');
         }
@@ -80,7 +80,7 @@ let ApprovalService = class ApprovalService {
         }
     }
     async reject(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
         if (myStep.type === approval_enum_1.ApprovalStepType.IMPLEMENTATION || myStep.type === approval_enum_1.ApprovalStepType.REFERENCE) {
             throw new common_1.BadRequestException('결재 단계가 아닙니다.');
         }
@@ -88,7 +88,7 @@ let ApprovalService = class ApprovalService {
         await this.rejectDocumentUseCase.execute(documentId);
     }
     async implementation(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
         if (myStep.type !== approval_enum_1.ApprovalStepType.IMPLEMENTATION) {
             throw new common_1.BadRequestException('시행 단계가 아닙니다.');
         }
@@ -99,7 +99,7 @@ let ApprovalService = class ApprovalService {
         await this.approveStepUseCase.execute(myStep.approvalStepId);
     }
     async reference(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
         if (myStep.type !== approval_enum_1.ApprovalStepType.REFERENCE) {
             throw new common_1.BadRequestException('열람 단계가 아닙니다.');
         }

@@ -56,19 +56,19 @@ __decorate([
     __metadata("design:type", String)
 ], EmployeeResponseDto.prototype, "employeeNumber", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'hong@lumir.space' }),
+    (0, swagger_1.ApiProperty)({ example: 'hong@lumir.space', required: false }),
     __metadata("design:type", String)
 ], EmployeeResponseDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '지상-Web' }),
+    (0, swagger_1.ApiProperty)({ example: '지상-Web', required: false }),
     __metadata("design:type", String)
 ], EmployeeResponseDto.prototype, "department", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '파트장' }),
+    (0, swagger_1.ApiProperty)({ example: '파트장', required: false }),
     __metadata("design:type", String)
 ], EmployeeResponseDto.prototype, "position", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '책임연구원' }),
+    (0, swagger_1.ApiProperty)({ example: '책임연구원', required: false }),
     __metadata("design:type", String)
 ], EmployeeResponseDto.prototype, "rank", void 0);
 class MetadataResponseDto {

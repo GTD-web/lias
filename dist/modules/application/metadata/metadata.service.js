@@ -16,13 +16,17 @@ const syncEmployee_usecase_1 = require("./usecases/syncEmployee.usecase");
 const getDepartmentInfo_usecase_1 = require("./usecases/getDepartmentInfo.usecase");
 const syncDepartment_usecase_1 = require("./usecases/syncDepartment.usecase");
 const findAllEmployeesByDepartment_usecase_1 = require("./usecases/findAllEmployeesByDepartment.usecase");
+const getExportAllData_usecase_1 = require("./usecases/getExportAllData.usecase");
+const syncAllMetadata_usecase_1 = require("./usecases/syncAllMetadata.usecase");
 let MetadataService = class MetadataService {
-    constructor(getEmployeeInfoUsecase, syncEmployeeUsecase, getDepartmentInfoUsecase, syncDepartmentUsecase, findAllEmployeesByDepartmentUsecase) {
+    constructor(getEmployeeInfoUsecase, syncEmployeeUsecase, getDepartmentInfoUsecase, syncDepartmentUsecase, findAllEmployeesByDepartmentUsecase, getExportAllDataUsecase, syncAllMetadataUsecase) {
         this.getEmployeeInfoUsecase = getEmployeeInfoUsecase;
         this.syncEmployeeUsecase = syncEmployeeUsecase;
         this.getDepartmentInfoUsecase = getDepartmentInfoUsecase;
         this.syncDepartmentUsecase = syncDepartmentUsecase;
         this.findAllEmployeesByDepartmentUsecase = findAllEmployeesByDepartmentUsecase;
+        this.getExportAllDataUsecase = getExportAllDataUsecase;
+        this.syncAllMetadataUsecase = syncAllMetadataUsecase;
     }
     async syncEmployees(employeeNumber) {
         const employees = await this.getEmployeeInfoUsecase.execute(employeeNumber);
@@ -35,6 +39,10 @@ let MetadataService = class MetadataService {
     async findAllEmplyeesByDepartment() {
         return this.findAllEmployeesByDepartmentUsecase.execute();
     }
+    async syncAllMetadata() {
+        const allData = await this.getExportAllDataUsecase.execute();
+        await this.syncAllMetadataUsecase.execute(allData);
+    }
 };
 exports.MetadataService = MetadataService;
 exports.MetadataService = MetadataService = __decorate([
@@ -43,6 +51,8 @@ exports.MetadataService = MetadataService = __decorate([
         syncEmployee_usecase_1.SyncEmployeeUsecase,
         getDepartmentInfo_usecase_1.GetDepartmentInfoUsecase,
         syncDepartment_usecase_1.SyncDepartmentUsecase,
-        findAllEmployeesByDepartment_usecase_1.FindAllEmployeesByDepartmentUsecase])
+        findAllEmployeesByDepartment_usecase_1.FindAllEmployeesByDepartmentUsecase,
+        getExportAllData_usecase_1.GetExportAllDataUsecase,
+        syncAllMetadata_usecase_1.SyncAllMetadataUsecase])
 ], MetadataService);
 //# sourceMappingURL=metadata.service.js.map

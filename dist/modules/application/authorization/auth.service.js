@@ -22,6 +22,16 @@ let AuthService = class AuthService {
     }
     async login(loginDto) {
         const ssoResponse = await this.ssoLoginUsecase.execute(loginDto.email, loginDto.password);
+        console.log(ssoResponse);
+        return {
+            accessToken: ssoResponse.accessToken,
+            email: ssoResponse.email,
+            name: ssoResponse.name,
+            department: ssoResponse.department,
+            position: ssoResponse.position,
+            rank: ssoResponse.rank,
+            roles: [],
+        };
         const updatedEmployee = await this.updateAuthInfoUsecase.execute(ssoResponse);
         return {
             accessToken: updatedEmployee.accessToken,

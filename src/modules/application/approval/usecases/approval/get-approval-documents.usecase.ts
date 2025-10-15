@@ -54,13 +54,18 @@ export class GetApprovalDocumentsUseCase {
 
     private getQueryCondition(listType: DocumentListType, user: Employee) {
         const conditions = {
-            [DocumentListType.DRAFTED]: { drafterId: user.employeeId },
+            [DocumentListType.ASSIGNED]: {
+                approvalSteps: {
+                    approverId: user.id,
+                },
+            },
+            [DocumentListType.DRAFTED]: { drafterId: user.id },
             [DocumentListType.PENDING_APPROVAL]: {
                 status: ApprovalStatus.PENDING,
                 approvalSteps: {
                     type: ApprovalStepType.APPROVAL,
                     approvedDate: IsNull(),
-                    approverId: user.employeeId,
+                    approverId: user.id,
                     isCurrent: true,
                 },
             },
@@ -69,29 +74,29 @@ export class GetApprovalDocumentsUseCase {
                 approvalSteps: {
                     type: ApprovalStepType.AGREEMENT,
                     approvedDate: IsNull(),
-                    approverId: user.employeeId,
+                    approverId: user.id,
                     isCurrent: true,
                 },
             },
             [DocumentListType.APPROVED]: {
-                drafterId: user.employeeId,
+                drafterId: user.id,
                 status: ApprovalStatus.APPROVED,
             },
             [DocumentListType.REJECTED]: {
-                drafterId: user.employeeId,
+                drafterId: user.id,
                 status: ApprovalStatus.REJECTED,
             },
             [DocumentListType.RECEIVED_REFERENCE]: {
                 approvalSteps: {
                     type: ApprovalStepType.REFERENCE,
-                    approverId: user.employeeId,
+                    approverId: user.id,
                 },
             },
             [DocumentListType.IMPLEMENTATION]: {
                 status: ApprovalStatus.APPROVED,
                 approvalSteps: {
                     type: ApprovalStepType.IMPLEMENTATION,
-                    approverId: user.employeeId,
+                    approverId: user.id,
                 },
             },
         };

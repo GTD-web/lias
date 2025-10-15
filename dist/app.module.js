@@ -16,8 +16,6 @@ const list_1 = require("./database/entities/list");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const env_config_1 = require("./configs/env.config");
-const api_doc_service_1 = require("./common/documents/api-doc.service");
-const db_doc_service_1 = require("./common/documents/db-doc.service");
 const document_module_1 = require("./modules/application/document/document.module");
 const auth_module_1 = require("./modules/application/authorization/auth.module");
 const metadata_module_1 = require("./modules/application/metadata/metadata.module");
@@ -57,7 +55,7 @@ exports.AppModule = AppModule = __decorate([
             approval_module_1.ApprovalModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, api_doc_service_1.ApiDocService, db_doc_service_1.DbDocService],
+        providers: [app_service_1.AppService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

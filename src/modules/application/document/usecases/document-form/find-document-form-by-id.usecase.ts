@@ -65,7 +65,7 @@ export class FindDocumentFormByIdUseCase {
         autoApprovalSteps.push(newApprovalStep);
         if (autoFillType === AutoFillType.DRAFTER_SUPERIOR) {
             // 본인을 포함한 상급자들 추가
-            const superiors = await this.findSuperiorsByDepartment(user.department, user.employeeId, user.position);
+            const superiors = await this.findSuperiorsByDepartment(user.department, user.id, user.position);
 
             // 상급자들을 순서대로 추가
             for (let index = 0; index < superiors.length; index++) {
@@ -123,7 +123,7 @@ export class FindDocumentFormByIdUseCase {
 
             if (dept && dept.parentDepartmentId) {
                 const parentDept = await this.departmentService.findOne({
-                    where: { departmentId: dept.parentDepartmentId },
+                    where: { id: dept.parentDepartmentId },
                 });
 
                 if (parentDept) {
