@@ -1,8 +1,14 @@
+import { DepartmentType } from '../../common/enums/department.enum';
 export declare class Department {
-    departmentId: string;
-    departmentCode: string;
+    id: string;
+    get departmentId(): string;
     departmentName: string;
-    parentDepartmentId: string;
-    parentDepartment: Department;
-    childrenDepartments: Department[];
+    departmentCode: string;
+    type: DepartmentType;
+    parentDepartmentId?: string;
+    order: number;
+    parentDepartment?: Department;
+    childDepartments: Department[];
+    createdAt: Date;
+    updatedAt: Date;
 }

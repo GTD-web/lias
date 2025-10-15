@@ -45,5 +45,6 @@ var DocumentListType;
     DocumentListType["REJECTED"] = "rejected";
     DocumentListType["RECEIVED_REFERENCE"] = "received_reference";
     DocumentListType["IMPLEMENTATION"] = "implementation";
+    DocumentListType["ASSIGNED"] = "assigned";
 })(DocumentListType || (exports.DocumentListType = DocumentListType = {}));
 //# sourceMappingURL=approval.enum.js.map

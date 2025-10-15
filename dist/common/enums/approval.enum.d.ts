@@ -34,5 +34,6 @@ export declare enum DocumentListType {
     APPROVED = "approved",
     REJECTED = "rejected",
     RECEIVED_REFERENCE = "received_reference",
-    IMPLEMENTATION = "implementation"
+    IMPLEMENTATION = "implementation",
+    ASSIGNED = "assigned"
 }

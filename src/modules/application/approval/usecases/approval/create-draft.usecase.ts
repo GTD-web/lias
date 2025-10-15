@@ -31,7 +31,7 @@ export class CreateDraftUseCase {
         const document = await this.domainDocumentService.save(
             {
                 ...draftData,
-                drafterId: user.employeeId,
+                drafterId: user.id,
                 status: ApprovalStatus.PENDING,
                 documentNumber: `${draftData.documentNumber}-${year}-${formattedCount}`,
             },

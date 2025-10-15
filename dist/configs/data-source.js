@@ -19,6 +19,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     logging: process.env.NODE_ENV === 'local',
     migrations: [(0, path_1.join)(__dirname, '../common/migrations/*.ts')],
     migrationsRun: false,
+    migrationsTransactionMode: 'each',
     ssl: parseInt(process.env.POSTGRES_PORT, 10) === 6543,
     extra: {
         ssl: parseInt(process.env.POSTGRES_PORT, 10) === 6543 ? { rejectUnauthorized: false } : null,

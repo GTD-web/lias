@@ -88,7 +88,7 @@ export class ApprovalService {
 
     async approve(user: Employee, documentId: string): Promise<void> {
         // 결재 승인 로직
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
 
         if (myStep.type === ApprovalStepType.IMPLEMENTATION || myStep.type === ApprovalStepType.REFERENCE) {
             throw new BadRequestException('결재 단계가 아닙니다.');
@@ -115,7 +115,7 @@ export class ApprovalService {
 
     async reject(user: Employee, documentId: string): Promise<void> {
         // 결재 반려 로직
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
 
         if (myStep.type === ApprovalStepType.IMPLEMENTATION || myStep.type === ApprovalStepType.REFERENCE) {
             throw new BadRequestException('결재 단계가 아닙니다.');
@@ -132,7 +132,7 @@ export class ApprovalService {
 
     async implementation(user: Employee, documentId: string): Promise<void> {
         // 시행 로직
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
 
         if (myStep.type !== ApprovalStepType.IMPLEMENTATION) {
             throw new BadRequestException('시행 단계가 아닙니다.');
@@ -154,7 +154,7 @@ export class ApprovalService {
 
     async reference(user: Employee, documentId: string): Promise<void> {
         // 열람 로직
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.employeeId);
+        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
 
         if (myStep.type !== ApprovalStepType.REFERENCE) {
             throw new BadRequestException('열람 단계가 아닙니다.');

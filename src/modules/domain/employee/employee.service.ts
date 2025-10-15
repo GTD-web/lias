@@ -10,8 +10,8 @@ export class DomainEmployeeService extends BaseService<Employee> {
     }
 
     // 예시: 직원 ID로 찾기
-    async findByEmployeeId(employeeId: string): Promise<Employee> {
-        const employee = await this.employeeRepository.findOne({ where: { employeeId } });
+    async findByEmployeeId(id: string): Promise<Employee> {
+        const employee = await this.employeeRepository.findOne({ where: { id } });
         if (!employee) {
             throw new NotFoundException('직원을 찾을 수 없습니다.');
         }
@@ -33,6 +33,30 @@ export class DomainEmployeeService extends BaseService<Employee> {
         const employee = await this.employeeRepository.findOne({ where: { employeeNumber } });
         if (!employee) {
             throw new NotFoundException('직원을 찾을 수 없습니다.');
+        }
+        return employee;
+    }
+
+    async findOrNullByEmployeeNumber(employeeNumber: string): Promise<Employee> {
+        const employee = await this.employeeRepository.findOne({ where: { employeeNumber } });
+        if (!employee) {
+            return null;
+        }
+        return employee;
+    }
+
+    async findOrNullByEmail(email: string): Promise<Employee> {
+        const employee = await this.employeeRepository.findOne({ where: { email } });
+        if (!employee) {
+            return null;
+        }
+        return employee;
+    }
+
+    async findOrNullByEmployeeId(id: string): Promise<Employee> {
+        const employee = await this.employeeRepository.findOne({ where: { id } });
+        if (!employee) {
+            return null;
         }
         return employee;
     }

@@ -46,6 +46,6 @@ import { ApprovalModule } from './modules/application/approval/approval.module';
         ApprovalModule,
     ],
     controllers: [AppController],
-    providers: [AppService, ApiDocService, DbDocService],
+    providers: [AppService],
 })
 export class AppModule {}

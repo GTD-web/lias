@@ -51,7 +51,7 @@ let SyncDepartmentUsecase = class SyncDepartmentUsecase {
         for (const department of departments) {
             const syncedDepartment = await this.syncDepartment(department, parentDepartmentId);
             if (department.child_departments && department.child_departments.length > 0) {
-                await this.recursiveSyncDepartments(department.child_departments, syncedDepartment.departmentId);
+                await this.recursiveSyncDepartments(department.child_departments, syncedDepartment.id);
             }
         }
     }

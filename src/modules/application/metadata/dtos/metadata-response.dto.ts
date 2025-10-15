@@ -34,17 +34,17 @@ export class EmployeeResponseDto {
     @ApiProperty({ example: '25001' })
     employeeNumber: string;
 
-    @ApiProperty({ example: 'hong@lumir.space' })
-    email: string;
+    @ApiProperty({ example: 'hong@lumir.space', required: false })
+    email?: string;
 
-    @ApiProperty({ example: '지상-Web' })
-    department: string;
+    @ApiProperty({ example: '지상-Web', required: false })
+    department?: string;
 
-    @ApiProperty({ example: '파트장' })
-    position: string;
+    @ApiProperty({ example: '파트장', required: false })
+    position?: string;
 
-    @ApiProperty({ example: '책임연구원' })
-    rank: string;
+    @ApiProperty({ example: '책임연구원', required: false })
+    rank?: string;
 }
 
 export class MetadataResponseDto {

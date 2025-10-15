@@ -43,6 +43,7 @@ async function bootstrap() {
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
     setupSwagger(app, Object.values(dto));
+    console.log('ENV.APP_PORT :', ENV.APP_PORT);
     await app.listen(ENV.APP_PORT || 3000);
 }
 bootstrap();

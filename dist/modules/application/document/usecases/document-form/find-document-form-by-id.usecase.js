@@ -60,7 +60,7 @@ let FindDocumentFormByIdUseCase = class FindDocumentFormByIdUseCase {
         });
         autoApprovalSteps.push(newApprovalStep);
         if (autoFillType === approval_enum_1.AutoFillType.DRAFTER_SUPERIOR) {
-            const superiors = await this.findSuperiorsByDepartment(user.department, user.employeeId, user.position);
+            const superiors = await this.findSuperiorsByDepartment(user.department, user.id, user.position);
             for (let index = 0; index < superiors.length; index++) {
                 const superior = superiors[index];
                 const newApprovalStep = await this.formApprovalStepService.create({
@@ -95,7 +95,7 @@ let FindDocumentFormByIdUseCase = class FindDocumentFormByIdUseCase {
             });
             if (dept && dept.parentDepartmentId) {
                 const parentDept = await this.departmentService.findOne({
-                    where: { departmentId: dept.parentDepartmentId },
+                    where: { id: dept.parentDepartmentId },
                 });
                 if (parentDept) {
                     hierarchy.push(parentDept.departmentCode);

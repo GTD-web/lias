@@ -21,9 +21,9 @@ export declare class ApproverResponseDto {
     employeeId: string;
     name: string;
     employeeNumber: string;
-    department: string;
-    position: string;
-    rank: string;
+    department?: string;
+    position?: string;
+    rank?: string;
 }
 export declare class FormApprovalStepResponseDto {
     formApprovalStepId: string;

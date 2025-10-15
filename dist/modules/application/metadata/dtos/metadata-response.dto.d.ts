@@ -8,10 +8,10 @@ export declare class EmployeeResponseDto {
     employeeId: string;
     name: string;
     employeeNumber: string;
-    email: string;
-    department: string;
-    position: string;
-    rank: string;
+    email?: string;
+    department?: string;
+    position?: string;
+    rank?: string;
 }
 export declare class MetadataResponseDto {
     department: DepartmentResponseDto;

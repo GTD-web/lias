@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IRepository, IRepositoryOptions } from '../interfaces/repository.interface';
-import { ObjectLiteral, Repository, DeepPartial, FindOptionsWhere, FindOneOptions } from 'typeorm';
+import { ObjectLiteral, Repository, DeepPartial, FindOptionsWhere, FindOneOptions, QueryRunner } from 'typeorm';
 
 @Injectable()
 export abstract class BaseRepository<T extends ObjectLiteral> implements IRepository<T> {

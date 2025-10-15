@@ -19,6 +19,7 @@ export const AppDataSource = new DataSource({
     logging: process.env.NODE_ENV === 'local',
     migrations: [join(__dirname, '../common/migrations/*.ts')],
     migrationsRun: false,
+    migrationsTransactionMode: 'each', // 각 마이그레이션이 자체 트랜잭션 설정을 사용할 수 있도록 허용
     ssl: parseInt(process.env.POSTGRES_PORT, 10) === 6543,
     extra: {
         ssl: parseInt(process.env.POSTGRES_PORT, 10) === 6543 ? { rejectUnauthorized: false } : null,

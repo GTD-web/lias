@@ -18,8 +18,8 @@ let DomainEmployeeService = class DomainEmployeeService extends base_service_1.B
         super(employeeRepository);
         this.employeeRepository = employeeRepository;
     }
-    async findByEmployeeId(employeeId) {
-        const employee = await this.employeeRepository.findOne({ where: { employeeId } });
+    async findByEmployeeId(id) {
+        const employee = await this.employeeRepository.findOne({ where: { id } });
         if (!employee) {
             throw new common_1.NotFoundException('직원을 찾을 수 없습니다.');
         }
@@ -38,6 +38,27 @@ let DomainEmployeeService = class DomainEmployeeService extends base_service_1.B
         const employee = await this.employeeRepository.findOne({ where: { employeeNumber } });
         if (!employee) {
             throw new common_1.NotFoundException('직원을 찾을 수 없습니다.');
+        }
+        return employee;
+    }
+    async findOrNullByEmployeeNumber(employeeNumber) {
+        const employee = await this.employeeRepository.findOne({ where: { employeeNumber } });
+        if (!employee) {
+            return null;
+        }
+        return employee;
+    }
+    async findOrNullByEmail(email) {
+        const employee = await this.employeeRepository.findOne({ where: { email } });
+        if (!employee) {
+            return null;
+        }
+        return employee;
+    }
+    async findOrNullByEmployeeId(id) {
+        const employee = await this.employeeRepository.findOne({ where: { id } });
+        if (!employee) {
+            return null;
         }
         return employee;
     }

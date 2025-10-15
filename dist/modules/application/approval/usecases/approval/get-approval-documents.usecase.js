@@ -56,13 +56,18 @@ let GetApprovalDocumentsUseCase = class GetApprovalDocumentsUseCase {
     }
     getQueryCondition(listType, user) {
         const conditions = {
-            [approval_enum_1.DocumentListType.DRAFTED]: { drafterId: user.employeeId },
+            [approval_enum_1.DocumentListType.ASSIGNED]: {
+                approvalSteps: {
+                    approverId: user.id,
+                },
+            },
+            [approval_enum_1.DocumentListType.DRAFTED]: { drafterId: user.id },
             [approval_enum_1.DocumentListType.PENDING_APPROVAL]: {
                 status: approval_enum_1.ApprovalStatus.PENDING,
                 approvalSteps: {
                     type: approval_enum_1.ApprovalStepType.APPROVAL,
                     approvedDate: (0, typeorm_1.IsNull)(),
-                    approverId: user.employeeId,
+                    approverId: user.id,
                     isCurrent: true,
                 },
             },
@@ -71,29 +76,29 @@ let GetApprovalDocumentsUseCase = class GetApprovalDocumentsUseCase {
                 approvalSteps: {
                     type: approval_enum_1.ApprovalStepType.AGREEMENT,
                     approvedDate: (0, typeorm_1.IsNull)(),
-                    approverId: user.employeeId,
+                    approverId: user.id,
                     isCurrent: true,
                 },
             },
             [approval_enum_1.DocumentListType.APPROVED]: {
-                drafterId: user.employeeId,
+                drafterId: user.id,
                 status: approval_enum_1.ApprovalStatus.APPROVED,
             },
             [approval_enum_1.DocumentListType.REJECTED]: {
-                drafterId: user.employeeId,
+                drafterId: user.id,
                 status: approval_enum_1.ApprovalStatus.REJECTED,
             },
             [approval_enum_1.DocumentListType.RECEIVED_REFERENCE]: {
                 approvalSteps: {
                     type: approval_enum_1.ApprovalStepType.REFERENCE,
-                    approverId: user.employeeId,
+                    approverId: user.id,
                 },
             },
             [approval_enum_1.DocumentListType.IMPLEMENTATION]: {
                 status: approval_enum_1.ApprovalStatus.APPROVED,
                 approvalSteps: {
                     type: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
-                    approverId: user.employeeId,
+                    approverId: user.id,
                 },
             },
         };

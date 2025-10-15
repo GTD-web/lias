@@ -22,6 +22,7 @@ async function bootstrap() {
     app.useGlobalInterceptors(new request_interceptor_1.RequestInterceptor(), new response_interceptor_1.ResponseInterceptor(), new error_interceptor_1.ErrorInterceptor());
     app.useGlobalPipes(new common_1.ValidationPipe({ transform: true }));
     (0, swagger_1.setupSwagger)(app, Object.values(dto));
+    console.log('ENV.APP_PORT :', env_config_1.ENV.APP_PORT);
     await app.listen(env_config_1.ENV.APP_PORT || 3000);
 }
 bootstrap();

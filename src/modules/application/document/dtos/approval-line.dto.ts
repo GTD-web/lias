@@ -163,20 +163,23 @@ export class ApproverResponseDto {
     @ApiProperty({
         description: '결재자 부서',
         example: '1234567890',
+        required: false,
     })
-    department: string;
+    department?: string;
 
     @ApiProperty({
         description: '결재자 직책',
         example: '1234567890',
+        required: false,
     })
-    position: string;
+    position?: string;
 
     @ApiProperty({
         description: '결재자 직급',
         example: '1234567890',
+        required: false,
     })
-    rank: string;
+    rank?: string;
 }
 
 export class FormApprovalStepResponseDto {

@@ -1,5 +1,8 @@
 export { Employee } from './employee.entity';
 export { Department } from './department.entity ';
+export { Position } from './position.entity';
+export { Rank } from './rank.entity';
+export { EmployeeDepartmentPosition } from './employee-department-position.entity';
 export { Document } from './document.entity';
 export { DocumentForm } from './document-form.entity';
 export { DocumentType } from './document-type.entity';

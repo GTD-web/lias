@@ -1,10 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.File = exports.ApprovalStep = exports.FormApprovalStep = exports.FormApprovalLine = exports.DocumentType = exports.DocumentForm = exports.Document = exports.Department = exports.Employee = void 0;
+exports.File = exports.ApprovalStep = exports.FormApprovalStep = exports.FormApprovalLine = exports.DocumentType = exports.DocumentForm = exports.Document = exports.EmployeeDepartmentPosition = exports.Rank = exports.Position = exports.Department = exports.Employee = void 0;
 var employee_entity_1 = require("./employee.entity");
 Object.defineProperty(exports, "Employee", { enumerable: true, get: function () { return employee_entity_1.Employee; } });
 var department_entity_1 = require("./department.entity ");
 Object.defineProperty(exports, "Department", { enumerable: true, get: function () { return department_entity_1.Department; } });
+var position_entity_1 = require("./position.entity");
+Object.defineProperty(exports, "Position", { enumerable: true, get: function () { return position_entity_1.Position; } });
+var rank_entity_1 = require("./rank.entity");
+Object.defineProperty(exports, "Rank", { enumerable: true, get: function () { return rank_entity_1.Rank; } });
+var employee_department_position_entity_1 = require("./employee-department-position.entity");
+Object.defineProperty(exports, "EmployeeDepartmentPosition", { enumerable: true, get: function () { return employee_department_position_entity_1.EmployeeDepartmentPosition; } });
 var document_entity_1 = require("./document.entity");
 Object.defineProperty(exports, "Document", { enumerable: true, get: function () { return document_entity_1.Document; } });
 var document_form_entity_1 = require("./document-form.entity");

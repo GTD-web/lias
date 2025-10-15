@@ -43,4 +43,5 @@ export enum DocumentListType {
     REJECTED = 'rejected', // 결재 반려된 문서
     RECEIVED_REFERENCE = 'received_reference', // 내가 수신한 문서 (참조)
     IMPLEMENTATION = 'implementation', // 내가 시행해야하는 문서 (현재 차례)
+    ASSIGNED = 'assigned', // 내가 할당받은 문서
 }

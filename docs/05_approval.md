@@ -132,7 +132,7 @@
 ,
   "limit": 0 // ❌ Optional 한 페이지당 항목 수
 ,
-  "listType": "drafted" // ✅ Required 결재 문서 조회 타입 (drafted,pending_approval,pending_agreement,approved,rejected,received_reference,implementation)
+  "listType": "drafted" // ✅ Required 결재 문서 조회 타입 (drafted,pending_approval,pending_agreement,approved,rejected,received_reference,implementation,assigned)
 
 }
 ```

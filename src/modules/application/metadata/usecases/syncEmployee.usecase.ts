@@ -16,7 +16,7 @@ export class SyncEmployeeUsecase {
 
             if (employee.status === '퇴사') {
                 if (existingEmployee) {
-                    await this.employeeService.update(existingEmployee.employeeId, {
+                    await this.employeeService.update(existingEmployee.id, {
                         department: employee.status,
                         position: employee.status,
                         rank: employee.status,
