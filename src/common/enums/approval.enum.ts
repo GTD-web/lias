@@ -33,6 +33,7 @@ export enum AutoFillType {
     NONE = 'NONE',
     DRAFTER_ONLY = 'DRAFTER_ONLY',
     DRAFTER_SUPERIOR = 'DRAFTER_SUPERIOR',
+    APPROVAL_LINE = 'APPROVAL_LINE',
 }
 
 export enum DocumentListType {

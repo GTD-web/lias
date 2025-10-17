@@ -35,6 +35,7 @@ var AutoFillType;
     AutoFillType["NONE"] = "NONE";
     AutoFillType["DRAFTER_ONLY"] = "DRAFTER_ONLY";
     AutoFillType["DRAFTER_SUPERIOR"] = "DRAFTER_SUPERIOR";
+    AutoFillType["APPROVAL_LINE"] = "APPROVAL_LINE";
 })(AutoFillType || (exports.AutoFillType = AutoFillType = {}));
 var DocumentListType;
 (function (DocumentListType) {

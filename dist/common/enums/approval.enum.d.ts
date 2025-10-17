@@ -25,7 +25,8 @@ export declare enum ApprovalLineType {
 export declare enum AutoFillType {
     NONE = "NONE",
     DRAFTER_ONLY = "DRAFTER_ONLY",
-    DRAFTER_SUPERIOR = "DRAFTER_SUPERIOR"
+    DRAFTER_SUPERIOR = "DRAFTER_SUPERIOR",
+    APPROVAL_LINE = "APPROVAL_LINE"
 }
 export declare enum DocumentListType {
     DRAFTED = "drafted",
