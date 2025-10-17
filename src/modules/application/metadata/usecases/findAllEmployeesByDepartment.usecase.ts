@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { DomainEmployeeService } from 'src/modules/domain/employee/employee.service';
-import { MetadataResponseDto } from '../dtos/metadata-response.dto';
+import { MetadataResponseDto, DepartmentResponseDto, EmployeeResponseDto } from '../dtos/metadata-response.dto';
 import { DomainDepartmentService } from 'src/modules/domain/department/department.service';
 import { IsNull } from 'typeorm';
+import { Employee } from 'src/database/entities/employee.entity';
+import { Department } from 'src/database/entities/department.entity ';
+import { EmployeeDepartmentPosition } from 'src/database/entities/employee-department-position.entity';
+
+interface EmployeeWithRelations extends Employee {
+    departmentPositions?: EmployeeDepartmentPosition[];
+}
 
 @Injectable()
 export class FindAllEmployeesByDepartmentUsecase {
@@ -12,90 +19,114 @@ export class FindAllEmployeesByDepartmentUsecase {
     ) {}
 
     async execute(): Promise<MetadataResponseDto> {
+        // 최상위 부서와 하위 부서들을 재귀적으로 조회
         const departments = await this.departmentService.findAll({
             where: {
                 parentDepartment: IsNull(),
             },
-            relations: ['childrenDepartments', 'childrenDepartments.childrenDepartments'],
-        });
-        const employees = await this.employeeService.findAll({
-            select: {
-                employeeId: true,
-                name: true,
-                email: true,
-                employeeNumber: true,
-                position: true,
-                department: true,
-                rank: true,
+            relations: ['childDepartments', 'childDepartments.childDepartments'],
+            order: {
+                order: 'ASC',
+                childDepartments: {
+                    order: 'ASC',
+                },
             },
         });
 
-        const metadata = this.buildDepartmentTree(departments, employees);
+        // 직원 정보를 부서-직책 관계와 함께 조회
+        const employees = await this.employeeService.findAll({
+            relations: [
+                'departmentPositions',
+                'departmentPositions.department',
+                'departmentPositions.position',
+                'currentRank',
+            ],
+        });
+
+        const metadata = this.buildDepartmentTree(departments, employees as EmployeeWithRelations[]);
         return metadata[0];
     }
 
-    private buildDepartmentTree(departments: any[], employees: any[]): MetadataResponseDto[] {
+    private buildDepartmentTree(departments: Department[], employees: EmployeeWithRelations[]): MetadataResponseDto[] {
         return departments.map((department) => {
-            const departmentEmployees = employees.filter(
-                (employee) => employee.department === department.departmentCode,
-            );
+            // 해당 부서에 속한 직원 필터링
+            const departmentEmployees = employees.filter((employee) => {
+                // 새로운 구조: departmentPositions를 통한 관계 확인
+                if (employee.departmentPositions && employee.departmentPositions.length > 0) {
+                    return employee.departmentPositions.some((dp) => dp.departmentId === department.id);
+                }
+            });
 
+            // 하위 부서 재귀 처리
             const childrenDepartments =
-                department.childrenDepartments && department.childrenDepartments.length > 0
-                    ? this.buildDepartmentTree(department.childrenDepartments, employees)
+                department.childDepartments && department.childDepartments.length > 0
+                    ? this.buildDepartmentTree(department.childDepartments, employees)
                     : [];
 
-            department.childrenDepartments = childrenDepartments;
+            // 엔티티를 DTO로 변환
+            const departmentDto = this.convertDepartmentToDto(department, childrenDepartments);
+            const employeeDtos = this.sortEmployees(departmentEmployees, department.id);
+
             return {
-                department,
-                employees: this.sortEmployees(departmentEmployees),
+                department: departmentDto,
+                employees: employeeDtos,
             };
         });
     }
 
-    private sortEmployees(employees: any[]): any[] {
-        return employees.sort((a, b) => {
-            // 1순위: position
-            const positionOrder = ['임원', '실장', 'PM', '파트장', '직원'];
-            const aPositionIndex = positionOrder.indexOf(a.position);
-            const bPositionIndex = positionOrder.indexOf(b.position);
+    private convertDepartmentToDto(
+        department: Department,
+        childrenDepartments: MetadataResponseDto[],
+    ): DepartmentResponseDto {
+        return {
+            departmentId: department.id,
+            departmentName: department.departmentName,
+            departmentCode: department.departmentCode,
+            childrenDepartments: childrenDepartments.map((meta) => meta.department),
+        };
+    }
 
-            if (aPositionIndex !== bPositionIndex) {
-                return aPositionIndex - bPositionIndex;
-            }
+    private sortEmployees(employees: EmployeeWithRelations[], departmentId: string): EmployeeResponseDto[] {
+        // 정렬을 위한 임시 타입
+        interface SortableEmployee extends EmployeeResponseDto {
+            positionLevel: number;
+            rankLevel: number;
+        }
 
-            // 2순위: rank
-            const rankOrder = [
-                '사장',
-                '부사장',
-                '전무이사',
-                '상무이사',
-                '이사',
-                '전문위원',
-                '책임연구원',
-                '책임매니저',
-                '책임제조원',
-                '선임매니저',
-                '선임연구원',
-                '선임제조원',
-                '매니저',
-                '연구원',
-                '제조원',
-            ];
-            const aRankIndex = rankOrder.indexOf(a.rank);
-            const bRankIndex = rankOrder.indexOf(b.rank);
+        return employees
+            .map((employee): SortableEmployee => {
+                // 해당 부서에서의 직책 정보 찾기
+                const deptPosition = employee.departmentPositions?.find((dp) => dp.departmentId === departmentId);
 
-            if (aRankIndex !== bRankIndex) {
-                return aRankIndex - bRankIndex;
-            }
+                return {
+                    employeeId: employee.id,
+                    name: employee.name,
+                    email: employee.email,
+                    employeeNumber: employee.employeeNumber,
+                    // 정렬을 위한 추가 정보 (임시)
+                    positionLevel: deptPosition?.position?.level || 999,
+                    rankLevel: employee.currentRank?.level || 999,
+                };
+            })
+            .sort((a, b) => {
+                // 1순위: position level (낮을수록 상위)
+                if (a.positionLevel !== b.positionLevel) {
+                    return a.positionLevel - b.positionLevel;
+                }
 
-            // 3순위: employeeNumber
-            if (a.employeeNumber !== b.employeeNumber) {
-                return a.employeeNumber.localeCompare(b.employeeNumber);
-            }
+                // 2순위: rank level (낮을수록 상위)
+                if (a.rankLevel !== b.rankLevel) {
+                    return a.rankLevel - b.rankLevel;
+                }
 
-            // 4순위: 이름
-            return a.name.localeCompare(b.name);
-        });
+                // 3순위: employeeNumber
+                if (a.employeeNumber !== b.employeeNumber) {
+                    return a.employeeNumber.localeCompare(b.employeeNumber);
+                }
+
+                // 4순위: 이름
+                return a.name.localeCompare(b.name);
+            })
+            .map(({ positionLevel, rankLevel, ...employee }) => employee); // 정렬 후 임시 필드 제거
     }
 }

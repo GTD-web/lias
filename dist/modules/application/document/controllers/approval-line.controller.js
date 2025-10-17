@@ -140,7 +140,6 @@ __decorate([
 ], ApprovalLineController.prototype, "deleteApprovalLineById", null);
 exports.ApprovalLineController = ApprovalLineController = __decorate([
     (0, swagger_1.ApiTags)('결재선'),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('approval-lines'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])
 ], ApprovalLineController);

@@ -28,8 +28,6 @@ export declare class CreateRandomDocumentsUseCase {
         approvalSteps: ApprovalStep[];
     }>;
     private ensureBasicData;
-    private createDepartments;
-    private createEmployees;
     private createDocumentTypes;
     private createDocumentForms;
     private createRandomDocument;

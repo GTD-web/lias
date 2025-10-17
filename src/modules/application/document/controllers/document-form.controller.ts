@@ -10,7 +10,7 @@ import { Employee } from 'src/database/entities/employee.entity';
 import { User } from 'src/common/decorators/user.decorator';
 
 @ApiTags('문서양식')
-@ApiBearerAuth()
+// @ApiBearerAuth()
 @Controller('forms')
 export class DocumentFormController {
     constructor(private readonly documentService: DocumentService) {}

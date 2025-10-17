@@ -8,5 +8,6 @@ export declare class GetApprovalDocumentsUseCase {
     private readonly domainDocumentService;
     constructor(domainDocumentService: DomainDocumentService);
     execute(user: Employee, query: PaginationQueryDto, listType: DocumentListType): Promise<PaginationData<ApprovalResponseDto>>;
+    private mapEmployeeToDto;
     private getQueryCondition;
 }

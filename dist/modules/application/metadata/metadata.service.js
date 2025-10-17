@@ -11,30 +11,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MetadataService = void 0;
 const common_1 = require("@nestjs/common");
-const getEmployeeInfo_usecase_1 = require("./usecases/getEmployeeInfo.usecase");
-const syncEmployee_usecase_1 = require("./usecases/syncEmployee.usecase");
-const getDepartmentInfo_usecase_1 = require("./usecases/getDepartmentInfo.usecase");
-const syncDepartment_usecase_1 = require("./usecases/syncDepartment.usecase");
 const findAllEmployeesByDepartment_usecase_1 = require("./usecases/findAllEmployeesByDepartment.usecase");
 const getExportAllData_usecase_1 = require("./usecases/getExportAllData.usecase");
 const syncAllMetadata_usecase_1 = require("./usecases/syncAllMetadata.usecase");
 let MetadataService = class MetadataService {
-    constructor(getEmployeeInfoUsecase, syncEmployeeUsecase, getDepartmentInfoUsecase, syncDepartmentUsecase, findAllEmployeesByDepartmentUsecase, getExportAllDataUsecase, syncAllMetadataUsecase) {
-        this.getEmployeeInfoUsecase = getEmployeeInfoUsecase;
-        this.syncEmployeeUsecase = syncEmployeeUsecase;
-        this.getDepartmentInfoUsecase = getDepartmentInfoUsecase;
-        this.syncDepartmentUsecase = syncDepartmentUsecase;
+    constructor(findAllEmployeesByDepartmentUsecase, getExportAllDataUsecase, syncAllMetadataUsecase) {
         this.findAllEmployeesByDepartmentUsecase = findAllEmployeesByDepartmentUsecase;
         this.getExportAllDataUsecase = getExportAllDataUsecase;
         this.syncAllMetadataUsecase = syncAllMetadataUsecase;
-    }
-    async syncEmployees(employeeNumber) {
-        const employees = await this.getEmployeeInfoUsecase.execute(employeeNumber);
-        await this.syncEmployeeUsecase.execute(employees);
-    }
-    async syncDepartments() {
-        const departments = await this.getDepartmentInfoUsecase.execute();
-        await this.syncDepartmentUsecase.execute(departments);
     }
     async findAllEmplyeesByDepartment() {
         return this.findAllEmployeesByDepartmentUsecase.execute();
@@ -47,11 +31,7 @@ let MetadataService = class MetadataService {
 exports.MetadataService = MetadataService;
 exports.MetadataService = MetadataService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [getEmployeeInfo_usecase_1.GetEmployeeInfoUsecase,
-        syncEmployee_usecase_1.SyncEmployeeUsecase,
-        getDepartmentInfo_usecase_1.GetDepartmentInfoUsecase,
-        syncDepartment_usecase_1.SyncDepartmentUsecase,
-        findAllEmployeesByDepartment_usecase_1.FindAllEmployeesByDepartmentUsecase,
+    __metadata("design:paramtypes", [findAllEmployeesByDepartment_usecase_1.FindAllEmployeesByDepartmentUsecase,
         getExportAllData_usecase_1.GetExportAllDataUsecase,
         syncAllMetadata_usecase_1.SyncAllMetadataUsecase])
 ], MetadataService);

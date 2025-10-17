@@ -84,23 +84,7 @@ export class Employee {
     @OneToMany(() => EmployeeDepartmentPosition, (edp) => edp.employee)
     departmentPositions?: EmployeeDepartmentPosition[];
 
-    // 현재 서버에서 관리하는 필드들 (임시 - 중앙 서버 연동 전까지 사용)
-    @Column({ nullable: true, comment: '부서 (임시)' })
-    department?: string;
-
-    @Column({ nullable: true, comment: '직책 (임시)' })
-    position?: string;
-
-    @Column({ nullable: true, comment: '직급 (임시)' })
-    rank?: string;
-
     // 현재 서버에서 관리하는 필드들 (인증/권한)
-    @Column({ nullable: true, comment: '액세스 토큰' })
-    accessToken?: string;
-
-    @Column({ nullable: true, comment: '토큰 만료 시간', type: 'timestamp with time zone' })
-    expiredAt?: Date;
-
     @Column({ type: 'enum', enum: Role, array: true, default: [Role.USER], comment: '사용자 역할' })
     roles: Role[];
 

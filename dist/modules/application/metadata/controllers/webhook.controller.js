@@ -14,29 +14,16 @@ const common_1 = require("@nestjs/common");
 const metadata_service_1 = require("../metadata.service");
 const swagger_1 = require("@nestjs/swagger");
 const public_decorator_1 = require("../../../../common/decorators/public.decorator");
-const functions_1 = require("@vercel/functions");
 let MetadataWebhookController = class MetadataWebhookController {
     constructor(metadataService) {
         this.metadataService = metadataService;
     }
-    async syncMetadata() {
-        (0, functions_1.waitUntil)(this.metadataService.syncDepartments());
-        (0, functions_1.waitUntil)(this.metadataService.syncEmployees());
-        return { ok: true, acceptedAt: new Date().toISOString() };
-    }
     async syncAllMetadata() {
-        (0, functions_1.waitUntil)(this.metadataService.syncAllMetadata());
+        await this.metadataService.syncAllMetadata();
         return { ok: true, message: '전체 메타데이터 동기화 시작', acceptedAt: new Date().toISOString() };
     }
 };
 exports.MetadataWebhookController = MetadataWebhookController;
-__decorate([
-    (0, common_1.Get)('sync'),
-    (0, common_1.HttpCode)(202),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], MetadataWebhookController.prototype, "syncMetadata", null);
 __decorate([
     (0, common_1.Get)('sync-all'),
     (0, common_1.HttpCode)(202),

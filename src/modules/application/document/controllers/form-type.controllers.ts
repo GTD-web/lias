@@ -5,7 +5,7 @@ import { DocumentService } from '../document.service';
 import { CreateDocumentTypeDto, DocumentTypeResponseDto, UpdateDocumentTypeDto } from '../dtos/form-type.dto';
 
 @ApiTags('문서양식분류')
-@ApiBearerAuth()
+// @ApiBearerAuth()
 @Controller('form-types')
 export class FormTypeController {
     constructor(private readonly documentService: DocumentService) {}

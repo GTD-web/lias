@@ -116,7 +116,6 @@ __decorate([
 ], DocumentFormController.prototype, "deleteDocumentFormById", null);
 exports.DocumentFormController = DocumentFormController = __decorate([
     (0, swagger_1.ApiTags)('문서양식'),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('forms'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])
 ], DocumentFormController);

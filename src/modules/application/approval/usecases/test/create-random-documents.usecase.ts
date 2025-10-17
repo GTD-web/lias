@@ -14,6 +14,8 @@ import { DocumentType } from 'src/database/entities/document-type.entity';
 import { Department } from 'src/database/entities/department.entity ';
 import { CreateDraftDocumentDto } from '../../dtos/approval-draft.dto';
 import { In } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { DepartmentType } from 'src/common/enums/department.enum';
 
 @Injectable()
 export class CreateRandomDocumentsUseCase {
@@ -87,20 +89,32 @@ export class CreateRandomDocumentsUseCase {
 
     private async ensureBasicData() {
         // 기존 데이터가 있는지 확인하고 없으면 생성
-        let employees = await this.employeeService.findAll({
-            where: {
-                department: In(['지상-Web']),
-            },
-        });
-        let departments = await this.departmentService.findAll();
+        const departments = await this.departmentService.findAll();
         let documentTypes = await this.documentTypeService.findAll();
         let documentForms = await this.documentFormService.findAll({
             relations: ['documentType'],
         });
 
-        if (employees.length === 0) {
-            departments = await this.createDepartments();
-            employees = await this.createEmployees(departments);
+        // '지상-Web' 부서에 소속된 직원 찾기 (새로운 엔티티 구조에 맞춤)
+        const webDepartment = await this.departmentService.findOne({
+            where: {
+                departmentCode: '지상-Web',
+            },
+        });
+
+        console.log('webDepartment', webDepartment);
+        let employees: Employee[] = [];
+        if (webDepartment) {
+            // 중간 테이블을 통해 '지상-Web' 소속 직원 조회
+            employees = await this.employeeService.findAll({
+                relations: ['departmentPositions'],
+                where: {
+                    departmentPositions: {
+                        departmentId: webDepartment.id,
+                    },
+                },
+            });
+            console.log('employees', employees);
         }
 
         if (documentTypes.length === 0) {
@@ -112,80 +126,6 @@ export class CreateRandomDocumentsUseCase {
         }
 
         return { employees, departments, documentTypes, documentForms };
-    }
-
-    private async createDepartments(): Promise<Department[]> {
-        const departmentData = [
-            { departmentCode: 'HR', departmentName: '인사팀' },
-            { departmentCode: 'DEV', departmentName: '개발팀' },
-            { departmentCode: 'PLAN', departmentName: '기획팀' },
-            { departmentCode: 'MKT', departmentName: '마케팅팀' },
-            { departmentCode: 'FIN', departmentName: '재무팀' },
-            { departmentCode: 'SALES', departmentName: '영업팀' },
-            { departmentCode: 'RND', departmentName: '연구개발팀' },
-            { departmentCode: 'ADMIN', departmentName: '총무팀' },
-        ];
-
-        const departments: Department[] = [];
-        for (const data of departmentData) {
-            const department = await this.departmentService.create(data);
-            departments.push(department);
-        }
-
-        return departments;
-    }
-
-    private async createEmployees(departments: Department[]): Promise<Employee[]> {
-        const employeeNames = [
-            '김철수',
-            '이영희',
-            '박민수',
-            '정수진',
-            '최동욱',
-            '한미영',
-            '윤태호',
-            '송지은',
-            '강현우',
-            '임서연',
-            '조성민',
-            '백지원',
-            '오승준',
-            '신혜진',
-            '권태현',
-            '황민지',
-            '남기준',
-            '문소영',
-            '양준호',
-            '구미영',
-            '손현우',
-            '배지민',
-            '조현준',
-            '홍서연',
-            '김도현',
-            '이수진',
-            '박준영',
-            '정민지',
-            '최현우',
-            '한지원',
-        ];
-
-        const positions = ['사원', '대리', '과장', '차장', '부장', '이사', '상무', '전무'];
-        const employees: Employee[] = [];
-
-        for (let i = 0; i < employeeNames.length; i++) {
-            const department = departments[i % departments.length];
-            const position = positions[i % positions.length];
-
-            const employee = await this.employeeService.create({
-                name: employeeNames[i],
-                email: `${employeeNames[i].toLowerCase().replace(/[가-힣]/g, '')}@company.com`,
-                department: department.departmentName,
-                position: position,
-            });
-            employees.push(employee);
-        }
-
-        return employees;
     }
 
     private async createDocumentTypes(): Promise<DocumentType[]> {

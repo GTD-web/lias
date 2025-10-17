@@ -5,7 +5,7 @@ import { MetadataService } from '../metadata.service';
 import { MetadataResponseDto } from '../dtos/metadata-response.dto';
 
 @ApiTags('메타데이터')
-@ApiBearerAuth()
+// @ApiBearerAuth()
 @Controller('')
 export class MetadataController {
     constructor(private readonly metadataService: MetadataService) {}

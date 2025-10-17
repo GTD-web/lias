@@ -100,26 +100,6 @@ __decorate([
     __metadata("design:type", Array)
 ], Employee.prototype, "departmentPositions", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true, comment: '부서 (임시)' }),
-    __metadata("design:type", String)
-], Employee.prototype, "department", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true, comment: '직책 (임시)' }),
-    __metadata("design:type", String)
-], Employee.prototype, "position", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true, comment: '직급 (임시)' }),
-    __metadata("design:type", String)
-], Employee.prototype, "rank", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true, comment: '액세스 토큰' }),
-    __metadata("design:type", String)
-], Employee.prototype, "accessToken", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true, comment: '토큰 만료 시간', type: 'timestamp with time zone' }),
-    __metadata("design:type", Date)
-], Employee.prototype, "expiredAt", void 0);
-__decorate([
     (0, typeorm_1.Column)({ type: 'enum', enum: role_type_enum_1.Role, array: true, default: [role_type_enum_1.Role.USER], comment: '사용자 역할' }),
     __metadata("design:type", Array)
 ], Employee.prototype, "roles", void 0);

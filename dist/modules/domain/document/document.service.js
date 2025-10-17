@@ -19,6 +19,9 @@ let DomainDocumentService = class DomainDocumentService extends base_service_1.B
         super(documentRepository);
         this.documentRepository = documentRepository;
     }
+    createQueryBuilder(alias) {
+        return this.documentRepository['repository'].createQueryBuilder(alias);
+    }
     async approve(id, queryRunner) {
         return await this.documentRepository.update(id, { status: approval_enum_1.ApprovalStatus.APPROVED }, { queryRunner });
     }

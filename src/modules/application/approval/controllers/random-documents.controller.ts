@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiBearerAuth } from '@ne
 import { CreateRandomDocumentsUseCase } from '../usecases/test/create-random-documents.usecase';
 
 @ApiTags('랜덤 문서 생성')
-@ApiBearerAuth()
+// @ApiBearerAuth()
 @Controller('api/v2/approval/random-documents')
 export class RandomDocumentsController {
     constructor(private readonly createRandomDocumentsUseCase: CreateRandomDocumentsUseCase) {}

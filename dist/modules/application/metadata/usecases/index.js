@@ -16,8 +16,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./getDepartmentInfo.usecase"), exports);
 __exportStar(require("./getEmployeeInfo.usecase"), exports);
-__exportStar(require("./syncDepartment.usecase"), exports);
-__exportStar(require("./syncEmployee.usecase"), exports);
 __exportStar(require("./findAllEmployeesByDepartment.usecase"), exports);
 __exportStar(require("./getExportAllData.usecase"), exports);
 __exportStar(require("./syncAllMetadata.usecase"), exports);

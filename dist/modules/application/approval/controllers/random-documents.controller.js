@@ -79,7 +79,6 @@ __decorate([
 ], RandomDocumentsController.prototype, "deleteRandomDocuments", null);
 exports.RandomDocumentsController = RandomDocumentsController = __decorate([
     (0, swagger_1.ApiTags)('랜덤 문서 생성'),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('api/v2/approval/random-documents'),
     __metadata("design:paramtypes", [create_random_documents_usecase_1.CreateRandomDocumentsUseCase])
 ], RandomDocumentsController);
