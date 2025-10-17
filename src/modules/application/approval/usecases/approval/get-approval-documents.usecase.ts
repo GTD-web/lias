@@ -23,24 +23,84 @@ export class GetApprovalDocumentsUseCase {
             skip: offset,
             take: query.limit,
         });
-        const documentData = await this.domainDocumentService.findAll({
-            where: {
-                documentId: In(documents.map((document) => document.documentId)),
-            },
-            relations: ['drafter', 'approvalSteps', 'approvalSteps.approver', 'parentDocument', 'files'],
-            order: {
-                createdAt: 'DESC',
-                approvalSteps: {
-                    order: 'ASC',
+
+        if (documents.length === 0) {
+            return {
+                items: [],
+                meta: {
+                    total,
+                    page: query.page,
+                    limit: query.limit,
+                    hasNext: false,
                 },
-            },
-        });
+            };
+        }
+
+        // QueryBuilder로 최적화된 조회
+        const documentIds = documents.map((doc) => doc.documentId);
+
+        const documentData = await this.domainDocumentService
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.drafter', 'drafter')
+            .leftJoinAndSelect('drafter.departmentPositions', 'drafterDeptPos')
+            .leftJoinAndSelect('drafterDeptPos.department', 'drafterDept')
+            .leftJoinAndSelect('drafterDeptPos.position', 'drafterPos')
+            .leftJoinAndSelect('drafter.currentRank', 'drafterRank')
+            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
+            .leftJoinAndSelect('approvalSteps.approver', 'approver')
+            .leftJoinAndSelect('approver.departmentPositions', 'approverDeptPos')
+            .leftJoinAndSelect('approverDeptPos.department', 'approverDept')
+            .leftJoinAndSelect('approverDeptPos.position', 'approverPos')
+            .leftJoinAndSelect('approver.currentRank', 'approverRank')
+            .leftJoinAndSelect('document.parentDocument', 'parentDocument')
+            .leftJoinAndSelect('document.files', 'files')
+            .where('document.documentId IN (:...documentIds)', { documentIds })
+            .orderBy('document.createdAt', 'DESC')
+            .addOrderBy('approvalSteps.order', 'ASC')
+            .getMany();
+
         return {
             items: documentData.map((document) => {
                 const currentStep = document.approvalSteps.find((step) => step.isCurrent);
                 return {
-                    ...document,
-                    currentStep: currentStep,
+                    documentId: document.documentId,
+                    documentNumber: document.documentNumber,
+                    documentType: document.documentType,
+                    title: document.title,
+                    content: document.content,
+                    status: document.status,
+                    retentionPeriod: document.retentionPeriod,
+                    retentionPeriodUnit: document.retentionPeriodUnit,
+                    retentionStartDate: document.retentionStartDate,
+                    retentionEndDate: document.retentionEndDate,
+                    implementDate: document.implementDate,
+                    createdAt: document.createdAt,
+                    updatedAt: document.updatedAt,
+                    drafter: this.mapEmployeeToDto(document.drafter),
+                    approvalSteps: document.approvalSteps.map((step) => ({
+                        type: step.type,
+                        order: step.order,
+                        isApproved: step.isApproved,
+                        approvedDate: step.approvedDate,
+                        isCurrent: step.isCurrent,
+                        createdAt: step.createdAt,
+                        updatedAt: step.updatedAt,
+                        approver: this.mapEmployeeToDto(step.approver),
+                    })),
+                    currentStep: currentStep
+                        ? {
+                              type: currentStep.type,
+                              order: currentStep.order,
+                              isApproved: currentStep.isApproved,
+                              approvedDate: currentStep.approvedDate,
+                              isCurrent: currentStep.isCurrent,
+                              createdAt: currentStep.createdAt,
+                              updatedAt: currentStep.updatedAt,
+                              approver: this.mapEmployeeToDto(currentStep.approver),
+                          }
+                        : undefined,
+                    parentDocument: document.parentDocument,
+                    files: document.files || [],
                 };
             }),
             meta: {
@@ -49,6 +109,26 @@ export class GetApprovalDocumentsUseCase {
                 limit: query.limit,
                 hasNext: query.page * query.limit < total,
             },
+        };
+    }
+
+    private mapEmployeeToDto(employee: Employee) {
+        if (!employee) return null;
+
+        // 첫 번째 부서-직책 정보 가져오기 (여러 개일 경우 첫 번째 사용)
+        const primaryDeptPosition = employee.departmentPositions?.[0];
+        const department = primaryDeptPosition?.department?.departmentCode || '';
+        const position = primaryDeptPosition?.position?.positionTitle || '';
+        const rank = employee.currentRank?.rankTitle || '';
+
+        return {
+            employeeId: employee.id,
+            name: employee.name,
+            employeeNumber: employee.employeeNumber,
+            email: employee.email,
+            department: department,
+            position: position,
+            rank: rank,
         };
     }
 
@@ -90,6 +170,7 @@ export class GetApprovalDocumentsUseCase {
                 approvalSteps: {
                     type: ApprovalStepType.REFERENCE,
                     approverId: user.id,
+                    approvedDate: IsNull(),
                 },
             },
             [DocumentListType.IMPLEMENTATION]: {
@@ -97,6 +178,7 @@ export class GetApprovalDocumentsUseCase {
                 approvalSteps: {
                     type: ApprovalStepType.IMPLEMENTATION,
                     approverId: user.id,
+                    approvedDate: IsNull(),
                 },
             },
         };

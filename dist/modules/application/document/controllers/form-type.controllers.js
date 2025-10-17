@@ -106,7 +106,6 @@ __decorate([
 ], FormTypeController.prototype, "deleteFormTypeById", null);
 exports.FormTypeController = FormTypeController = __decorate([
     (0, swagger_1.ApiTags)('문서양식분류'),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('form-types'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])
 ], FormTypeController);

@@ -7,5 +7,6 @@ export declare class FindAllEmployeesByDepartmentUsecase {
     constructor(employeeService: DomainEmployeeService, departmentService: DomainDepartmentService);
     execute(): Promise<MetadataResponseDto>;
     private buildDepartmentTree;
+    private convertDepartmentToDto;
     private sortEmployees;
 }

@@ -62,9 +62,17 @@ let ApprovalService = class ApprovalService {
         }
     }
     async approve(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
-        if (myStep.type === approval_enum_1.ApprovalStepType.IMPLEMENTATION || myStep.type === approval_enum_1.ApprovalStepType.REFERENCE) {
-            throw new common_1.BadRequestException('결재 단계가 아닙니다.');
+        console.log('user', user);
+        const mySteps = await this.getMyStepUseCase.execute(documentId, user.id);
+        console.log('mySteps', mySteps);
+        const approvalSteps = mySteps.filter((step) => step.type === approval_enum_1.ApprovalStepType.APPROVAL || step.type === approval_enum_1.ApprovalStepType.AGREEMENT);
+        if (approvalSteps.length === 0) {
+            throw new common_1.BadRequestException('결재 또는 협의 단계를 찾을 수 없습니다.');
+        }
+        const myStep = approvalSteps.find((step) => step.type === approval_enum_1.ApprovalStepType.APPROVAL) || approvalSteps[0];
+        console.log('myStep', myStep);
+        if (myStep.approvedDate) {
+            throw new common_1.BadRequestException('이미 승인된 결재 단계입니다.');
         }
         const approvalStep = await this.approveStepUseCase.execute(myStep.approvalStepId);
         console.log('approvalStep', approvalStep);
@@ -80,29 +88,41 @@ let ApprovalService = class ApprovalService {
         }
     }
     async reject(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
-        if (myStep.type === approval_enum_1.ApprovalStepType.IMPLEMENTATION || myStep.type === approval_enum_1.ApprovalStepType.REFERENCE) {
-            throw new common_1.BadRequestException('결재 단계가 아닙니다.');
+        const mySteps = await this.getMyStepUseCase.execute(documentId, user.id);
+        const approvalSteps = mySteps.filter((step) => step.type === approval_enum_1.ApprovalStepType.APPROVAL || step.type === approval_enum_1.ApprovalStepType.AGREEMENT);
+        if (approvalSteps.length === 0) {
+            throw new common_1.BadRequestException('결재 또는 협의 단계를 찾을 수 없습니다.');
+        }
+        const myStep = approvalSteps.find((step) => step.type === approval_enum_1.ApprovalStepType.APPROVAL) || approvalSteps[0];
+        if (myStep.approvedDate) {
+            throw new common_1.BadRequestException('이미 승인된 결재 단계입니다.');
         }
         await this.rejectStepUseCase.execute(myStep.approvalStepId);
         await this.rejectDocumentUseCase.execute(documentId);
     }
     async implementation(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
-        if (myStep.type !== approval_enum_1.ApprovalStepType.IMPLEMENTATION) {
+        const mySteps = await this.getMyStepUseCase.execute(documentId, user.id);
+        const implementationSteps = mySteps.filter((step) => step.type === approval_enum_1.ApprovalStepType.IMPLEMENTATION);
+        if (implementationSteps.length === 0) {
             throw new common_1.BadRequestException('시행 단계가 아닙니다.');
         }
+        const myStep = implementationSteps[0];
+        console.log('myStep', myStep);
         const [allStepsApproved, total] = await this.checkStepsUseCase.execute(documentId);
+        console.log('allStepsApproved', allStepsApproved);
+        console.log('total', total);
         if (total > 0) {
             throw new common_1.BadRequestException('모든 결재단계가 승인되지 않았습니다.');
         }
         await this.approveStepUseCase.execute(myStep.approvalStepId);
     }
     async reference(user, documentId) {
-        const myStep = await this.getMyStepUseCase.execute(documentId, user.id);
-        if (myStep.type !== approval_enum_1.ApprovalStepType.REFERENCE) {
+        const mySteps = await this.getMyStepUseCase.execute(documentId, user.id);
+        const referenceSteps = mySteps.filter((step) => step.type === approval_enum_1.ApprovalStepType.REFERENCE);
+        if (referenceSteps.length === 0) {
             throw new common_1.BadRequestException('열람 단계가 아닙니다.');
         }
+        const myStep = referenceSteps[0];
         await this.approveStepUseCase.execute(myStep.approvalStepId);
     }
     async getApprovalDocuments(user, query, listType) {

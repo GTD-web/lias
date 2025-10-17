@@ -23,11 +23,6 @@ export declare class Employee {
     terminationReason?: string;
     isInitialPasswordSet: boolean;
     departmentPositions?: EmployeeDepartmentPosition[];
-    department?: string;
-    position?: string;
-    rank?: string;
-    accessToken?: string;
-    expiredAt?: Date;
     roles: Role[];
     draftDocuments?: Document[];
     defaultApprovers?: FormApprovalStep[];

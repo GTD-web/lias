@@ -14,7 +14,7 @@ import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { ApprovalLineType } from '../../../../common/enums/approval.enum';
 
 @ApiTags('결재선')
-@ApiBearerAuth()
+// @ApiBearerAuth()
 @Controller('approval-lines')
 export class ApprovalLineController {
     constructor(private readonly documentService: DocumentService) {}

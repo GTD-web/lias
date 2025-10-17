@@ -65,7 +65,11 @@ export class FindDocumentFormByIdUseCase {
         autoApprovalSteps.push(newApprovalStep);
         if (autoFillType === AutoFillType.DRAFTER_SUPERIOR) {
             // 본인을 포함한 상급자들 추가
-            const superiors = await this.findSuperiorsByDepartment(user.department, user.id, user.position);
+            const superiors = await this.findSuperiorsByDepartment(
+                user.departmentPositions[0].departmentId,
+                user.id,
+                user.departmentPositions[0].positionId,
+            );
 
             // 상급자들을 순서대로 추가
             for (let index = 0; index < superiors.length; index++) {

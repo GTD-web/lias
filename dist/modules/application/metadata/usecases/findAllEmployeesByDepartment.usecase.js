@@ -24,70 +24,77 @@ let FindAllEmployeesByDepartmentUsecase = class FindAllEmployeesByDepartmentUsec
             where: {
                 parentDepartment: (0, typeorm_1.IsNull)(),
             },
-            relations: ['childrenDepartments', 'childrenDepartments.childrenDepartments'],
+            relations: ['childDepartments', 'childDepartments.childDepartments'],
+            order: {
+                order: 'ASC',
+                childDepartments: {
+                    order: 'ASC',
+                },
+            },
         });
         const employees = await this.employeeService.findAll({
-            select: {
-                employeeId: true,
-                name: true,
-                email: true,
-                employeeNumber: true,
-                position: true,
-                department: true,
-                rank: true,
-            },
+            relations: [
+                'departmentPositions',
+                'departmentPositions.department',
+                'departmentPositions.position',
+                'currentRank',
+            ],
         });
         const metadata = this.buildDepartmentTree(departments, employees);
         return metadata[0];
     }
     buildDepartmentTree(departments, employees) {
         return departments.map((department) => {
-            const departmentEmployees = employees.filter((employee) => employee.department === department.departmentCode);
-            const childrenDepartments = department.childrenDepartments && department.childrenDepartments.length > 0
-                ? this.buildDepartmentTree(department.childrenDepartments, employees)
+            const departmentEmployees = employees.filter((employee) => {
+                if (employee.departmentPositions && employee.departmentPositions.length > 0) {
+                    return employee.departmentPositions.some((dp) => dp.departmentId === department.id);
+                }
+            });
+            const childrenDepartments = department.childDepartments && department.childDepartments.length > 0
+                ? this.buildDepartmentTree(department.childDepartments, employees)
                 : [];
-            department.childrenDepartments = childrenDepartments;
+            const departmentDto = this.convertDepartmentToDto(department, childrenDepartments);
+            const employeeDtos = this.sortEmployees(departmentEmployees, department.id);
             return {
-                department,
-                employees: this.sortEmployees(departmentEmployees),
+                department: departmentDto,
+                employees: employeeDtos,
             };
         });
     }
-    sortEmployees(employees) {
-        return employees.sort((a, b) => {
-            const positionOrder = ['임원', '실장', 'PM', '파트장', '직원'];
-            const aPositionIndex = positionOrder.indexOf(a.position);
-            const bPositionIndex = positionOrder.indexOf(b.position);
-            if (aPositionIndex !== bPositionIndex) {
-                return aPositionIndex - bPositionIndex;
+    convertDepartmentToDto(department, childrenDepartments) {
+        return {
+            departmentId: department.id,
+            departmentName: department.departmentName,
+            departmentCode: department.departmentCode,
+            childrenDepartments: childrenDepartments.map((meta) => meta.department),
+        };
+    }
+    sortEmployees(employees, departmentId) {
+        return employees
+            .map((employee) => {
+            const deptPosition = employee.departmentPositions?.find((dp) => dp.departmentId === departmentId);
+            return {
+                employeeId: employee.id,
+                name: employee.name,
+                email: employee.email,
+                employeeNumber: employee.employeeNumber,
+                positionLevel: deptPosition?.position?.level || 999,
+                rankLevel: employee.currentRank?.level || 999,
+            };
+        })
+            .sort((a, b) => {
+            if (a.positionLevel !== b.positionLevel) {
+                return a.positionLevel - b.positionLevel;
             }
-            const rankOrder = [
-                '사장',
-                '부사장',
-                '전무이사',
-                '상무이사',
-                '이사',
-                '전문위원',
-                '책임연구원',
-                '책임매니저',
-                '책임제조원',
-                '선임매니저',
-                '선임연구원',
-                '선임제조원',
-                '매니저',
-                '연구원',
-                '제조원',
-            ];
-            const aRankIndex = rankOrder.indexOf(a.rank);
-            const bRankIndex = rankOrder.indexOf(b.rank);
-            if (aRankIndex !== bRankIndex) {
-                return aRankIndex - bRankIndex;
+            if (a.rankLevel !== b.rankLevel) {
+                return a.rankLevel - b.rankLevel;
             }
             if (a.employeeNumber !== b.employeeNumber) {
                 return a.employeeNumber.localeCompare(b.employeeNumber);
             }
             return a.name.localeCompare(b.name);
-        });
+        })
+            .map(({ positionLevel, rankLevel, ...employee }) => employee);
     }
 };
 exports.FindAllEmployeesByDepartmentUsecase = FindAllEmployeesByDepartmentUsecase;

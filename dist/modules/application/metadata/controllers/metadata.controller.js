@@ -38,7 +38,6 @@ __decorate([
 ], MetadataController.prototype, "findAllEmplyeesByDepartment", null);
 exports.MetadataController = MetadataController = __decorate([
     (0, swagger_1.ApiTags)('메타데이터'),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)(''),
     __metadata("design:paramtypes", [metadata_service_1.MetadataService])
 ], MetadataController);

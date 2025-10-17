@@ -17,19 +17,16 @@ let GetMyStepUseCase = class GetMyStepUseCase {
         this.approvalStepService = approvalStepService;
     }
     async execute(documentId, employeeId) {
-        const myStep = await this.approvalStepService.findOne({
+        const mySteps = await this.approvalStepService.findAll({
             where: {
                 documentId,
                 approverId: employeeId,
             },
         });
-        if (!myStep) {
+        if (!mySteps || mySteps.length === 0) {
             throw new common_1.NotFoundException('결재 단계를 찾을 수 없습니다.');
         }
-        if (myStep.approvedDate) {
-            throw new common_1.BadRequestException('이미 승인된 결재 단계입니다.');
-        }
-        return myStep;
+        return mySteps;
     }
 };
 exports.GetMyStepUseCase = GetMyStepUseCase;
