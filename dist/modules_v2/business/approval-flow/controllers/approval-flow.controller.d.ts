@@ -1,0 +1,42 @@
+import { CreateFormWithApprovalLineUsecase, UpdateFormVersionUsecase, CloneApprovalLineTemplateUsecase, CreateApprovalLineTemplateVersionUsecase, CreateApprovalLineTemplateUsecase, CreateApprovalSnapshotUsecase, PreviewApprovalLineUsecase } from '../usecases';
+import { CreateFormRequestDto, UpdateFormVersionRequestDto, CloneTemplateRequestDto, CreateTemplateVersionRequestDto, CreateApprovalLineTemplateRequestDto, CreateSnapshotRequestDto, CreateFormResponseDto, UpdateFormVersionResponseDto, ApprovalLineTemplateResponseDto, ApprovalLineTemplateVersionResponseDto, ApprovalSnapshotResponseDto, PreviewApprovalLineRequestDto, PreviewApprovalLineResponseDto } from '../dtos';
+import { Employee } from '../../../domain/employee/employee.entity';
+import { ApprovalFlowContext } from '../../../context/approval-flow/approval-flow.context';
+export declare class ApprovalFlowController {
+    private readonly createFormWithApprovalLineUsecase;
+    private readonly updateFormVersionUsecase;
+    private readonly cloneApprovalLineTemplateUsecase;
+    private readonly createApprovalLineTemplateVersionUsecase;
+    private readonly createApprovalLineTemplateUsecase;
+    private readonly createApprovalSnapshotUsecase;
+    private readonly previewApprovalLineUsecase;
+    private readonly approvalFlowContext;
+    constructor(createFormWithApprovalLineUsecase: CreateFormWithApprovalLineUsecase, updateFormVersionUsecase: UpdateFormVersionUsecase, cloneApprovalLineTemplateUsecase: CloneApprovalLineTemplateUsecase, createApprovalLineTemplateVersionUsecase: CreateApprovalLineTemplateVersionUsecase, createApprovalLineTemplateUsecase: CreateApprovalLineTemplateUsecase, createApprovalSnapshotUsecase: CreateApprovalSnapshotUsecase, previewApprovalLineUsecase: PreviewApprovalLineUsecase, approvalFlowContext: ApprovalFlowContext);
+    createFormWithApprovalLine(user: Employee, dto: CreateFormRequestDto): Promise<CreateFormResponseDto>;
+    updateFormVersion(user: Employee, formId: string, dto: UpdateFormVersionRequestDto): Promise<UpdateFormVersionResponseDto>;
+    createApprovalLineTemplate(user: Employee, dto: CreateApprovalLineTemplateRequestDto): Promise<ApprovalLineTemplateResponseDto>;
+    cloneApprovalLineTemplate(user: Employee, dto: CloneTemplateRequestDto): Promise<ApprovalLineTemplateVersionResponseDto>;
+    createApprovalLineTemplateVersion(user: Employee, templateId: string, dto: CreateTemplateVersionRequestDto): Promise<ApprovalLineTemplateVersionResponseDto>;
+    createApprovalSnapshot(dto: CreateSnapshotRequestDto): Promise<ApprovalSnapshotResponseDto>;
+    getApprovalLineTemplates(type?: string): Promise<import("../../../domain").ApprovalLineTemplate[]>;
+    getApprovalLineTemplate(templateId: string): Promise<import("../../../domain").ApprovalLineTemplate>;
+    getApprovalLineTemplateVersion(templateId: string, versionId: string): Promise<import("../../../domain").ApprovalLineTemplateVersion>;
+    getForms(): Promise<import("../../../domain").Form[]>;
+    getForm(formId: string): Promise<import("../../../domain").Form>;
+    getFormVersion(formId: string, versionId: string): Promise<{
+        approvalLineInfo: any;
+        id: string;
+        formId: string;
+        versionNo: number;
+        template: string;
+        isActive: boolean;
+        changeReason?: string;
+        createdBy?: string;
+        createdAt: Date;
+        updatedAt: Date;
+        form: import("../../../domain").Form;
+        approvalLineTemplateMappings: import("../../../domain").FormVersionApprovalLineTemplateVersion[];
+        documents: import("../../../domain").Document[];
+    }>;
+    previewApprovalLine(employee: Employee, formId: string, dto: PreviewApprovalLineRequestDto): Promise<PreviewApprovalLineResponseDto>;
+}

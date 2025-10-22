@@ -3,16 +3,20 @@ import { RouterModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { typeOrmConfig } from './configs/typeorm.config';
-import { EntityList } from './database/entities/list';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DB_Config, JWT_CONFIG } from './configs/env.config';
 import { ApiDocService } from './common/documents/api-doc.service';
 import { DbDocService } from './common/documents/db-doc.service';
-import { DocumentModule } from './modules/application/document/document.module';
-import { AuthModule } from './modules/application/authorization/auth.module';
-import { MetadataModule } from './modules/application/metadata/metadata.module';
-import { ApprovalModule } from './modules/application/approval/approval.module';
+import { AuthModule } from './common/auth/auth.module';
+
+import {
+    MetadataModule,
+    ApprovalFlowBusinessModule,
+    DocumentBusinessModule,
+    ApprovalProcessBusinessModule,
+    TestDataBusinessModule,
+} from './modules_v2/business';
 
 @Module({
     imports: [
@@ -24,26 +28,43 @@ import { ApprovalModule } from './modules/application/approval/approval.module';
             inject: [ConfigService],
             useFactory: typeOrmConfig,
         }),
-        TypeOrmModule.forFeature(EntityList),
         RouterModule.register([
-            {
-                path: 'document',
-                module: DocumentModule,
-            },
+            // {
+            //     path: 'document',
+            //     module: DocumentModule,
+            // },
             {
                 path: 'metadata',
                 module: MetadataModule,
             },
             {
-                path: 'approval',
-                module: ApprovalModule,
+                path: 'v2/approval-flow',
+                module: ApprovalFlowBusinessModule,
             },
+            {
+                path: 'v2/document',
+                module: DocumentBusinessModule,
+            },
+            {
+                path: 'v2/approval-process',
+                module: ApprovalProcessBusinessModule,
+            },
+            {
+                path: 'v2/test-data',
+                module: TestDataBusinessModule,
+            },
+            // {
+            //     path: 'approval',
+            //     module: ApprovalModule,
+            // },
         ]),
 
         AuthModule,
         MetadataModule,
-        DocumentModule,
-        ApprovalModule,
+        ApprovalFlowBusinessModule,
+        DocumentBusinessModule,
+        ApprovalProcessBusinessModule,
+        TestDataBusinessModule,
     ],
     controllers: [AppController],
     providers: [AppService],

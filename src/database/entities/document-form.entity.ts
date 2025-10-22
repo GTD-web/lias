@@ -26,12 +26,6 @@ export class DocumentForm {
     })
     autoFillType: AutoFillType;
 
-    // @Column({ type: 'jsonb', comment: '수신 및 참조자 정보 객체', nullable: true })
-    // receiverInfo: ReferencerInfo[];
-
-    // @Column({ type: 'jsonb', comment: '시행자 정보 객체', nullable: true })
-    // implementerInfo: ImplementerInfo[];
-
     @Column({ comment: '결재선 ID', nullable: true })
     formApprovalLineId: string;
 

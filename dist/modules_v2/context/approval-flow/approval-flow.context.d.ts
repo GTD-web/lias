@@ -1,0 +1,77 @@
+import { DataSource, QueryRunner } from 'typeorm';
+import { DomainFormService } from '../../domain/form/form.service';
+import { DomainFormVersionService } from '../../domain/form/form-version.service';
+import { DomainApprovalLineTemplateService } from '../../domain/approval-line-template/approval-line-template.service';
+import { DomainApprovalLineTemplateVersionService } from '../../domain/approval-line-template/approval-line-template-version.service';
+import { DomainApprovalStepTemplateService } from '../../domain/approval-step-template/approval-step-template.service';
+import { DomainApprovalLineSnapshotService } from '../../domain/approval-line-snapshot/approval-line-snapshot.service';
+import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
+import { DomainFormVersionApprovalLineTemplateVersionService } from '../../domain/form-version-approval-line-template-version/form-version-approval-line-template-version.service';
+import { DomainEmployeeService } from '../../domain/employee/employee.service';
+import { DomainDepartmentService } from '../../domain/department/department.service';
+import { DomainPositionService } from '../../domain/position/position.service';
+import { DomainEmployeeDepartmentPositionService } from '../../domain/employee-department-position/employee-department-position.service';
+import { CreateFormWithApprovalLineDto, UpdateFormVersionDto, CloneApprovalLineTemplateDto, CreateApprovalLineTemplateVersionDto, CreateApprovalLineTemplateDto } from './dtos/form-approval-line.dto';
+import { CreateSnapshotDto } from './dtos/draft-context.dto';
+export declare class ApprovalFlowContext {
+    private readonly dataSource;
+    private readonly formService;
+    private readonly formVersionService;
+    private readonly approvalLineTemplateService;
+    private readonly approvalLineTemplateVersionService;
+    private readonly approvalStepTemplateService;
+    private readonly approvalLineSnapshotService;
+    private readonly approvalStepSnapshotService;
+    private readonly formVersionApprovalLineTemplateVersionService;
+    private readonly employeeService;
+    private readonly departmentService;
+    private readonly positionService;
+    private readonly employeeDepartmentPositionService;
+    private readonly logger;
+    constructor(dataSource: DataSource, formService: DomainFormService, formVersionService: DomainFormVersionService, approvalLineTemplateService: DomainApprovalLineTemplateService, approvalLineTemplateVersionService: DomainApprovalLineTemplateVersionService, approvalStepTemplateService: DomainApprovalStepTemplateService, approvalLineSnapshotService: DomainApprovalLineSnapshotService, approvalStepSnapshotService: DomainApprovalStepSnapshotService, formVersionApprovalLineTemplateVersionService: DomainFormVersionApprovalLineTemplateVersionService, employeeService: DomainEmployeeService, departmentService: DomainDepartmentService, positionService: DomainPositionService, employeeDepartmentPositionService: DomainEmployeeDepartmentPositionService);
+    createFormWithApprovalLine(dto: CreateFormWithApprovalLineDto, externalQueryRunner?: QueryRunner): Promise<{
+        form: import("../../domain").Form;
+        formVersion: import("../../domain").FormVersion;
+        lineTemplateVersionId: string;
+    }>;
+    updateFormVersion(dto: UpdateFormVersionDto, externalQueryRunner?: QueryRunner): Promise<{
+        form: import("../../domain").Form;
+        newVersion: import("../../domain").FormVersion;
+    }>;
+    cloneApprovalLineTemplateVersion(dto: CloneApprovalLineTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalLineTemplateVersion>;
+    createApprovalLineTemplateVersion(dto: CreateApprovalLineTemplateVersionDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalLineTemplateVersion>;
+    createApprovalLineTemplate(dto: CreateApprovalLineTemplateDto, externalQueryRunner?: QueryRunner): Promise<{
+        template: import("../../domain").ApprovalLineTemplate;
+        version: import("../../domain").ApprovalLineTemplateVersion;
+    }>;
+    private createHierarchicalApprovalLine;
+    createApprovalSnapshot(dto: CreateSnapshotDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalLineSnapshot>;
+    private resolveAssigneeRule;
+    private resolveDrafter;
+    private resolveFixedUser;
+    private resolveDirectManager;
+    private resolveManagerChain;
+    private resolveDepartmentHead;
+    private resolvePositionBased;
+    private resolveAmountBased;
+    getApprovalLineTemplates(type?: string): Promise<import("../../domain").ApprovalLineTemplate[]>;
+    getApprovalLineTemplateVersion(templateId: string, versionId: string): Promise<import("../../domain").ApprovalLineTemplateVersion>;
+    getForms(): Promise<import("../../domain").Form[]>;
+    getFormVersion(formId: string, versionId: string): Promise<{
+        approvalLineInfo: any;
+        id: string;
+        formId: string;
+        versionNo: number;
+        template: string;
+        isActive: boolean;
+        changeReason?: string;
+        createdBy?: string;
+        createdAt: Date;
+        updatedAt: Date;
+        form: import("../../domain").Form;
+        approvalLineTemplateMappings: import("../../domain").FormVersionApprovalLineTemplateVersion[];
+        documents: import("../../domain").Document[];
+    }>;
+    getApprovalLineTemplateById(templateId: string): Promise<import("../../domain").ApprovalLineTemplate>;
+    getFormById(formId: string): Promise<import("../../domain").Form>;
+}

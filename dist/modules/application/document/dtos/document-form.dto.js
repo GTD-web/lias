@@ -154,7 +154,7 @@ __decorate([
 ], DocumentFormResponseDto.prototype, "template", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR)',
+        description: '자동 채우기 타입 (NONE, APPROVAL_LINE, DRAFTER_ONLY, DRAFTER_SUPERIOR)',
         example: approval_enum_1.AutoFillType.NONE,
     }),
     __metadata("design:type", String)

@@ -25,6 +25,12 @@ function setupSwagger(app, dtos) {
         swaggerOptions: {
             docExpansion: 'none',
             persistAuthorization: true,
+            deepLinking: true,
+            displayRequestDuration: true,
+            filter: true,
+            showExtensions: true,
+            showCommonExtensions: true,
+            tryItOutEnabled: true,
         },
     });
 }

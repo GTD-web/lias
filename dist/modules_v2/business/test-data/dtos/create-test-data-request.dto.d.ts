@@ -1,0 +1,17 @@
+export declare enum TestDataScenario {
+    SIMPLE_APPROVAL = "SIMPLE_APPROVAL",
+    MULTI_LEVEL_APPROVAL = "MULTI_LEVEL_APPROVAL",
+    AGREEMENT_PROCESS = "AGREEMENT_PROCESS",
+    IMPLEMENTATION_PROCESS = "IMPLEMENTATION_PROCESS",
+    REJECTED_DOCUMENT = "REJECTED_DOCUMENT",
+    CANCELLED_DOCUMENT = "CANCELLED_DOCUMENT",
+    WITH_REFERENCE = "WITH_REFERENCE",
+    PARALLEL_AGREEMENT = "PARALLEL_AGREEMENT",
+    FULL_PROCESS = "FULL_PROCESS"
+}
+export declare class CreateTestDataRequestDto {
+    scenario: TestDataScenario;
+    documentCount?: number;
+    titlePrefix?: string;
+    progress?: number;
+}

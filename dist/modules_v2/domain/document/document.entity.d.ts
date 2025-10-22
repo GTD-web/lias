@@ -1,0 +1,34 @@
+import { DocumentStatus } from '../../../common/enums/approval.enum';
+import { FormVersion } from '../form/form-version.entity';
+import { ApprovalLineSnapshot } from '../approval-line-snapshot/approval-line-snapshot.entity';
+import { Employee } from '../employee/employee.entity';
+export declare class Document {
+    id: string;
+    documentNumber: string;
+    formVersionId: string;
+    approvalLineSnapshotId?: string;
+    title: string;
+    content: string;
+    status: DocumentStatus;
+    drafterId: string;
+    submittedAt?: Date;
+    cancelReason?: string;
+    cancelledAt?: Date;
+    comment?: string;
+    retentionPeriod?: string;
+    retentionPeriodUnit?: string;
+    retentionStartDate?: Date;
+    retentionEndDate?: Date;
+    implementDate?: Date;
+    approvedAt?: Date;
+    rejectedAt?: Date;
+    parentDocumentId?: string;
+    metadata?: Record<string, any>;
+    createdAt: Date;
+    updatedAt: Date;
+    formVersion: FormVersion;
+    approvalLineSnapshot?: ApprovalLineSnapshot;
+    drafter: Employee;
+    parentDocument?: Document;
+    childDocuments: Document[];
+}

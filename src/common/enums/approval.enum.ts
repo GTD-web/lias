@@ -6,8 +6,8 @@ export enum ApproverType {
 }
 
 export enum DepartmentScopeType {
-    SELECTED = 'SELECTED',
-    DRAFT_OWNER = 'DRAFT_OWNER',
+    ALL = 'ALL', // 전사 공통
+    SPECIFIC_DEPARTMENT = 'SPECIFIC_DEPARTMENT', // 특정 부서 전용
 }
 
 export enum ApprovalStepType {
@@ -45,4 +45,33 @@ export enum DocumentListType {
     RECEIVED_REFERENCE = 'received_reference', // 내가 수신한 문서 (참조)
     IMPLEMENTATION = 'implementation', // 내가 시행해야하는 문서 (현재 차례)
     ASSIGNED = 'assigned', // 내가 할당받은 문서
+}
+
+export enum FormStatus {
+    DRAFT = 'DRAFT', // 초안
+    ACTIVE = 'ACTIVE', // 활성
+    ARCHIVED = 'ARCHIVED', // 보관
+}
+
+export enum ApprovalLineTemplateStatus {
+    DRAFT = 'DRAFT', // 초안
+    ACTIVE = 'ACTIVE', // 활성
+    ARCHIVED = 'ARCHIVED', // 보관
+}
+
+export enum AssigneeRule {
+    FIXED = 'FIXED', // 고정 결재자
+    DRAFTER = 'DRAFTER', // 기안자
+    DRAFTER_SUPERIOR = 'DRAFTER_SUPERIOR', // 기안자 상급자
+    DEPARTMENT_HEAD = 'DEPARTMENT_HEAD', // 부서장
+    POSITION_BASED = 'POSITION_BASED', // 직책 기반
+}
+
+export enum DocumentStatus {
+    DRAFT = 'DRAFT', // 임시저장
+    PENDING = 'PENDING', // 결재 진행중
+    APPROVED = 'APPROVED', // 승인 완료
+    REJECTED = 'REJECTED', // 반려
+    CANCELLED = 'CANCELLED', // 취소
+    IMPLEMENTED = 'IMPLEMENTED', // 시행 완료
 }

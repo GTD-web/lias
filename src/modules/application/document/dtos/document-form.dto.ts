@@ -123,7 +123,7 @@ export class DocumentFormResponseDto {
     template: string;
 
     @ApiProperty({
-        description: '자동 채우기 타입 (NONE, DRAFTER_ONLY, DRAFTER_SUPERIOR)',
+        description: '자동 채우기 타입 (NONE, APPROVAL_LINE, DRAFTER_ONLY, DRAFTER_SUPERIOR)',
         example: AutoFillType.NONE,
     })
     autoFillType: AutoFillType;
