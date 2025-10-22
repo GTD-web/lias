@@ -16,7 +16,7 @@ export declare class RandomDocumentsController {
             documents: {
                 documentId: string;
                 title: string;
-                status: import("../../../../common/enums/approval.enum").ApprovalStatus;
+                status: import("../../../../common/enums").ApprovalStatus;
                 drafterId: string;
                 createdAt: Date;
             }[];

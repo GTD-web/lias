@@ -1,6 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { EntityList } from '../database/entities/list';
+import { EntityListV2 } from 'src/modules_v2/domain/list';
 import { join } from 'path';
 
 export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
@@ -11,12 +11,12 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
         username: configService.get('database.username'),
         password: configService.get('database.password'),
         database: configService.get('database.database'),
-        entities: EntityList,
+        entities: EntityListV2,
         schema: 'public',
         synchronize: configService.get('NODE_ENV') === 'local',
         // logging: configService.get('NODE_ENV') === 'local',
-        migrations: [join(__dirname, '../common/migrations/*.ts')],
-        migrationsRun: configService.get('database.port') === 6543,
+        // migrations: [join(__dirname, '../common/migrations/*.ts')],
+        // migrationsRun: configService.get('database.port') === 6543,
         ssl: configService.get('database.port') === 6543,
         extra: {
             ssl: configService.get('database.port') === 6543 ? { rejectUnauthorized: false } : null,

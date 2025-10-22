@@ -21,6 +21,7 @@ const document_form_dto_1 = require("../dtos/document-form.dto");
 const pagination_query_dto_1 = require("../../../../common/dtos/pagination-query.dto");
 const employee_entity_1 = require("../../../../database/entities/employee.entity");
 const user_decorator_1 = require("../../../../common/decorators/user.decorator");
+const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 let DocumentFormController = class DocumentFormController {
     constructor(documentService) {
         this.documentService = documentService;
@@ -116,6 +117,8 @@ __decorate([
 ], DocumentFormController.prototype, "deleteDocumentFormById", null);
 exports.DocumentFormController = DocumentFormController = __decorate([
     (0, swagger_1.ApiTags)('문서양식'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('forms'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])
 ], DocumentFormController);

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiDataResponse } from '../../../../common/decorators/api-responses.decorator';
 import { DocumentService } from '../document.service';
@@ -8,9 +8,11 @@ import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { PaginationData, PaginationMetaDto } from 'src/common/dtos/pagination-response.dto';
 import { Employee } from 'src/database/entities/employee.entity';
 import { User } from 'src/common/decorators/user.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('문서양식')
-// @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('forms')
 export class DocumentFormController {
     constructor(private readonly documentService: DocumentService) {}
