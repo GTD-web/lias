@@ -15,37 +15,41 @@ class CreatedTestDataDto {
 }
 exports.CreatedTestDataDto = CreatedTestDataDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 Form ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 Form ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "forms", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 FormVersion ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 FormVersion ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "formVersions", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 Document ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 Document ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "documents", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLineTemplate ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLineTemplate ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "approvalLineTemplates", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLineTemplateVersion ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLineTemplateVersion ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "approvalLineTemplateVersions", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalStepTemplate ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalStepTemplate ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "approvalStepTemplates", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLineSnapshot ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLineSnapshot ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "approvalLineSnapshots", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalStepSnapshot ID 목록', type: [String] }),
+    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalStepSnapshot ID 목록', type: [String], required: false }),
     __metadata("design:type", Array)
 ], CreatedTestDataDto.prototype, "approvalStepSnapshots", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '생성된 ApprovalLine ID 목록 (결재선 없는 경우)', type: [String], required: false }),
+    __metadata("design:type", Array)
+], CreatedTestDataDto.prototype, "approvalLines", void 0);
 class TestDataResponseDto {
 }
 exports.TestDataResponseDto = TestDataResponseDto;
@@ -58,7 +62,7 @@ __decorate([
     __metadata("design:type", String)
 ], TestDataResponseDto.prototype, "message", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '생성된 테스트 데이터', type: CreatedTestDataDto, required: false }),
-    __metadata("design:type", CreatedTestDataDto)
+    (0, swagger_1.ApiProperty)({ description: '생성된 테스트 데이터', required: false }),
+    __metadata("design:type", Object)
 ], TestDataResponseDto.prototype, "data", void 0);
 //# sourceMappingURL=test-data-response.dto.js.map

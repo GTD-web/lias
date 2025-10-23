@@ -353,10 +353,29 @@ export class ApprovalProcessContext {
             queryRunner,
         });
 
+        if (allPendingSteps.length === 0) {
+            return [];
+        }
+
+        // 모든 스냅샷 ID 수집
+        const snapshotIds = [...new Set(allPendingSteps.map((step) => step.snapshotId))];
+
+        // 각 스냅샷의 모든 단계를 한 번에 조회
+        const allStepsBySnapshot = new Map();
+        for (const snapshotId of snapshotIds) {
+            const steps = await this.approvalStepSnapshotService.findAll({
+                where: { snapshotId },
+                order: { stepOrder: 'ASC' },
+                queryRunner,
+            });
+            allStepsBySnapshot.set(snapshotId, steps);
+        }
+
         // 실제 처리 가능한 단계만 필터링
         const processableSteps = [];
         for (const step of allPendingSteps) {
-            if (await this.canProcessStep(step, queryRunner)) {
+            const allSteps = allStepsBySnapshot.get(step.snapshotId) || [];
+            if (await this.canProcessStepOptimized(step, allSteps)) {
                 processableSteps.push(step);
             }
         }
@@ -521,6 +540,67 @@ export class ApprovalProcessContext {
      *
      * 대기 목록 API에서 사용하여 실제 처리 가능한 건만 반환
      */
+    private async canProcessStepOptimized(step: any, allSteps: any[]): Promise<boolean> {
+        try {
+            // 1) 협의는 언제나 처리 가능
+            if (step.stepType === ApprovalStepType.AGREEMENT) {
+                return true;
+            }
+
+            // 2) 결재인 경우
+            if (step.stepType === ApprovalStepType.APPROVAL) {
+                // 협의가 있다면 모든 협의가 완료되어야 함
+                const agreementSteps = allSteps.filter((s) => s.stepType === ApprovalStepType.AGREEMENT);
+                if (agreementSteps.length > 0) {
+                    const allAgreementsCompleted = agreementSteps.every((s) => s.status === ApprovalStatus.APPROVED);
+                    if (!allAgreementsCompleted) {
+                        return false;
+                    }
+                }
+
+                // 이전 결재 단계가 모두 완료되어야 함
+                const approvalSteps = allSteps.filter((s) => s.stepType === ApprovalStepType.APPROVAL);
+                for (const prevStep of approvalSteps) {
+                    if (prevStep.stepOrder < step.stepOrder) {
+                        if (prevStep.status !== ApprovalStatus.APPROVED) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            // 3) 시행인 경우
+            if (step.stepType === ApprovalStepType.IMPLEMENTATION) {
+                // 협의가 모두 완료되어야 함
+                const agreementSteps = allSteps.filter((s) => s.stepType === ApprovalStepType.AGREEMENT);
+                if (agreementSteps.length > 0) {
+                    const allAgreementsCompleted = agreementSteps.every((s) => s.status === ApprovalStatus.APPROVED);
+                    if (!allAgreementsCompleted) {
+                        return false;
+                    }
+                }
+
+                // 모든 결재가 완료되어야 함
+                const approvalSteps = allSteps.filter((s) => s.stepType === ApprovalStepType.APPROVAL);
+                if (approvalSteps.length > 0) {
+                    const allApprovalsCompleted = approvalSteps.every((s) => s.status === ApprovalStatus.APPROVED);
+                    if (!allApprovalsCompleted) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            this.logger.error(`canProcessStepOptimized 오류: ${error.message}`);
+            return false;
+        }
+    }
+
     private async canProcessStep(step: any, queryRunner?: QueryRunner): Promise<boolean> {
         try {
             // 모든 단계 조회

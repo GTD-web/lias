@@ -47,15 +47,15 @@ describe('ApprovalProcessController (e2e)', () => {
         dataSource = moduleFixture.get<DataSource>(DataSource);
         jwtService = moduleFixture.get<JwtService>(JwtService);
 
-        // 실제 DB에 존재하는 직원 조회 (최소 2명 필요)
+        // 실제 DB에 존재하는 직원 조회 (최소 3명 필요)
         const employeeRepo = dataSource.getRepository('Employee');
         const employees = await employeeRepo.find({
-            take: 2,
+            take: 3,
             order: { createdAt: 'ASC' },
         });
 
-        if (!employees || employees.length < 2) {
-            throw new Error('테스트를 위해서는 최소 2명 이상의 직원이 필요합니다.');
+        if (!employees || employees.length < 3) {
+            throw new Error('테스트를 위해서는 최소 3명 이상의 직원이 필요합니다.');
         }
 
         // 첫 번째 직원: 기안자
@@ -89,7 +89,7 @@ describe('ApprovalProcessController (e2e)', () => {
                         stepOrder: 1,
                         stepType: 'APPROVAL',
                         assigneeRule: 'FIXED',
-                        targetEmployeeId: approverEmployeeId,
+                        defaultApproverId: approverEmployeeId,
                         isRequired: true,
                     },
                 ],
@@ -137,6 +137,20 @@ describe('ApprovalProcessController (e2e)', () => {
             .set('Authorization', `Bearer ${drafterToken}`);
 
         stepSnapshotId = stepsResponse.body.steps[0]?.id;
+
+        // 실제 할당된 결재자의 ID로 업데이트 (정상 테스트용)
+        const actualApproverId = stepsResponse.body.steps[0]?.approverId;
+        if (actualApproverId && actualApproverId !== approverEmployeeId) {
+            // 실제 할당된 결재자의 토큰 생성
+            const actualApprover = await employeeRepo.findOne({ where: { id: actualApproverId } });
+            if (actualApprover) {
+                approverEmployeeId = actualApproverId;
+                approverToken = jwtService.sign({
+                    sub: approverEmployeeId,
+                    employeeNumber: actualApprover.employeeNumber,
+                });
+            }
+        }
     });
 
     afterAll(async () => {
@@ -216,6 +230,9 @@ describe('ApprovalProcessController (e2e)', () => {
         });
 
         it('실패: 권한 없는 사용자(기안자)가 승인 시도', async () => {
+            // 원래 설정된 결재자 ID 사용 (beforeAll에서 업데이트되지 않은 값)
+            const originalApproverId = '1c633f97-bd4e-40a6-b8f1-2d0186d7df2b'; // 전무현
+
             // 새 문서 생성
             const docResponse = await request(app.getHttpServer())
                 .post('/v2/document')
@@ -231,6 +248,15 @@ describe('ApprovalProcessController (e2e)', () => {
                 .set('Authorization', `Bearer ${drafterToken}`)
                 .send({
                     draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: originalApproverId, // 원래 설정된 결재자로 지정
+                            isRequired: true,
+                        },
+                    ],
                 });
 
             const stepsResponse = await request(app.getHttpServer())
@@ -241,7 +267,7 @@ describe('ApprovalProcessController (e2e)', () => {
 
             await request(app.getHttpServer())
                 .post('/v2/approval-process/approve')
-                .set('Authorization', `Bearer ${drafterToken}`)
+                .set('Authorization', `Bearer ${drafterToken}`) // 기안자가 승인 시도 (권한 없음)
                 .send({
                     stepSnapshotId: newStepId,
                 })
@@ -370,6 +396,9 @@ describe('ApprovalProcessController (e2e)', () => {
         });
 
         it('실패: 권한 없는 사용자가 반려 시도', async () => {
+            // 원래 설정된 결재자 ID 사용 (beforeAll에서 업데이트되지 않은 값)
+            const originalApproverId = '1c633f97-bd4e-40a6-b8f1-2d0186d7df2b'; // 전무현
+
             const docResponse = await request(app.getHttpServer())
                 .post('/v2/document')
                 .set('Authorization', `Bearer ${drafterToken}`)
@@ -384,6 +413,15 @@ describe('ApprovalProcessController (e2e)', () => {
                 .set('Authorization', `Bearer ${drafterToken}`)
                 .send({
                     draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: originalApproverId, // 원래 설정된 결재자로 지정
+                            isRequired: true,
+                        },
+                    ],
                 });
 
             const stepsResponse = await request(app.getHttpServer())
@@ -394,7 +432,7 @@ describe('ApprovalProcessController (e2e)', () => {
 
             await request(app.getHttpServer())
                 .post('/v2/approval-process/reject')
-                .set('Authorization', `Bearer ${drafterToken}`)
+                .set('Authorization', `Bearer ${drafterToken}`) // 기안자가 반려 시도 (권한 없음)
                 .send({
                     stepSnapshotId: newStepId,
                     comment: '반려',
@@ -433,7 +471,7 @@ describe('ApprovalProcessController (e2e)', () => {
                             stepOrder: 1,
                             stepType: 'AGREEMENT',
                             assigneeRule: 'FIXED',
-                            targetEmployeeId: approverEmployeeId,
+                            defaultApproverId: approverEmployeeId,
                             isRequired: true,
                         },
                     ],
@@ -472,6 +510,15 @@ describe('ApprovalProcessController (e2e)', () => {
                 .set('Authorization', `Bearer ${drafterToken}`)
                 .send({
                     draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'AGREEMENT',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                    ],
                 });
 
             const stepsResponse = await request(app.getHttpServer())
@@ -479,6 +526,20 @@ describe('ApprovalProcessController (e2e)', () => {
                 .set('Authorization', `Bearer ${drafterToken}`);
 
             agreementStepId = stepsResponse.body.steps[0]?.id;
+
+            // 실제 할당된 협의자의 ID로 업데이트
+            const actualAgreementId = stepsResponse.body.steps[0]?.approverId;
+            if (actualAgreementId && actualAgreementId !== approverEmployeeId) {
+                const employeeRepo = dataSource.getRepository('Employee');
+                const actualAgreement = await employeeRepo.findOne({ where: { id: actualAgreementId } });
+                if (actualAgreement) {
+                    approverEmployeeId = actualAgreementId;
+                    approverToken = jwtService.sign({
+                        sub: approverEmployeeId,
+                        employeeNumber: actualAgreement.employeeNumber,
+                    });
+                }
+            }
         });
 
         it('정상: 협의 완료', async () => {
@@ -546,7 +607,7 @@ describe('ApprovalProcessController (e2e)', () => {
                             stepOrder: 1,
                             stepType: 'IMPLEMENTATION',
                             assigneeRule: 'FIXED',
-                            targetEmployeeId: approverEmployeeId,
+                            defaultApproverId: approverEmployeeId,
                             isRequired: true,
                         },
                     ],
@@ -585,6 +646,15 @@ describe('ApprovalProcessController (e2e)', () => {
                 .set('Authorization', `Bearer ${drafterToken}`)
                 .send({
                     draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'IMPLEMENTATION',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                    ],
                 });
 
             const stepsResponse = await request(app.getHttpServer())
@@ -592,6 +662,20 @@ describe('ApprovalProcessController (e2e)', () => {
                 .set('Authorization', `Bearer ${drafterToken}`);
 
             implementationStepId = stepsResponse.body.steps[0]?.id;
+
+            // 실제 할당된 시행자의 ID로 업데이트
+            const actualImplementationId = stepsResponse.body.steps[0]?.approverId;
+            if (actualImplementationId && actualImplementationId !== approverEmployeeId) {
+                const employeeRepo = dataSource.getRepository('Employee');
+                const actualImplementation = await employeeRepo.findOne({ where: { id: actualImplementationId } });
+                if (actualImplementation) {
+                    approverEmployeeId = actualImplementationId;
+                    approverToken = jwtService.sign({
+                        sub: approverEmployeeId,
+                        employeeNumber: actualImplementation.employeeNumber,
+                    });
+                }
+            }
         });
 
         it('정상: 시행 완료', async () => {
@@ -780,6 +864,20 @@ describe('ApprovalProcessController (e2e)', () => {
         });
 
         it('실패: 기안자가 아닌 사용자가 취소 시도', async () => {
+            // 실제 존재하는 직원 중 하나를 사용 (기안자가 아닌)
+            const employeeRepo = dataSource.getRepository('Employee');
+            const employees = await employeeRepo.find({ take: 3 });
+            const otherEmployee = employees.find((emp) => emp.id !== drafterEmployeeId);
+
+            if (!otherEmployee) {
+                throw new Error('테스트용 직원을 찾을 수 없습니다');
+            }
+
+            const originalApproverToken = jwtService.sign({
+                sub: otherEmployee.id,
+                employeeNumber: otherEmployee.employeeNumber,
+            });
+
             // 새 문서 생성
             const docResponse = await request(app.getHttpServer())
                 .post('/v2/document')
@@ -799,7 +897,7 @@ describe('ApprovalProcessController (e2e)', () => {
 
             await request(app.getHttpServer())
                 .post('/v2/approval-process/cancel')
-                .set('Authorization', `Bearer ${approverToken}`)
+                .set('Authorization', `Bearer ${originalApproverToken}`) // 결재자가 취소 시도 (권한 없음)
                 .send({
                     documentId: docResponse.body.id,
                     reason: '취소',
@@ -826,6 +924,317 @@ describe('ApprovalProcessController (e2e)', () => {
                     reason: '취소',
                 })
                 .expect(401);
+        });
+    });
+
+    describe('순서 검증 테스트 - 결재 프로세스 순서 위반', () => {
+        let orderTestDocumentId: string;
+        let agreementStepId: string;
+        let approvalStepId: string;
+        let implementationStepId: string;
+
+        beforeAll(async () => {
+            // 협의 → 결재 → 시행 순서의 결재선 템플릿 생성
+            const timestamp = Date.now();
+            const templateResponse = await request(app.getHttpServer())
+                .post('/v2/approval-flow/templates')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    name: `순서 검증 결재선_${timestamp}`,
+                    description: '순서 검증 테스트용',
+                    type: 'COMMON',
+                    orgScope: 'ALL',
+                    steps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'AGREEMENT',
+                            assigneeRule: 'FIXED',
+                            defaultApproverId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            defaultApproverId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 3,
+                            stepType: 'IMPLEMENTATION',
+                            assigneeRule: 'FIXED',
+                            defaultApproverId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                    ],
+                });
+
+            const orderTestTemplateVersionId = templateResponse.body.currentVersionId;
+
+            // 문서양식 생성
+            const formResponse = await request(app.getHttpServer())
+                .post('/v2/approval-flow/forms')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    formName: `순서 검증 양식_${timestamp}`,
+                    formCode: `ORDER_TEST_FORM_${timestamp}`,
+                    template: '<h1>순서 검증 테스트</h1>',
+                    useExistingLine: true,
+                    lineTemplateVersionId: orderTestTemplateVersionId,
+                });
+
+            const orderTestFormVersionId = formResponse.body.formVersion.id;
+
+            // 문서 생성 (임시저장)
+            const docResponse = await request(app.getHttpServer())
+                .post('/v2/document')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    formVersionId: orderTestFormVersionId,
+                    title: '순서 검증 테스트 문서',
+                    content: '<p>순서 검증 테스트 내용</p>',
+                });
+
+            orderTestDocumentId = docResponse.body.id;
+
+            // 문서 제출 (customApprovalSteps로 협의 단계 포함)
+            await request(app.getHttpServer())
+                .post(`/v2/document/${orderTestDocumentId}/submit`)
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'AGREEMENT',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 3,
+                            stepType: 'IMPLEMENTATION',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                    ],
+                });
+
+            // 결재 단계들 조회
+            const stepsResponse = await request(app.getHttpServer())
+                .get(`/v2/approval-process/document/${orderTestDocumentId}/steps`)
+                .set('Authorization', `Bearer ${drafterToken}`);
+
+            agreementStepId = stepsResponse.body.steps.find((s: any) => s.stepType === 'AGREEMENT')?.id;
+            approvalStepId = stepsResponse.body.steps.find((s: any) => s.stepType === 'APPROVAL')?.id;
+            implementationStepId = stepsResponse.body.steps.find((s: any) => s.stepType === 'IMPLEMENTATION')?.id;
+        });
+
+        it('실패: 협의가 완료되지 않은 상태에서 결재 시도', async () => {
+            // 협의를 완료하지 않고 바로 결재 시도
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: approvalStepId,
+                    comment: '결재 승인',
+                })
+                .expect(400);
+        });
+
+        it('실패: 협의가 완료되지 않은 상태에서 시행 시도', async () => {
+            // 협의를 완료하지 않고 바로 시행 시도
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/implementation/complete')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: implementationStepId,
+                    comment: '시행 완료',
+                })
+                .expect(400);
+        });
+
+        it('실패: 결재가 완료되지 않은 상태에서 시행 시도', async () => {
+            // 협의 완료
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/agreement/complete')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: agreementStepId,
+                    comment: '협의 완료',
+                })
+                .expect(200);
+
+            // 결재를 완료하지 않고 바로 시행 시도
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/implementation/complete')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: implementationStepId,
+                    comment: '시행 완료',
+                })
+                .expect(400);
+        });
+
+        it('정상: 올바른 순서로 결재 프로세스 진행', async () => {
+            // 1. 결재 승인
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: approvalStepId,
+                    comment: '결재 승인',
+                })
+                .expect(200);
+
+            // 2. 시행 완료
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/implementation/complete')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: implementationStepId,
+                    comment: '시행 완료',
+                })
+                .expect(200);
+        });
+    });
+
+    describe('순서 검증 테스트 - 다중 결재 단계 순서 위반', () => {
+        let multiApprovalDocumentId: string;
+        let firstApprovalStepId: string;
+        let secondApprovalStepId: string;
+
+        beforeAll(async () => {
+            // 다중 결재 단계가 있는 결재선 템플릿 생성
+            const timestamp = Date.now();
+            const templateResponse = await request(app.getHttpServer())
+                .post('/v2/approval-flow/templates')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    name: `다중 결재 순서 검증_${timestamp}`,
+                    description: '다중 결재 순서 검증 테스트용',
+                    type: 'COMMON',
+                    orgScope: 'ALL',
+                    steps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            defaultApproverId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            defaultApproverId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                    ],
+                });
+
+            const multiApprovalTemplateVersionId = templateResponse.body.currentVersionId;
+
+            // 문서양식 생성
+            const formResponse = await request(app.getHttpServer())
+                .post('/v2/approval-flow/forms')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    formName: `다중 결재 양식_${timestamp}`,
+                    formCode: `MULTI_APPROVAL_FORM_${timestamp}`,
+                    template: '<h1>다중 결재 테스트</h1>',
+                    useExistingLine: true,
+                    lineTemplateVersionId: multiApprovalTemplateVersionId,
+                });
+
+            const multiApprovalFormVersionId = formResponse.body.formVersion.id;
+
+            // 문서 생성 (임시저장)
+            const docResponse = await request(app.getHttpServer())
+                .post('/v2/document')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    formVersionId: multiApprovalFormVersionId,
+                    title: '다중 결재 순서 검증 문서',
+                    content: '<p>다중 결재 순서 검증 내용</p>',
+                });
+
+            multiApprovalDocumentId = docResponse.body.id;
+
+            // 문서 제출 (customApprovalSteps로 다중 결재 단계 포함)
+            await request(app.getHttpServer())
+                .post(`/v2/document/${multiApprovalDocumentId}/submit`)
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: approverEmployeeId,
+                            isRequired: true,
+                        },
+                    ],
+                });
+
+            // 결재 단계들 조회
+            const stepsResponse = await request(app.getHttpServer())
+                .get(`/v2/approval-process/document/${multiApprovalDocumentId}/steps`)
+                .set('Authorization', `Bearer ${drafterToken}`);
+
+            const approvalSteps = stepsResponse.body.steps.filter((s: any) => s.stepType === 'APPROVAL');
+            firstApprovalStepId = approvalSteps.find((s: any) => s.stepOrder === 1)?.id;
+            secondApprovalStepId = approvalSteps.find((s: any) => s.stepOrder === 2)?.id;
+        });
+
+        it('실패: 첫 번째 결재가 완료되지 않은 상태에서 두 번째 결재 시도', async () => {
+            // 첫 번째 결재를 완료하지 않고 두 번째 결재 시도
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: secondApprovalStepId,
+                    comment: '두 번째 결재 승인',
+                })
+                .expect(400);
+        });
+
+        it('정상: 올바른 순서로 다중 결재 진행', async () => {
+            // 1. 첫 번째 결재 승인
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStepId,
+                    comment: '첫 번째 결재 승인',
+                })
+                .expect(200);
+
+            // 2. 두 번째 결재 승인
+            await request(app.getHttpServer())
+                .post('/v2/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: secondApprovalStepId,
+                    comment: '두 번째 결재 승인',
+                })
+                .expect(200);
         });
     });
 });

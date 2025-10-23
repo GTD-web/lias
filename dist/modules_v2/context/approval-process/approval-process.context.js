@@ -197,9 +197,23 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             order: { createdAt: 'DESC' },
             queryRunner,
         });
+        if (allPendingSteps.length === 0) {
+            return [];
+        }
+        const snapshotIds = [...new Set(allPendingSteps.map((step) => step.snapshotId))];
+        const allStepsBySnapshot = new Map();
+        for (const snapshotId of snapshotIds) {
+            const steps = await this.approvalStepSnapshotService.findAll({
+                where: { snapshotId },
+                order: { stepOrder: 'ASC' },
+                queryRunner,
+            });
+            allStepsBySnapshot.set(snapshotId, steps);
+        }
         const processableSteps = [];
         for (const step of allPendingSteps) {
-            if (await this.canProcessStep(step, queryRunner)) {
+            const allSteps = allStepsBySnapshot.get(step.snapshotId) || [];
+            if (await this.canProcessStepOptimized(step, allSteps)) {
                 processableSteps.push(step);
             }
         }
@@ -298,6 +312,53 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             throw new common_1.BadRequestException('모든 결재가 완료되어야 시행할 수 있습니다.');
         }
         this.logger.debug(`시행 가능 여부 검증 통과: ${currentStep.id}`);
+    }
+    async canProcessStepOptimized(step, allSteps) {
+        try {
+            if (step.stepType === approval_enum_1.ApprovalStepType.AGREEMENT) {
+                return true;
+            }
+            if (step.stepType === approval_enum_1.ApprovalStepType.APPROVAL) {
+                const agreementSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.AGREEMENT);
+                if (agreementSteps.length > 0) {
+                    const allAgreementsCompleted = agreementSteps.every((s) => s.status === approval_enum_1.ApprovalStatus.APPROVED);
+                    if (!allAgreementsCompleted) {
+                        return false;
+                    }
+                }
+                const approvalSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
+                for (const prevStep of approvalSteps) {
+                    if (prevStep.stepOrder < step.stepOrder) {
+                        if (prevStep.status !== approval_enum_1.ApprovalStatus.APPROVED) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            if (step.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION) {
+                const agreementSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.AGREEMENT);
+                if (agreementSteps.length > 0) {
+                    const allAgreementsCompleted = agreementSteps.every((s) => s.status === approval_enum_1.ApprovalStatus.APPROVED);
+                    if (!allAgreementsCompleted) {
+                        return false;
+                    }
+                }
+                const approvalSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
+                if (approvalSteps.length > 0) {
+                    const allApprovalsCompleted = approvalSteps.every((s) => s.status === approval_enum_1.ApprovalStatus.APPROVED);
+                    if (!allApprovalsCompleted) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+        catch (error) {
+            this.logger.error(`canProcessStepOptimized 오류: ${error.message}`);
+            return false;
+        }
     }
     async canProcessStep(step, queryRunner) {
         try {

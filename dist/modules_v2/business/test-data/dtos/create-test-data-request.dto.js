@@ -23,6 +23,7 @@ var TestDataScenario;
     TestDataScenario["WITH_REFERENCE"] = "WITH_REFERENCE";
     TestDataScenario["PARALLEL_AGREEMENT"] = "PARALLEL_AGREEMENT";
     TestDataScenario["FULL_PROCESS"] = "FULL_PROCESS";
+    TestDataScenario["NO_APPROVAL_LINE"] = "NO_APPROVAL_LINE";
 })(TestDataScenario || (exports.TestDataScenario = TestDataScenario = {}));
 class CreateTestDataRequestDto {
 }
@@ -42,6 +43,7 @@ __decorate([
             withReference: { value: TestDataScenario.WITH_REFERENCE, description: '👥 참조자 포함' },
             parallel: { value: TestDataScenario.PARALLEL_AGREEMENT, description: '🔀 병렬 협의' },
             fullProcess: { value: TestDataScenario.FULL_PROCESS, description: '🎯 전체 프로세스' },
+            noApprovalLine: { value: TestDataScenario.NO_APPROVAL_LINE, description: '🔧 결재선 없는 양식' },
         },
     }),
     (0, class_validator_1.IsNotEmpty)({ message: '시나리오를 선택해주세요' }),

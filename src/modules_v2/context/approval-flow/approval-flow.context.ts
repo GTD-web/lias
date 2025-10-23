@@ -676,36 +676,69 @@ export class ApprovalFlowContext {
      */
     async createApprovalSnapshot(dto: CreateSnapshotDto, externalQueryRunner?: QueryRunner) {
         this.logger.log(`결재 스냅샷 생성 시작: Document ${dto.documentId}`);
+        this.logger.log(`customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
 
         return await withTransaction(
             this.dataSource,
             async (queryRunner) => {
-                // 1) FormVersion 조회
-                const formVersion = await this.formVersionService.findOne({
-                    where: { id: dto.formVersionId },
+                // 기존 스냅샷이 있으면 먼저 삭제 (유니크 제약조건 방지)
+                const existingSnapshot = await this.approvalLineSnapshotService.findOne({
+                    where: { documentId: dto.documentId },
                     queryRunner,
                 });
-                if (!formVersion) {
-                    throw new NotFoundException(`FormVersion을 찾을 수 없습니다: ${dto.formVersionId}`);
+
+                if (existingSnapshot) {
+                    this.logger.log(`기존 스냅샷 발견, 삭제 중: ${existingSnapshot.id}`);
+                    // ApprovalStepSnapshot들 먼저 삭제
+                    await this.approvalStepSnapshotService.delete({ snapshotId: existingSnapshot.id } as any, {
+                        queryRunner,
+                    });
+                    // ApprovalLineSnapshot 삭제
+                    await this.approvalLineSnapshotService.delete(existingSnapshot.id, { queryRunner });
                 }
 
-                // 2) 연결된 결재선 템플릿 버전 조회
-                const link = await this.formVersionApprovalLineTemplateVersionService.findOne({
-                    where: { formVersionId: formVersion.id, isDefault: true },
-                    queryRunner,
-                });
-
+                // 무조건 body로 받은 스텝 정보로 스냅샷 생성
                 let resolvedApprovers: ResolvedApproverDto[] = [];
 
-                if (!link) {
-                    // 템플릿이 없으면 자동으로 계층적 결재선 생성
-                    this.logger.warn(
-                        `FormVersion ${formVersion.id}에 연결된 결재선 템플릿이 없습니다. 자동 계층적 결재선을 생성합니다.`,
-                    );
+                if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
+                    // 사용자 정의 결재선 생성
+                    this.logger.log(`사용자 정의 결재선 생성 - 단계 수: ${dto.customApprovalSteps.length}`);
+
+                    for (const customStep of dto.customApprovalSteps) {
+                        // 직원 정보 조회
+                        const employee = await this.employeeService.findOne({
+                            where: { id: customStep.employeeId },
+                            queryRunner,
+                        });
+
+                        if (!employee) {
+                            throw new NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                        }
+
+                        // 직원의 부서/직급 정보 조회
+                        const edp = await this.employeeDepartmentPositionService.findOne({
+                            where: { employeeId: customStep.employeeId },
+                            queryRunner,
+                        });
+
+                        resolvedApprovers.push({
+                            employeeId: customStep.employeeId,
+                            employeeName: employee.name,
+                            departmentId: edp?.departmentId,
+                            positionId: edp?.positionId,
+                            stepOrder: customStep.stepOrder,
+                            stepType: customStep.stepType,
+                            assigneeRule: customStep.assigneeRule,
+                            isRequired: customStep.isRequired,
+                        });
+                    }
+                } else {
+                    // customApprovalSteps가 없으면 자동 계층적 결재선 생성
+                    this.logger.log(`자동 계층적 결재선 생성`);
 
                     if (!dto.draftContext.drafterDepartmentId) {
                         throw new BadRequestException(
-                            '결재선 템플릿이 없고, 기안자의 부서 정보도 없습니다. drafterDepartmentId를 제공해주세요.',
+                            '결재선 정보가 없고, 기안자의 부서 정보도 없습니다. drafterDepartmentId를 제공해주세요.',
                         );
                     }
 
@@ -714,41 +747,6 @@ export class ApprovalFlowContext {
                         dto.draftContext.drafterDepartmentId,
                         queryRunner,
                     );
-                } else {
-                    // 템플릿이 있으면 기존 로직대로 진행
-                    const lineTemplateVersion = await this.approvalLineTemplateVersionService.findOne({
-                        where: { id: link.approvalLineTemplateVersionId },
-                        queryRunner,
-                    });
-                    if (!lineTemplateVersion) {
-                        throw new NotFoundException(`결재선 템플릿 버전을 찾을 수 없습니다.`);
-                    }
-
-                    // 3) 단계 템플릿들 조회
-                    const stepTemplates = await this.approvalStepTemplateService.findAll({
-                        where: { lineTemplateVersionId: lineTemplateVersion.id },
-                        order: { stepOrder: 'ASC' },
-                        queryRunner,
-                    });
-
-                    // 4) 각 단계의 assignee_rule 해석
-                    for (const stepTemplate of stepTemplates) {
-                        const approvers = await this.resolveAssigneeRule(
-                            stepTemplate.assigneeRule,
-                            dto.draftContext,
-                            stepTemplate,
-                            queryRunner,
-                        );
-                        resolvedApprovers.push(
-                            ...approvers.map((approver) => ({
-                                ...approver,
-                                stepOrder: stepTemplate.stepOrder,
-                                stepType: stepTemplate.stepType,
-                                assigneeRule: stepTemplate.assigneeRule,
-                                isRequired: stepTemplate.required,
-                            })),
-                        );
-                    }
                 }
 
                 if (resolvedApprovers.length === 0) {
@@ -756,12 +754,21 @@ export class ApprovalFlowContext {
                 }
 
                 // 5) ApprovalLineSnapshot 생성
+                const snapshotName =
+                    dto.customApprovalSteps && dto.customApprovalSteps.length > 0
+                        ? '사용자 정의 결재선'
+                        : '자동 생성 결재선';
+                const snapshotDescription =
+                    dto.customApprovalSteps && dto.customApprovalSteps.length > 0
+                        ? '제출 시 수정된 결재선'
+                        : '부서 계층에 따른 자동 생성 결재선';
+
                 const snapshotEntity = await this.approvalLineSnapshotService.create(
                     {
                         documentId: dto.documentId,
-                        sourceTemplateVersionId: link?.approvalLineTemplateVersionId || null,
-                        snapshotName: link ? '결재선 스냅샷' : '자동 생성 결재선',
-                        snapshotDescription: link ? undefined : '부서 계층에 따른 자동 생성 결재선',
+                        sourceTemplateVersionId: null, // 템플릿과의 연결 제거
+                        snapshotName,
+                        snapshotDescription,
                         frozenAt: new Date(),
                     },
                     { queryRunner },

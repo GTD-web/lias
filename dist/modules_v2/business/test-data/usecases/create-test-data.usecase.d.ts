@@ -18,6 +18,10 @@ export declare class CreateTestDataUsecase {
             approvalStepTemplates: any[];
             approvalLineSnapshots: any[];
             approvalStepSnapshots: any[];
+        } | {
+            forms: import("../../../domain").Form[];
+            documents: any[];
+            approvalLines: any[];
         };
     }>;
 }

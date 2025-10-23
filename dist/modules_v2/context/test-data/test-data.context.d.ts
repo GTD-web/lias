@@ -75,6 +75,10 @@ export declare class TestDataContext {
         approvalStepTemplates: any[];
         approvalLineSnapshots: any[];
         approvalStepSnapshots: any[];
+    } | {
+        forms: import("../../domain").Form[];
+        documents: any[];
+        approvalLines: any[];
     }>;
     private createSimpleApprovalScenario;
     private createMultiLevelApprovalScenario;
@@ -85,4 +89,6 @@ export declare class TestDataContext {
     private createWithReferenceScenario;
     private createParallelAgreementScenario;
     private createFullProcessScenario;
+    private createNoApprovalLineScenario;
+    private createFormWithoutApprovalLine;
 }

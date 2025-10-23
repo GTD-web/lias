@@ -20,5 +20,6 @@ export declare class ApprovalProcessContext {
     private checkAndUpdateDocumentStatus;
     private validateApprovalOrder;
     private validateImplementationPrecondition;
+    private canProcessStepOptimized;
     private canProcessStep;
 }

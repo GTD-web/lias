@@ -429,58 +429,67 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
     }
     async createApprovalSnapshot(dto, externalQueryRunner) {
         this.logger.log(`결재 스냅샷 생성 시작: Document ${dto.documentId}`);
+        this.logger.log(`customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
         return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
-            const formVersion = await this.formVersionService.findOne({
-                where: { id: dto.formVersionId },
+            const existingSnapshot = await this.approvalLineSnapshotService.findOne({
+                where: { documentId: dto.documentId },
                 queryRunner,
             });
-            if (!formVersion) {
-                throw new common_1.NotFoundException(`FormVersion을 찾을 수 없습니다: ${dto.formVersionId}`);
+            if (existingSnapshot) {
+                this.logger.log(`기존 스냅샷 발견, 삭제 중: ${existingSnapshot.id}`);
+                await this.approvalStepSnapshotService.delete({ snapshotId: existingSnapshot.id }, {
+                    queryRunner,
+                });
+                await this.approvalLineSnapshotService.delete(existingSnapshot.id, { queryRunner });
             }
-            const link = await this.formVersionApprovalLineTemplateVersionService.findOne({
-                where: { formVersionId: formVersion.id, isDefault: true },
-                queryRunner,
-            });
             let resolvedApprovers = [];
-            if (!link) {
-                this.logger.warn(`FormVersion ${formVersion.id}에 연결된 결재선 템플릿이 없습니다. 자동 계층적 결재선을 생성합니다.`);
-                if (!dto.draftContext.drafterDepartmentId) {
-                    throw new common_1.BadRequestException('결재선 템플릿이 없고, 기안자의 부서 정보도 없습니다. drafterDepartmentId를 제공해주세요.');
+            if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
+                this.logger.log(`사용자 정의 결재선 생성 - 단계 수: ${dto.customApprovalSteps.length}`);
+                for (const customStep of dto.customApprovalSteps) {
+                    const employee = await this.employeeService.findOne({
+                        where: { id: customStep.employeeId },
+                        queryRunner,
+                    });
+                    if (!employee) {
+                        throw new common_1.NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                    }
+                    const edp = await this.employeeDepartmentPositionService.findOne({
+                        where: { employeeId: customStep.employeeId },
+                        queryRunner,
+                    });
+                    resolvedApprovers.push({
+                        employeeId: customStep.employeeId,
+                        employeeName: employee.name,
+                        departmentId: edp?.departmentId,
+                        positionId: edp?.positionId,
+                        stepOrder: customStep.stepOrder,
+                        stepType: customStep.stepType,
+                        assigneeRule: customStep.assigneeRule,
+                        isRequired: customStep.isRequired,
+                    });
                 }
-                resolvedApprovers = await this.createHierarchicalApprovalLine(dto.draftContext.drafterId, dto.draftContext.drafterDepartmentId, queryRunner);
             }
             else {
-                const lineTemplateVersion = await this.approvalLineTemplateVersionService.findOne({
-                    where: { id: link.approvalLineTemplateVersionId },
-                    queryRunner,
-                });
-                if (!lineTemplateVersion) {
-                    throw new common_1.NotFoundException(`결재선 템플릿 버전을 찾을 수 없습니다.`);
+                this.logger.log(`자동 계층적 결재선 생성`);
+                if (!dto.draftContext.drafterDepartmentId) {
+                    throw new common_1.BadRequestException('결재선 정보가 없고, 기안자의 부서 정보도 없습니다. drafterDepartmentId를 제공해주세요.');
                 }
-                const stepTemplates = await this.approvalStepTemplateService.findAll({
-                    where: { lineTemplateVersionId: lineTemplateVersion.id },
-                    order: { stepOrder: 'ASC' },
-                    queryRunner,
-                });
-                for (const stepTemplate of stepTemplates) {
-                    const approvers = await this.resolveAssigneeRule(stepTemplate.assigneeRule, dto.draftContext, stepTemplate, queryRunner);
-                    resolvedApprovers.push(...approvers.map((approver) => ({
-                        ...approver,
-                        stepOrder: stepTemplate.stepOrder,
-                        stepType: stepTemplate.stepType,
-                        assigneeRule: stepTemplate.assigneeRule,
-                        isRequired: stepTemplate.required,
-                    })));
-                }
+                resolvedApprovers = await this.createHierarchicalApprovalLine(dto.draftContext.drafterId, dto.draftContext.drafterDepartmentId, queryRunner);
             }
             if (resolvedApprovers.length === 0) {
                 throw new common_1.BadRequestException('결재선을 구성할 수 없습니다. 결재자가 없습니다.');
             }
+            const snapshotName = dto.customApprovalSteps && dto.customApprovalSteps.length > 0
+                ? '사용자 정의 결재선'
+                : '자동 생성 결재선';
+            const snapshotDescription = dto.customApprovalSteps && dto.customApprovalSteps.length > 0
+                ? '제출 시 수정된 결재선'
+                : '부서 계층에 따른 자동 생성 결재선';
             const snapshotEntity = await this.approvalLineSnapshotService.create({
                 documentId: dto.documentId,
-                sourceTemplateVersionId: link?.approvalLineTemplateVersionId || null,
-                snapshotName: link ? '결재선 스냅샷' : '자동 생성 결재선',
-                snapshotDescription: link ? undefined : '부서 계층에 따른 자동 생성 결재선',
+                sourceTemplateVersionId: null,
+                snapshotName,
+                snapshotDescription,
                 frozenAt: new Date(),
             }, { queryRunner });
             const snapshot = await this.approvalLineSnapshotService.save(snapshotEntity, { queryRunner });

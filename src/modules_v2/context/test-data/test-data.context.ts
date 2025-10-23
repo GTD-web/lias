@@ -24,6 +24,7 @@ import {
     ApprovalLineType,
     DepartmentScopeType,
 } from '../../../common/enums/approval.enum';
+import { EmployeeStatus } from '../../../common/enums/employee.enum';
 
 /**
  * TestDataContext
@@ -248,7 +249,7 @@ export class TestDataContext {
     }
 
     /**
-     * 헬퍼: 같은 부서의 다른 직원들 조회 (기안자 제외)
+     * 헬퍼: 같은 부서의 다른 직원들 조회 (기안자 제외, 재직중인 직원만)
      */
     private async getOtherEmployeesInDepartment(
         excludeEmployeeId: string,
@@ -262,12 +263,17 @@ export class TestDataContext {
         });
 
         return employeeDeptPositions
-            .filter((edp) => edp.employeeId !== excludeEmployeeId && edp.employee)
+            .filter(
+                (edp) =>
+                    edp.employeeId !== excludeEmployeeId &&
+                    edp.employee &&
+                    edp.employee.status === EmployeeStatus.Active,
+            )
             .map((edp) => edp.employee);
     }
 
     /**
-     * 헬퍼: 부서장 조회
+     * 헬퍼: 부서장 조회 (재직중인 직원만)
      */
     private async getDepartmentHead(departmentId: string, excludeEmployeeId?: string, queryRunner?: QueryRunner) {
         const employeeDeptPositions = await this.employeeDepartmentPositionService.findAll({
@@ -276,21 +282,33 @@ export class TestDataContext {
             queryRunner,
         });
 
-        // isManager가 true인 직원 우선 (excludeEmployeeId 제외)
+        // isManager가 true인 직원 우선 (excludeEmployeeId 제외, 재직중인 직원만)
         const manager = employeeDeptPositions.find(
-            (edp) => edp.isManager && edp.employee && edp.employeeId !== excludeEmployeeId,
+            (edp) =>
+                edp.isManager &&
+                edp.employee &&
+                edp.employeeId !== excludeEmployeeId &&
+                edp.employee.status === EmployeeStatus.Active,
         );
         if (manager) return manager.employee;
 
-        // hasManagementAuthority가 true인 position을 가진 직원 (excludeEmployeeId 제외)
+        // hasManagementAuthority가 true인 position을 가진 직원 (excludeEmployeeId 제외, 재직중인 직원만)
         for (const edp of employeeDeptPositions) {
-            if (edp.position?.hasManagementAuthority && edp.employee && edp.employeeId !== excludeEmployeeId) {
+            if (
+                edp.position?.hasManagementAuthority &&
+                edp.employee &&
+                edp.employeeId !== excludeEmployeeId &&
+                edp.employee.status === EmployeeStatus.Active
+            ) {
                 return edp.employee;
             }
         }
 
-        // 없으면 첫 번째 직원 반환 (excludeEmployeeId 제외)
-        const fallback = employeeDeptPositions.find((edp) => edp.employee && edp.employeeId !== excludeEmployeeId);
+        // 없으면 첫 번째 재직중인 직원 반환 (excludeEmployeeId 제외)
+        const fallback = employeeDeptPositions.find(
+            (edp) =>
+                edp.employee && edp.employeeId !== excludeEmployeeId && edp.employee.status === EmployeeStatus.Active,
+        );
         return fallback?.employee || null;
     }
 
@@ -312,7 +330,7 @@ export class TestDataContext {
     }
 
     /**
-     * 헬퍼: 상위 부서의 부서장 조회
+     * 헬퍼: 상위 부서의 부서장 조회 (재직중인 직원만)
      */
     private async getParentDepartmentHead(departmentId: string, excludeEmployeeId?: string, queryRunner?: QueryRunner) {
         const parentDept = await this.getParentDepartment(departmentId, queryRunner);
@@ -322,11 +340,16 @@ export class TestDataContext {
     }
 
     /**
-     * 헬퍼: 랜덤으로 직원 선택
+     * 헬퍼: 랜덤으로 직원 선택 (재직중인 직원만)
      */
     private getRandomEmployee(employees: any[]) {
         if (!employees || employees.length === 0) return null;
-        return employees[Math.floor(Math.random() * employees.length)];
+
+        // 재직중인 직원만 필터링
+        const activeEmployees = employees.filter((emp) => emp.status === EmployeeStatus.Active);
+        if (activeEmployees.length === 0) return null;
+
+        return activeEmployees[Math.floor(Math.random() * activeEmployees.length)];
     }
 
     /**
@@ -393,7 +416,7 @@ export class TestDataContext {
                     lineTemplateVersionId: version.id,
                     stepOrder: 2,
                     stepType: ApprovalStepType.APPROVAL,
-                    assigneeRule: AssigneeRule.DEPARTMENT_HEAD,
+                    assigneeRule: AssigneeRule.FIXED,
                     targetDepartmentId: departmentId,
                     required: true,
                     description: '2차 결재 (부서장)',
@@ -416,7 +439,7 @@ export class TestDataContext {
                     lineTemplateVersionId: version.id,
                     stepOrder: 1,
                     stepType: ApprovalStepType.APPROVAL,
-                    assigneeRule: AssigneeRule.DEPARTMENT_HEAD,
+                    assigneeRule: AssigneeRule.FIXED,
                     targetDepartmentId: departmentId,
                     required: true,
                     description: '부서장 결재',
@@ -473,7 +496,7 @@ export class TestDataContext {
 
         const steps = [];
 
-        // 1단계: 협의 (같은 부서의 다른 직원)
+        // 1단계: 협의 (고정 결재자)
         const step1 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
@@ -483,7 +506,7 @@ export class TestDataContext {
                     assigneeRule: AssigneeRule.FIXED,
                     defaultApproverId: agreementPerson?.id || employeeId,
                     required: true,
-                    description: '사전 협의',
+                    description: '사전 협의 (고정 결재자)',
                 },
                 { queryRunner },
             ),
@@ -491,17 +514,16 @@ export class TestDataContext {
         );
         steps.push(step1.id);
 
-        // 2단계: 1차 결재 (같은 부서의 다른 직원)
+        // 2단계: 1차 결재 (기안자)
         const step2 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
                     lineTemplateVersionId: version.id,
                     stepOrder: 2,
                     stepType: ApprovalStepType.APPROVAL,
-                    assigneeRule: AssigneeRule.FIXED,
-                    defaultApproverId: firstApprover?.id || employeeId,
+                    assigneeRule: AssigneeRule.DRAFTER,
                     required: true,
-                    description: '1차 결재',
+                    description: '1차 결재 (기안자)',
                 },
                 { queryRunner },
             ),
@@ -509,17 +531,16 @@ export class TestDataContext {
         );
         steps.push(step2.id);
 
-        // 3단계: 2차 결재 (부서장)
+        // 3단계: 2차 결재 (기안자 상급자)
         const step3 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
                     lineTemplateVersionId: version.id,
                     stepOrder: 3,
                     stepType: ApprovalStepType.APPROVAL,
-                    assigneeRule: AssigneeRule.DEPARTMENT_HEAD,
-                    targetDepartmentId: departmentId,
+                    assigneeRule: AssigneeRule.DRAFTER_SUPERIOR,
                     required: true,
-                    description: '2차 결재 (부서장)',
+                    description: '2차 결재 (기안자 상급자)',
                 },
                 { queryRunner },
             ),
@@ -547,7 +568,7 @@ export class TestDataContext {
             steps.push(step4.id);
         }
 
-        // 5단계: 시행 (같은 부서의 다른 직원)
+        // 5단계: 시행 (고정 결재자)
         const step5 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
@@ -557,7 +578,7 @@ export class TestDataContext {
                     assigneeRule: AssigneeRule.FIXED,
                     defaultApproverId: implementer?.id || employeeId,
                     required: true,
-                    description: '시행 처리',
+                    description: '시행 처리 (고정 결재자)',
                 },
                 { queryRunner },
             ),
@@ -605,7 +626,7 @@ export class TestDataContext {
 
         const steps = [];
 
-        // 협의 A (같은 부서의 다른 직원)
+        // 협의 A (고정 결재자)
         const step1 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
@@ -615,7 +636,7 @@ export class TestDataContext {
                     assigneeRule: AssigneeRule.FIXED,
                     defaultApproverId: agreementPersonA?.id || employeeId,
                     required: true,
-                    description: '협의 A',
+                    description: '협의 A (고정 결재자)',
                 },
                 { queryRunner },
             ),
@@ -623,7 +644,7 @@ export class TestDataContext {
         );
         steps.push(step1.id);
 
-        // 협의 B (같은 부서의 다른 직원)
+        // 협의 B (고정 결재자)
         const step2 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
@@ -633,7 +654,7 @@ export class TestDataContext {
                     assigneeRule: AssigneeRule.FIXED,
                     defaultApproverId: agreementPersonB?.id || employeeId,
                     required: true,
-                    description: '협의 B',
+                    description: '협의 B (고정 결재자)',
                 },
                 { queryRunner },
             ),
@@ -641,17 +662,16 @@ export class TestDataContext {
         );
         steps.push(step2.id);
 
-        // 최종 결재 (부서장)
+        // 최종 결재 (기안자)
         const step3 = await this.approvalStepTemplateService.save(
             await this.approvalStepTemplateService.create(
                 {
                     lineTemplateVersionId: version.id,
                     stepOrder: 3,
                     stepType: ApprovalStepType.APPROVAL,
-                    assigneeRule: AssigneeRule.DEPARTMENT_HEAD,
-                    targetDepartmentId: departmentId,
+                    assigneeRule: AssigneeRule.DRAFTER,
                     required: true,
-                    description: '최종 결재',
+                    description: '최종 결재 (기안자)',
                 },
                 { queryRunner },
             ),
@@ -1057,6 +1077,12 @@ export class TestDataContext {
                     titlePrefix,
                     progress,
                 });
+            case 'NO_APPROVAL_LINE':
+                return await this.createNoApprovalLineScenario(employeeId, departmentId, {
+                    documentCount,
+                    titlePrefix,
+                    progress,
+                });
             default:
                 // 기본적으로 기존 createTestData 메서드 사용
                 return await this.createTestData(employeeId, departmentId);
@@ -1291,5 +1317,68 @@ export class TestDataContext {
     private async createFullProcessScenario(employeeId: string, departmentId: string, options: any) {
         // 전체 프로세스 (복잡한 결재선 사용)
         return await this.createMultiLevelApprovalScenario(employeeId, departmentId, options);
+    }
+
+    private async createNoApprovalLineScenario(employeeId: string, departmentId: string, options: any) {
+        // 결재선이 없는 양식으로 문서 생성 (자동 결재선 생성 테스트)
+        const { documentCount, titlePrefix, progress } = options;
+
+        // 결재선이 없는 양식 생성
+        const form = await this.createFormWithoutApprovalLine(employeeId, departmentId);
+
+        const documents = [];
+        for (let i = 0; i < documentCount; i++) {
+            const document = await this.createDocument(
+                form.currentVersionId,
+                employeeId,
+                departmentId,
+                `${titlePrefix} ${i + 1} (결재선 없음)`,
+                progress > 0 ? DocumentStatus.PENDING : DocumentStatus.DRAFT,
+                null,
+            );
+            documents.push(document);
+        }
+
+        return {
+            forms: [form],
+            documents,
+            approvalLines: [], // 결재선이 없음
+        };
+    }
+
+    /**
+     * 결재선이 없는 양식 생성
+     */
+    private async createFormWithoutApprovalLine(employeeId: string, departmentId: string) {
+        const formEntity = await this.formService.create(
+            {
+                name: '결재선 없는 테스트 양식',
+                code: `NO_APPROVAL_LINE_FORM_${Date.now()}`,
+                description: '결재선이 없는 테스트 양식 (자동 결재선 생성 테스트용)',
+                status: FormStatus.ACTIVE,
+            },
+            { queryRunner: null },
+        );
+        const form = await this.formService.save(formEntity, { queryRunner: null });
+
+        // 양식 버전 생성 (결재선 없음)
+        const versionEntity = await this.formVersionService.create(
+            {
+                formId: form.id,
+                versionNo: 1,
+                template: `<div><h1>결재선 없는 테스트 양식</h1><p>자동 결재선 생성 테스트용 템플릿</p></div>`,
+                isActive: true,
+                createdBy: employeeId,
+                // approvalLineVersionId 없음 - 결재선이 없는 양식
+            },
+            { queryRunner: null },
+        );
+        const version = await this.formVersionService.save(versionEntity, { queryRunner: null });
+
+        // 양식 업데이트
+        form.currentVersionId = version.id;
+        await this.formService.save(form, { queryRunner: null });
+
+        return form;
     }
 }

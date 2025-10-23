@@ -49,11 +49,19 @@ export class DocumentController {
         summary: '문서 생성',
         description:
             '새로운 문서를 생성합니다 (임시저장 상태)\n\n' +
+            '**CustomApprovalSteps 지원:**\n' +
+            '- 문서 생성 시 결재선을 커스터마이징할 수 있습니다\n' +
+            '- 다양한 assigneeRule 지원: FIXED, DRAFTER, DRAFTER_SUPERIOR, DEPARTMENT_HEAD, POSITION_BASED\n' +
+            '- 임시저장 시에도 결재선 스냅샷이 생성됩니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 새로운 문서 생성 (임시저장)\n' +
-            '- ✅ metadata 없이 문서 생성\n' +
-            '- ❌ 필수 필드 누락 (formVersionId, title, content)\n' +
-            '- ❌ 존재하지 않는 formVersionId (404 반환)',
+            '- ✅ 정상: 새로운 문서 생성 (임시저장)\n' +
+            '- ✅ 정상: metadata 없이 문서 생성\n' +
+            '- ✅ 정상: customApprovalSteps와 함께 문서 생성\n' +
+            '- ✅ 정상: 다양한 assigneeRule로 결재선 커스터마이징\n' +
+            '- ❌ 실패: 필수 필드 누락 (formVersionId, title, content)\n' +
+            '- ❌ 실패: 존재하지 않는 formVersionId (404 반환)\n' +
+            '- ❌ 실패: 잘못된 assigneeRule (400 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiResponse({ status: 201, description: '문서 생성 성공', type: DocumentResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청' })
@@ -69,11 +77,12 @@ export class DocumentController {
         description:
             '임시저장 상태의 문서를 수정합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ DRAFT 상태 문서 수정\n' +
-            '- ✅ 일부 필드만 수정\n' +
-            '- ❌ 존재하지 않는 문서 ID (404 반환)\n' +
-            '- ❌ 제출된 문서(PENDING) 수정 시도 (400 반환)\n' +
-            '- ❌ 다른 사용자의 문서 수정 시도 (403 반환)',
+            '- ✅ 정상: DRAFT 상태 문서 수정\n' +
+            '- ✅ 정상: 일부 필드만 수정\n' +
+            '- ❌ 실패: 존재하지 않는 문서 ID (404 반환)\n' +
+            '- ❌ 실패: 제출된 문서(PENDING) 수정 시도 (400 반환)\n' +
+            '- ❌ 실패: 다른 사용자의 문서 수정 시도 (403 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiParam({ name: 'documentId', description: '문서 ID' })
     @ApiResponse({ status: 200, description: '문서 수정 성공', type: DocumentResponseDto })
@@ -99,12 +108,22 @@ export class DocumentController {
             '  - 기안자 → 기안자의 부서장 → 상위 부서장 → ... (최상위까지)\n' +
             '  - 기안자가 부서장인 경우 해당 단계는 건너뜀\n' +
             '  - drafterDepartmentId가 없으면 자동으로 기안자의 주 소속 부서 조회\n\n' +
+            '**AssigneeRule 해석:**\n' +
+            '- FIXED: 고정 결재자 (defaultApproverId 사용)\n' +
+            '- DRAFTER: 기안자 본인\n' +
+            '- DRAFTER_SUPERIOR: 기안자의 상급자\n' +
+            '- DEPARTMENT_HEAD: 지정된 부서의 부서장\n' +
+            '- POSITION_BASED: 지정된 직책의 담당자\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 문서 제출 (DRAFT → PENDING)\n' +
-            '- ✅ 결재선이 없는 양식으로 제출 (자동 결재선 생성)\n' +
-            '- ❌ 이미 제출된 문서 재제출 시도 (400 반환)\n' +
-            '- ❌ 존재하지 않는 문서 ID (404 반환)\n' +
-            '- ❌ 결재선도 없고 부서 정보도 없음 (400 반환)',
+            '- ✅ 정상: 문서 제출 (DRAFT → PENDING)\n' +
+            '- ✅ 정상: 결재선이 없는 양식으로 제출 (자동 결재선 생성)\n' +
+            '- ✅ 정상: customApprovalSteps와 함께 문서 제출\n' +
+            '- ✅ 정상: 다양한 assigneeRule로 결재선 커스터마이징\n' +
+            '- ❌ 실패: 이미 제출된 문서 재제출 시도 (400 반환)\n' +
+            '- ❌ 실패: 존재하지 않는 문서 ID (404 반환)\n' +
+            '- ❌ 실패: 결재선도 없고 부서 정보도 없음 (400 반환)\n' +
+            '- ❌ 실패: 잘못된 assigneeRule (400 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiParam({ name: 'documentId', description: '문서 ID' })
     @ApiResponse({ status: 200, description: '문서 제출 성공', type: DocumentResponseDto })
@@ -125,8 +144,9 @@ export class DocumentController {
         description:
             '내가 작성한 모든 문서를 조회합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 내가 작성한 모든 문서 조회\n' +
-            '- ✅ 작성자 확인 (drafterId 일치)',
+            '- ✅ 정상: 내가 작성한 모든 문서 조회\n' +
+            '- ✅ 정상: 작성자 확인 (drafterId 일치)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiResponse({ status: 200, description: '문서 목록 조회 성공', type: [DocumentResponseDto] })
     @ApiResponse({ status: 401, description: '인증 실패' })
@@ -140,10 +160,11 @@ export class DocumentController {
         description:
             '특정 상태의 모든 문서를 조회합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ DRAFT 상태 문서 조회\n' +
-            '- ✅ PENDING 상태 문서 조회\n' +
-            '- ✅ APPROVED 상태 문서 조회 (빈 배열 가능)\n' +
-            '- ❌ 잘못된 상태 값 (400 반환)',
+            '- ✅ 정상: DRAFT 상태 문서 조회\n' +
+            '- ✅ 정상: PENDING 상태 문서 조회\n' +
+            '- ✅ 정상: APPROVED 상태 문서 조회 (빈 배열 가능)\n' +
+            '- ❌ 실패: 잘못된 상태 값 (400 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiParam({ name: 'status', enum: DocumentStatus, description: '문서 상태' })
     @ApiResponse({ status: 200, description: '문서 목록 조회 성공', type: [DocumentResponseDto] })
@@ -162,9 +183,10 @@ export class DocumentController {
         description:
             'ID로 문서를 조회합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 특정 문서 조회\n' +
-            '- ✅ 다른 사용자의 문서 조회 가능 (조회 권한)\n' +
-            '- ❌ 존재하지 않는 문서 ID (404 반환)',
+            '- ✅ 정상: 특정 문서 조회\n' +
+            '- ✅ 정상: 다른 사용자의 문서 조회 가능 (조회 권한)\n' +
+            '- ❌ 실패: 존재하지 않는 문서 ID (404 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiParam({ name: 'documentId', description: '문서 ID' })
     @ApiResponse({ status: 200, description: '문서 조회 성공', type: DocumentResponseDto })
@@ -180,11 +202,12 @@ export class DocumentController {
         description:
             '임시저장 상태의 문서를 삭제합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ DRAFT 상태 문서 삭제\n' +
-            '- ❌ 제출된 문서(PENDING) 삭제 시도 (400 반환)\n' +
-            '- ❌ 존재하지 않는 문서 ID (404 반환)\n' +
-            '- ❌ 이미 삭제된 문서 재삭제 시도 (404 반환)\n' +
-            '- ❌ 다른 사용자의 문서 삭제 시도 (403 반환)',
+            '- ✅ 정상: DRAFT 상태 문서 삭제\n' +
+            '- ❌ 실패: 제출된 문서(PENDING) 삭제 시도 (400 반환)\n' +
+            '- ❌ 실패: 존재하지 않는 문서 ID (404 반환)\n' +
+            '- ❌ 실패: 이미 삭제된 문서 재삭제 시도 (404 반환)\n' +
+            '- ❌ 실패: 다른 사용자의 문서 삭제 시도 (403 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiParam({ name: 'documentId', description: '문서 ID' })
     @ApiResponse({ status: 200, description: '문서 삭제 성공' })

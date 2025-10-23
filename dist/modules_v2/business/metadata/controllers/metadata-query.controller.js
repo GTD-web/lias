@@ -53,7 +53,8 @@ __decorate([
         summary: '부서 목록 조회',
         description: '모든 부서를 조회합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 모든 부서 조회 (id, departmentName, departmentCode 포함)',
+            '- ✅ 정상: 모든 부서 조회 (id, departmentName, departmentCode 포함)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '부서 목록 조회 성공' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: '인증 실패' }),
@@ -69,9 +70,10 @@ __decorate([
             '**쿼리 파라미터:**\n' +
             '- activeOnly: 재직 중인 직원만 조회 (기본값: true)\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 특정 부서의 직원 목록 조회\n' +
-            '- ❌ 존재하지 않는 부서 ID (404 반환)\n' +
-            '- ❌ 잘못된 UUID 형식 (400 반환)',
+            '- ✅ 정상: 특정 부서의 직원 목록 조회\n' +
+            '- ❌ 실패: 존재하지 않는 부서 ID (404 반환)\n' +
+            '- ❌ 실패: 잘못된 UUID 형식 (400 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiParam)({ name: 'departmentId', description: '부서 ID' }),
     (0, swagger_1.ApiQuery)({
@@ -113,7 +115,10 @@ __decorate([
             '    ]\n' +
             '  }\n' +
             ']\n' +
-            '```',
+            '```\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 계층구조 부서 및 직원 조회\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'activeOnly',
@@ -134,7 +139,8 @@ __decorate([
         summary: '직급 목록 조회',
         description: '모든 직급을 조회합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 모든 직급 조회 (id, positionTitle, positionCode, level 포함)',
+            '- ✅ 정상: 모든 직급 조회 (id, positionTitle, positionCode, level 포함)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '직급 목록 조회 성공' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: '인증 실패' }),
@@ -148,15 +154,16 @@ __decorate([
         summary: '직원 검색',
         description: '이름 또는 직원번호로 직원을 검색합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 모든 직원 조회 (필터 없음)\n' +
-            '- ✅ 이름으로 검색\n' +
-            '- ✅ 직원번호로 검색\n' +
-            '- ✅ 부서별 필터링\n' +
-            '- ✅ 검색어 + 부서 조합 필터\n' +
-            '- ✅ 검색 결과 없음 (빈 배열 반환)\n' +
-            '- ✅ 빈 검색어 (전체 조회와 동일)\n' +
-            '- ✅ 한글, 공백, 특수문자, 긴 검색어 처리\n' +
-            '- ❌ 잘못된 departmentId UUID 형식 (400 반환)',
+            '- ✅ 정상: 모든 직원 조회 (필터 없음)\n' +
+            '- ✅ 정상: 이름으로 검색\n' +
+            '- ✅ 정상: 직원번호로 검색\n' +
+            '- ✅ 정상: 부서별 필터링\n' +
+            '- ✅ 정상: 검색어 + 부서 조합 필터\n' +
+            '- ✅ 정상: 검색 결과 없음 (빈 배열 반환)\n' +
+            '- ✅ 정상: 빈 검색어 (전체 조회와 동일)\n' +
+            '- ✅ 정상: 한글, 공백, 특수문자, 긴 검색어 처리\n' +
+            '- ❌ 실패: 잘못된 departmentId UUID 형식 (400 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiQuery)({ name: 'search', description: '검색어 (이름 또는 직원번호)', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'departmentId', description: '부서 ID', required: false }),
@@ -174,10 +181,11 @@ __decorate([
         summary: '직원 상세 조회',
         description: '특정 직원의 상세 정보를 조회합니다\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 특정 직원 상세 정보 조회\n' +
-            '- ✅ 다른 직원 정보 조회\n' +
-            '- ❌ 존재하지 않는 직원 ID (404 반환)\n' +
-            '- ❌ 잘못된 UUID 형식 (400 반환)',
+            '- ✅ 정상: 특정 직원 상세 정보 조회\n' +
+            '- ✅ 정상: 다른 직원 정보 조회\n' +
+            '- ❌ 실패: 존재하지 않는 직원 ID (404 반환)\n' +
+            '- ❌ 실패: 잘못된 UUID 형식 (400 반환)\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiParam)({ name: 'employeeId', description: '직원 ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '직원 조회 성공' }),

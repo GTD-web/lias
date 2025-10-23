@@ -254,6 +254,17 @@ __decorate([
         description: '문서 기안 시 호출됩니다. ' +
             '결재선 템플릿의 assignee_rule을 기안 컨텍스트로 해석하여 실제 결재자를 확정하고 스냅샷으로 저장합니다. ' +
             '이후 결재선 템플릿이 변경되어도 기안된 문서의 결재선은 변경되지 않습니다.\n\n' +
+            '**AssigneeRule 해석 규칙:**\n' +
+            '- FIXED: 고정 결재자 (defaultApproverId 사용)\n' +
+            '- DRAFTER: 기안자 본인\n' +
+            '- DRAFTER_SUPERIOR: 기안자의 상급자\n' +
+            '- DEPARTMENT_HEAD: 지정된 부서의 부서장\n' +
+            '- POSITION_BASED: 지정된 직책의 담당자\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 다양한 assigneeRule로 스냅샷 생성\n' +
+            '- ❌ 실패: 존재하지 않는 formVersionId (404 반환)\n' +
+            '- ❌ 실패: assigneeRule 해석 실패 (400 반환)\n' +
+            '- ❌ 실패: 필수 필드 누락 (formVersionId, drafterId)\n\n' +
             '**참고:** 이 API는 주로 문서 제출(POST /v2/documents/:documentId/submit) 프로세스 내에서 내부적으로 호출됩니다.',
     }),
     (0, swagger_1.ApiResponse)({

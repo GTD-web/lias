@@ -1,6 +1,46 @@
-import { IsNotEmpty, IsUUID, IsOptional, IsString, IsNumber, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsOptional, IsString, IsNumber, ValidateNested, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+
+export class CustomApprovalStepDto {
+    @ApiProperty({
+        description: '단계 순서',
+        example: 1,
+    })
+    @IsNotEmpty()
+    stepOrder: number;
+
+    @ApiProperty({
+        description: '단계 타입',
+        example: 'APPROVAL',
+    })
+    @IsNotEmpty()
+    @IsString()
+    stepType: string;
+
+    @ApiProperty({
+        description: '필수 여부',
+        example: true,
+    })
+    @IsNotEmpty()
+    isRequired: boolean;
+
+    @ApiProperty({
+        description: '담당자 직원 ID',
+        example: '123e4567-e89b-12d3-a456-426614174001',
+    })
+    @IsNotEmpty()
+    @IsUUID()
+    employeeId: string;
+
+    @ApiProperty({
+        description: '담당자 할당 규칙',
+        example: 'FIXED_EMPLOYEE',
+    })
+    @IsNotEmpty()
+    @IsString()
+    assigneeRule: string;
+}
 
 export class DraftContextDto {
     @ApiProperty({
@@ -40,4 +80,15 @@ export class SubmitDocumentRequestDto {
     @ValidateNested()
     @Type(() => DraftContextDto)
     draftContext: DraftContextDto;
+
+    @ApiProperty({
+        description: '사용자 정의 결재선 단계 (제출 시 결재선 수정)',
+        type: [CustomApprovalStepDto],
+        required: false,
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CustomApprovalStepDto)
+    customApprovalSteps?: CustomApprovalStepDto[];
 }
