@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { In } from 'typeorm';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { ApprovalStatus } from '../../../../common/enums/approval.enum';
 import { ApprovalStepResponseDto } from '../dtos/approval-process-response.dto';
@@ -29,33 +30,69 @@ export class GetApprovalStatusUsecase {
         this.logger.log(`결재 대기 목록 조회: ${approverId}`);
         const steps = await this.approvalProcessContext.getMyPendingApprovals(approverId);
 
-        // ApprovalStepSnapshot을 ApprovalStepResponseDto로 변환하면서 문서 정보도 함께 조회
+        if (steps.length === 0) {
+            return [];
+        }
+
+        // 모든 스냅샷 ID 수집
+        const snapshotIds = [...new Set(steps.map((step) => step.snapshotId))];
+
+        // 모든 문서를 한 번에 조회
+        const documents = await this.documentService.findAll({
+            where: { approvalLineSnapshotId: In(snapshotIds) },
+        });
+        const documentsBySnapshotId = new Map();
+        documents.forEach((doc) => {
+            documentsBySnapshotId.set(doc.approvalLineSnapshotId, doc);
+        });
+
+        // 모든 기안자 ID 수집
+        const drafterIds = [...new Set(documents.map((doc) => doc.drafterId).filter(Boolean))];
+
+        // 모든 기안자 정보를 한 번에 조회
+        const drafters = await this.employeeService.findAll({
+            where: { id: In(drafterIds) },
+        });
+        const draftersById = new Map();
+        drafters.forEach((drafter) => {
+            draftersById.set(drafter.id, drafter);
+        });
+
+        // 모든 기안자 부서 정보를 한 번에 조회
+        const edps = await this.employeeDepartmentPositionService.findAll({
+            where: { employeeId: In(drafterIds) },
+        });
+        const edpsByEmployeeId = new Map();
+        edps.forEach((edp) => {
+            edpsByEmployeeId.set(edp.employeeId, edp);
+        });
+
+        // 모든 부서 정보를 한 번에 조회
+        const departmentIds = [...new Set(edps.map((edp) => edp.departmentId).filter(Boolean))];
+        const departments = await this.departmentService.findAll({
+            where: { id: In(departmentIds) },
+        });
+        const departmentsById = new Map();
+        departments.forEach((dept) => {
+            departmentsById.set(dept.id, dept);
+        });
+
+        // ApprovalStepSnapshot을 ApprovalStepResponseDto로 변환
         const result: ApprovalStepResponseDto[] = [];
 
         for (const step of steps) {
-            // snapshot을 통해 문서 조회
-            const document = await this.documentService.findOne({
-                where: { approvalLineSnapshotId: step.snapshotId },
-            });
+            const document = documentsBySnapshotId.get(step.snapshotId);
 
             let drafterName: string | undefined;
             let drafterDepartmentName: string | undefined;
 
             if (document) {
-                // 기안자 정보 조회
-                const drafter = await this.employeeService.findOne({
-                    where: { id: document.drafterId },
-                });
+                const drafter = draftersById.get(document.drafterId);
                 drafterName = drafter?.name;
 
-                // 기안자 부서 조회
-                const edp = await this.employeeDepartmentPositionService.findOne({
-                    where: { employeeId: document.drafterId },
-                });
+                const edp = edpsByEmployeeId.get(document.drafterId);
                 if (edp?.departmentId) {
-                    const department = await this.departmentService.findOne({
-                        where: { id: edp.departmentId },
-                    });
+                    const department = departmentsById.get(edp.departmentId);
                     drafterDepartmentName = department?.departmentName;
                 }
             }

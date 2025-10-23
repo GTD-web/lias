@@ -12,6 +12,7 @@ var GetApprovalStatusUsecase_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetApprovalStatusUsecase = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("typeorm");
 const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const document_service_1 = require("../../../domain/document/document.service");
@@ -30,25 +31,51 @@ let GetApprovalStatusUsecase = GetApprovalStatusUsecase_1 = class GetApprovalSta
     async getMyPendingApprovals(approverId) {
         this.logger.log(`결재 대기 목록 조회: ${approverId}`);
         const steps = await this.approvalProcessContext.getMyPendingApprovals(approverId);
+        if (steps.length === 0) {
+            return [];
+        }
+        const snapshotIds = [...new Set(steps.map((step) => step.snapshotId))];
+        const documents = await this.documentService.findAll({
+            where: { approvalLineSnapshotId: (0, typeorm_1.In)(snapshotIds) },
+        });
+        const documentsBySnapshotId = new Map();
+        documents.forEach((doc) => {
+            documentsBySnapshotId.set(doc.approvalLineSnapshotId, doc);
+        });
+        const drafterIds = [...new Set(documents.map((doc) => doc.drafterId).filter(Boolean))];
+        const drafters = await this.employeeService.findAll({
+            where: { id: (0, typeorm_1.In)(drafterIds) },
+        });
+        const draftersById = new Map();
+        drafters.forEach((drafter) => {
+            draftersById.set(drafter.id, drafter);
+        });
+        const edps = await this.employeeDepartmentPositionService.findAll({
+            where: { employeeId: (0, typeorm_1.In)(drafterIds) },
+        });
+        const edpsByEmployeeId = new Map();
+        edps.forEach((edp) => {
+            edpsByEmployeeId.set(edp.employeeId, edp);
+        });
+        const departmentIds = [...new Set(edps.map((edp) => edp.departmentId).filter(Boolean))];
+        const departments = await this.departmentService.findAll({
+            where: { id: (0, typeorm_1.In)(departmentIds) },
+        });
+        const departmentsById = new Map();
+        departments.forEach((dept) => {
+            departmentsById.set(dept.id, dept);
+        });
         const result = [];
         for (const step of steps) {
-            const document = await this.documentService.findOne({
-                where: { approvalLineSnapshotId: step.snapshotId },
-            });
+            const document = documentsBySnapshotId.get(step.snapshotId);
             let drafterName;
             let drafterDepartmentName;
             if (document) {
-                const drafter = await this.employeeService.findOne({
-                    where: { id: document.drafterId },
-                });
+                const drafter = draftersById.get(document.drafterId);
                 drafterName = drafter?.name;
-                const edp = await this.employeeDepartmentPositionService.findOne({
-                    where: { employeeId: document.drafterId },
-                });
+                const edp = edpsByEmployeeId.get(document.drafterId);
                 if (edp?.departmentId) {
-                    const department = await this.departmentService.findOne({
-                        where: { id: edp.departmentId },
-                    });
+                    const department = departmentsById.get(edp.departmentId);
                     drafterDepartmentName = department?.departmentName;
                 }
             }

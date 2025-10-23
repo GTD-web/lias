@@ -12,12 +12,20 @@ const document_context_1 = require("./document.context");
 const document_module_1 = require("../../domain/document/document.module");
 const form_module_1 = require("../../domain/form/form.module");
 const employee_module_1 = require("../../domain/employee/employee.module");
+const approval_line_snapshot_module_1 = require("../../domain/approval-line-snapshot/approval-line-snapshot.module");
+const approval_step_snapshot_module_1 = require("../../domain/approval-step-snapshot/approval-step-snapshot.module");
 let DocumentModule = class DocumentModule {
 };
 exports.DocumentModule = DocumentModule;
 exports.DocumentModule = DocumentModule = __decorate([
     (0, common_1.Module)({
-        imports: [document_module_1.DomainDocumentModule, form_module_1.DomainFormModule, employee_module_1.DomainEmployeeModule],
+        imports: [
+            document_module_1.DomainDocumentModule,
+            form_module_1.DomainFormModule,
+            employee_module_1.DomainEmployeeModule,
+            approval_line_snapshot_module_1.DomainApprovalLineSnapshotModule,
+            approval_step_snapshot_module_1.DomainApprovalStepSnapshotModule,
+        ],
         providers: [document_context_1.DocumentContext],
         exports: [document_context_1.DocumentContext],
     })

@@ -31,6 +31,9 @@ export enum TestDataScenario {
 
     /** 전체 프로세스 (기안자 -> 협의 -> 결재 -> 시행 -> 참조, 모든 단계 포함) */
     FULL_PROCESS = 'FULL_PROCESS',
+
+    /** 결재선 없는 양식 (결재선이 없는 양식으로 문서 생성 -> 자동 결재선 생성) */
+    NO_APPROVAL_LINE = 'NO_APPROVAL_LINE',
 }
 
 /**
@@ -51,6 +54,7 @@ export class CreateTestDataRequestDto {
             withReference: { value: TestDataScenario.WITH_REFERENCE, description: '👥 참조자 포함' },
             parallel: { value: TestDataScenario.PARALLEL_AGREEMENT, description: '🔀 병렬 협의' },
             fullProcess: { value: TestDataScenario.FULL_PROCESS, description: '🎯 전체 프로세스' },
+            noApprovalLine: { value: TestDataScenario.NO_APPROVAL_LINE, description: '🔧 결재선 없는 양식' },
         },
     })
     @IsNotEmpty({ message: '시나리오를 선택해주세요' })

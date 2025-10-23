@@ -7,7 +7,8 @@ export declare enum TestDataScenario {
     CANCELLED_DOCUMENT = "CANCELLED_DOCUMENT",
     WITH_REFERENCE = "WITH_REFERENCE",
     PARALLEL_AGREEMENT = "PARALLEL_AGREEMENT",
-    FULL_PROCESS = "FULL_PROCESS"
+    FULL_PROCESS = "FULL_PROCESS",
+    NO_APPROVAL_LINE = "NO_APPROVAL_LINE"
 }
 export declare class CreateTestDataRequestDto {
     scenario: TestDataScenario;

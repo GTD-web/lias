@@ -1,3 +1,10 @@
+export declare class CustomApprovalStepDto {
+    stepOrder: number;
+    stepType: string;
+    isRequired: boolean;
+    employeeId: string;
+    assigneeRule: string;
+}
 export declare class DraftContextDto {
     drafterDepartmentId?: string;
     documentAmount?: number;
@@ -5,4 +12,5 @@ export declare class DraftContextDto {
 }
 export declare class SubmitDocumentRequestDto {
     draftContext: DraftContextDto;
+    customApprovalSteps?: CustomApprovalStepDto[];
 }

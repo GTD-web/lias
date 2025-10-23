@@ -28,6 +28,7 @@ const department_service_1 = require("../../domain/department/department.service
 const employee_department_position_service_1 = require("../../domain/employee-department-position/employee-department-position.service");
 const position_service_1 = require("../../domain/position/position.service");
 const approval_enum_1 = require("../../../common/enums/approval.enum");
+const employee_enum_1 = require("../../../common/enums/employee.enum");
 let TestDataContext = TestDataContext_1 = class TestDataContext {
     constructor(dataSource, formService, formVersionService, documentService, approvalLineTemplateService, approvalLineTemplateVersionService, approvalStepTemplateService, approvalLineSnapshotService, approvalStepSnapshotService, formVersionApprovalLineTemplateVersionService, employeeService, departmentService, employeeDepartmentPositionService, positionService) {
         this.dataSource = dataSource;
@@ -125,7 +126,9 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
             queryRunner,
         });
         return employeeDeptPositions
-            .filter((edp) => edp.employeeId !== excludeEmployeeId && edp.employee)
+            .filter((edp) => edp.employeeId !== excludeEmployeeId &&
+            edp.employee &&
+            edp.employee.status === employee_enum_1.EmployeeStatus.Active)
             .map((edp) => edp.employee);
     }
     async getDepartmentHead(departmentId, excludeEmployeeId, queryRunner) {
@@ -134,15 +137,21 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
             relations: ['employee', 'position'],
             queryRunner,
         });
-        const manager = employeeDeptPositions.find((edp) => edp.isManager && edp.employee && edp.employeeId !== excludeEmployeeId);
+        const manager = employeeDeptPositions.find((edp) => edp.isManager &&
+            edp.employee &&
+            edp.employeeId !== excludeEmployeeId &&
+            edp.employee.status === employee_enum_1.EmployeeStatus.Active);
         if (manager)
             return manager.employee;
         for (const edp of employeeDeptPositions) {
-            if (edp.position?.hasManagementAuthority && edp.employee && edp.employeeId !== excludeEmployeeId) {
+            if (edp.position?.hasManagementAuthority &&
+                edp.employee &&
+                edp.employeeId !== excludeEmployeeId &&
+                edp.employee.status === employee_enum_1.EmployeeStatus.Active) {
                 return edp.employee;
             }
         }
-        const fallback = employeeDeptPositions.find((edp) => edp.employee && edp.employeeId !== excludeEmployeeId);
+        const fallback = employeeDeptPositions.find((edp) => edp.employee && edp.employeeId !== excludeEmployeeId && edp.employee.status === employee_enum_1.EmployeeStatus.Active);
         return fallback?.employee || null;
     }
     async getParentDepartment(departmentId, queryRunner) {
@@ -166,7 +175,10 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
     getRandomEmployee(employees) {
         if (!employees || employees.length === 0)
             return null;
-        return employees[Math.floor(Math.random() * employees.length)];
+        const activeEmployees = employees.filter((emp) => emp.status === employee_enum_1.EmployeeStatus.Active);
+        if (activeEmployees.length === 0)
+            return null;
+        return activeEmployees[Math.floor(Math.random() * activeEmployees.length)];
     }
     async createSimpleApprovalLine(employeeId, departmentId, queryRunner) {
         const otherEmployees = await this.getOtherEmployeesInDepartment(employeeId, departmentId, queryRunner);
@@ -205,7 +217,7 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
                 lineTemplateVersionId: version.id,
                 stepOrder: 2,
                 stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-                assigneeRule: approval_enum_1.AssigneeRule.DEPARTMENT_HEAD,
+                assigneeRule: approval_enum_1.AssigneeRule.FIXED,
                 targetDepartmentId: departmentId,
                 required: true,
                 description: '2차 결재 (부서장)',
@@ -221,7 +233,7 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
                 lineTemplateVersionId: version.id,
                 stepOrder: 1,
                 stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-                assigneeRule: approval_enum_1.AssigneeRule.DEPARTMENT_HEAD,
+                assigneeRule: approval_enum_1.AssigneeRule.FIXED,
                 targetDepartmentId: departmentId,
                 required: true,
                 description: '부서장 결재',
@@ -261,27 +273,25 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
             assigneeRule: approval_enum_1.AssigneeRule.FIXED,
             defaultApproverId: agreementPerson?.id || employeeId,
             required: true,
-            description: '사전 협의',
+            description: '사전 협의 (고정 결재자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step1.id);
         const step2 = await this.approvalStepTemplateService.save(await this.approvalStepTemplateService.create({
             lineTemplateVersionId: version.id,
             stepOrder: 2,
             stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-            assigneeRule: approval_enum_1.AssigneeRule.FIXED,
-            defaultApproverId: firstApprover?.id || employeeId,
+            assigneeRule: approval_enum_1.AssigneeRule.DRAFTER,
             required: true,
-            description: '1차 결재',
+            description: '1차 결재 (기안자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step2.id);
         const step3 = await this.approvalStepTemplateService.save(await this.approvalStepTemplateService.create({
             lineTemplateVersionId: version.id,
             stepOrder: 3,
             stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-            assigneeRule: approval_enum_1.AssigneeRule.DEPARTMENT_HEAD,
-            targetDepartmentId: departmentId,
+            assigneeRule: approval_enum_1.AssigneeRule.DRAFTER_SUPERIOR,
             required: true,
-            description: '2차 결재 (부서장)',
+            description: '2차 결재 (기안자 상급자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step3.id);
         if (parentDeptHead) {
@@ -303,7 +313,7 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
             assigneeRule: approval_enum_1.AssigneeRule.FIXED,
             defaultApproverId: implementer?.id || employeeId,
             required: true,
-            description: '시행 처리',
+            description: '시행 처리 (고정 결재자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step5.id);
         template.currentVersionId = version.id;
@@ -337,7 +347,7 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
             assigneeRule: approval_enum_1.AssigneeRule.FIXED,
             defaultApproverId: agreementPersonA?.id || employeeId,
             required: true,
-            description: '협의 A',
+            description: '협의 A (고정 결재자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step1.id);
         const step2 = await this.approvalStepTemplateService.save(await this.approvalStepTemplateService.create({
@@ -347,17 +357,16 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
             assigneeRule: approval_enum_1.AssigneeRule.FIXED,
             defaultApproverId: agreementPersonB?.id || employeeId,
             required: true,
-            description: '협의 B',
+            description: '협의 B (고정 결재자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step2.id);
         const step3 = await this.approvalStepTemplateService.save(await this.approvalStepTemplateService.create({
             lineTemplateVersionId: version.id,
             stepOrder: 3,
             stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-            assigneeRule: approval_enum_1.AssigneeRule.DEPARTMENT_HEAD,
-            targetDepartmentId: departmentId,
+            assigneeRule: approval_enum_1.AssigneeRule.DRAFTER,
             required: true,
-            description: '최종 결재',
+            description: '최종 결재 (기안자)',
         }, { queryRunner }), { queryRunner });
         steps.push(step3.id);
         template.currentVersionId = version.id;
@@ -581,6 +590,12 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
                     titlePrefix,
                     progress,
                 });
+            case 'NO_APPROVAL_LINE':
+                return await this.createNoApprovalLineScenario(employeeId, departmentId, {
+                    documentCount,
+                    titlePrefix,
+                    progress,
+                });
             default:
                 return await this.createTestData(employeeId, departmentId);
         }
@@ -704,6 +719,40 @@ let TestDataContext = TestDataContext_1 = class TestDataContext {
     }
     async createFullProcessScenario(employeeId, departmentId, options) {
         return await this.createMultiLevelApprovalScenario(employeeId, departmentId, options);
+    }
+    async createNoApprovalLineScenario(employeeId, departmentId, options) {
+        const { documentCount, titlePrefix, progress } = options;
+        const form = await this.createFormWithoutApprovalLine(employeeId, departmentId);
+        const documents = [];
+        for (let i = 0; i < documentCount; i++) {
+            const document = await this.createDocument(form.currentVersionId, employeeId, departmentId, `${titlePrefix} ${i + 1} (결재선 없음)`, progress > 0 ? approval_enum_1.DocumentStatus.PENDING : approval_enum_1.DocumentStatus.DRAFT, null);
+            documents.push(document);
+        }
+        return {
+            forms: [form],
+            documents,
+            approvalLines: [],
+        };
+    }
+    async createFormWithoutApprovalLine(employeeId, departmentId) {
+        const formEntity = await this.formService.create({
+            name: '결재선 없는 테스트 양식',
+            code: `NO_APPROVAL_LINE_FORM_${Date.now()}`,
+            description: '결재선이 없는 테스트 양식 (자동 결재선 생성 테스트용)',
+            status: approval_enum_1.FormStatus.ACTIVE,
+        }, { queryRunner: null });
+        const form = await this.formService.save(formEntity, { queryRunner: null });
+        const versionEntity = await this.formVersionService.create({
+            formId: form.id,
+            versionNo: 1,
+            template: `<div><h1>결재선 없는 테스트 양식</h1><p>자동 결재선 생성 테스트용 템플릿</p></div>`,
+            isActive: true,
+            createdBy: employeeId,
+        }, { queryRunner: null });
+        const version = await this.formVersionService.save(versionEntity, { queryRunner: null });
+        form.currentVersionId = version.id;
+        await this.formService.save(form, { queryRunner: null });
+        return form;
     }
 };
 exports.TestDataContext = TestDataContext;

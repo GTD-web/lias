@@ -21,8 +21,17 @@ export class ResolvedApproverDto {
     isRequired: boolean;
 }
 
+export class CustomApprovalStepDto {
+    stepOrder: number;
+    stepType: string;
+    assigneeRule: string;
+    employeeId: string;
+    isRequired: boolean;
+}
+
 export class CreateSnapshotDto {
     documentId: string;
     formVersionId: string;
     draftContext: DraftContextDto;
+    customApprovalSteps?: CustomApprovalStepDto[];
 }

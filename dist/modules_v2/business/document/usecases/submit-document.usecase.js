@@ -54,6 +54,9 @@ let SubmitDocumentUsecase = SubmitDocumentUsecase_1 = class SubmitDocumentUsecas
                 this.logger.debug(`주 소속 부서 조회 성공: ${drafterDepartmentId}`);
             }
         }
+        this.logger.log(`제출 요청 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
+        this.logger.log(`기존 approvalLineSnapshotId: ${document.approvalLineSnapshotId}`);
+        this.logger.log(`새로운 결재선 스냅샷 생성 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
         const snapshot = await this.approvalFlowContext.createApprovalSnapshot({
             documentId,
             formVersionId: document.formVersionId,
@@ -62,6 +65,7 @@ let SubmitDocumentUsecase = SubmitDocumentUsecase_1 = class SubmitDocumentUsecas
                 drafterDepartmentId,
                 ...dto.draftContext,
             },
+            customApprovalSteps: dto.customApprovalSteps,
         });
         const updatedDocument = await this.documentContext.submitDocument({
             documentId,

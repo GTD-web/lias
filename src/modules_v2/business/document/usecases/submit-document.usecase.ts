@@ -57,7 +57,12 @@ export class SubmitDocumentUsecase {
             }
         }
 
-        // 3. 결재선 스냅샷 생성
+        // 3. 결재선 스냅샷 처리
+        this.logger.log(`제출 요청 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
+        this.logger.log(`기존 approvalLineSnapshotId: ${document.approvalLineSnapshotId}`);
+
+        // 결재선 스냅샷 생성 (customApprovalSteps가 있으면 사용자 정의, 없으면 기본)
+        this.logger.log(`새로운 결재선 스냅샷 생성 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
         const snapshot = await this.approvalFlowContext.createApprovalSnapshot({
             documentId,
             formVersionId: document.formVersionId,
@@ -66,6 +71,7 @@ export class SubmitDocumentUsecase {
                 drafterDepartmentId, // 자동 조회된 부서 ID 사용
                 ...dto.draftContext,
             },
+            customApprovalSteps: dto.customApprovalSteps,
         });
 
         // 4. 문서 제출 처리

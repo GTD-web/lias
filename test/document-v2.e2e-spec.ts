@@ -141,6 +141,39 @@ describe('DocumentController (e2e)', () => {
             expect(response.body.title).toBe('테스트 문서 2');
         });
 
+        it('정상: customApprovalSteps와 함께 문서 생성', async () => {
+            const response = await request(app.getHttpServer())
+                .post('/v2/document')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    formVersionId,
+                    title: '커스텀 결재선 문서',
+                    content: '<p>커스텀 결재선이 있는 문서</p>',
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'AGREEMENT',
+                            assigneeRule: 'FIXED',
+                            employeeId: employeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'DEPARTMENT_HEAD',
+                            employeeId: null,
+                            isRequired: true,
+                        },
+                    ],
+                })
+                .expect(201);
+
+            expect(response.body).toHaveProperty('id');
+            expect(response.body.title).toBe('커스텀 결재선 문서');
+            expect(response.body.status).toBe('DRAFT');
+            expect(response.body).toHaveProperty('approvalLineSnapshotId');
+        });
+
         it('실패: 필수 필드 누락 (formVersionId)', async () => {
             await request(app.getHttpServer())
                 .post('/v2/document')
@@ -295,6 +328,50 @@ describe('DocumentController (e2e)', () => {
             expect(response.body).toHaveProperty('submittedAt');
 
             submittedDocumentId = response.body.id;
+        });
+
+        it('정상: customApprovalSteps와 함께 문서 제출', async () => {
+            // 제출할 문서 생성
+            const createResponse = await request(app.getHttpServer())
+                .post('/v2/document')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    formVersionId,
+                    title: '커스텀 결재선 제출 문서',
+                    content: '<p>커스텀 결재선으로 제출할 문서</p>',
+                });
+
+            const documentId = createResponse.body.id;
+
+            const response = await request(app.getHttpServer())
+                .post(`/v2/document/${documentId}/submit`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'AGREEMENT',
+                            assigneeRule: 'FIXED',
+                            employeeId: employeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: employeeId,
+                            isRequired: true,
+                        },
+                    ],
+                });
+
+            expect(response.status).toBe(200);
+
+            expect(response.body.id).toBe(documentId);
+            expect(response.body.status).toBe('PENDING');
+            expect(response.body).toHaveProperty('approvalLineSnapshotId');
+            expect(response.body).toHaveProperty('submittedAt');
         });
 
         it('실패: 이미 제출된 문서 재제출 시도', async () => {

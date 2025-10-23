@@ -125,6 +125,12 @@ __decorate([
 - 모든 유형의 단계가 포함된 종합 시나리오
 - 실제 업무 프로세스와 가장 유사
 
+### 🔟 NO_APPROVAL_LINE (결재선 없는 양식)
+**결재선이 없는 양식으로 문서 생성 → 자동 결재선 생성**
+- 양식에 결재선이 연결되지 않은 상태
+- 문서 제출 시 자동으로 계층적 결재선 생성
+- 기안자 → 부서장 → 상위 부서장 → 최상위까지 자동 생성
+
 ## 🎛️ 추가 옵션
 - **documentCount**: 생성할 문서 개수 (1-10)
 - **titlePrefix**: 문서 제목 접두사
@@ -264,6 +270,16 @@ __decorate([
                     scenario: dtos_1.TestDataScenario.FULL_PROCESS,
                     documentCount: 1,
                     titlePrefix: '종합 테스트',
+                    progress: 0,
+                },
+            },
+            noApprovalLine: {
+                summary: '🔧 결재선 없는 양식',
+                description: '자동 결재선 생성 테스트',
+                value: {
+                    scenario: dtos_1.TestDataScenario.NO_APPROVAL_LINE,
+                    documentCount: 1,
+                    titlePrefix: '자동 결재선 테스트',
                     progress: 0,
                 },
             },
