@@ -26,6 +26,7 @@ exports.ApprovalFlowBusinessModule = ApprovalFlowBusinessModule = __decorate([
             usecases_1.CreateApprovalLineTemplateUsecase,
             usecases_1.CreateApprovalSnapshotUsecase,
             usecases_1.PreviewApprovalLineUsecase,
+            usecases_1.GetApprovalLineTemplateVersionUsecase,
         ],
         exports: [
             usecases_1.CreateFormWithApprovalLineUsecase,
@@ -35,6 +36,7 @@ exports.ApprovalFlowBusinessModule = ApprovalFlowBusinessModule = __decorate([
             usecases_1.CreateApprovalLineTemplateUsecase,
             usecases_1.CreateApprovalSnapshotUsecase,
             usecases_1.PreviewApprovalLineUsecase,
+            usecases_1.GetApprovalLineTemplateVersionUsecase,
         ],
     })
 ], ApprovalFlowBusinessModule);

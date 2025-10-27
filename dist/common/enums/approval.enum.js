@@ -65,8 +65,7 @@ var AssigneeRule;
     AssigneeRule["FIXED"] = "FIXED";
     AssigneeRule["DRAFTER"] = "DRAFTER";
     AssigneeRule["DRAFTER_SUPERIOR"] = "DRAFTER_SUPERIOR";
-    AssigneeRule["DEPARTMENT_HEAD"] = "DEPARTMENT_HEAD";
-    AssigneeRule["POSITION_BASED"] = "POSITION_BASED";
+    AssigneeRule["DEPARTMENT_REFERENCE"] = "DEPARTMENT_REFERENCE";
 })(AssigneeRule || (exports.AssigneeRule = AssigneeRule = {}));
 var DocumentStatus;
 (function (DocumentStatus) {

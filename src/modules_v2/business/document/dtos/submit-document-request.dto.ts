@@ -26,16 +26,26 @@ export class CustomApprovalStepDto {
     isRequired: boolean;
 
     @ApiProperty({
-        description: '담당자 직원 ID',
+        description: '담당자 직원 ID (개별 선택시)',
         example: '123e4567-e89b-12d3-a456-426614174001',
+        required: false,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsUUID()
-    employeeId: string;
+    employeeId?: string;
+
+    @ApiProperty({
+        description: '담당 부서 ID (부서 선택시)',
+        example: '123e4567-e89b-12d3-a456-426614174001',
+        required: false,
+    })
+    @IsOptional()
+    @IsUUID()
+    departmentId?: string;
 
     @ApiProperty({
         description: '담당자 할당 규칙',
-        example: 'FIXED_EMPLOYEE',
+        example: 'FIXED',
     })
     @IsNotEmpty()
     @IsString()

@@ -38,19 +38,19 @@ import {
                 module: MetadataModule,
             },
             {
-                path: 'v2/approval-flow',
+                path: 'approval-flow',
                 module: ApprovalFlowBusinessModule,
             },
             {
-                path: 'v2/document',
+                path: 'document',
                 module: DocumentBusinessModule,
             },
             {
-                path: 'v2/approval-process',
+                path: 'approval-process',
                 module: ApprovalProcessBusinessModule,
             },
             {
-                path: 'v2/test-data',
+                path: 'test-data',
                 module: TestDataBusinessModule,
             },
             // {

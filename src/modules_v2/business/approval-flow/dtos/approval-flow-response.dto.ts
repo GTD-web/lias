@@ -46,6 +46,18 @@ export class FormVersionResponseDto {
     createdAt: Date;
 }
 
+export class FormVersionWithApprovalLineResponseDto extends FormVersionResponseDto {
+    @ApiPropertyOptional({ description: '문서양식 HTML 템플릿' })
+    template?: string;
+
+    @ApiPropertyOptional({ description: '연결된 결재선 정보' })
+    approvalLineInfo?: {
+        template: ApprovalLineTemplateResponseDto;
+        templateVersion: ApprovalLineTemplateVersionResponseDto;
+        steps: ApprovalStepTemplateResponseDto[];
+    };
+}
+
 export class CreateFormResponseDto {
     @ApiProperty({ description: '생성된 문서양식', type: FormResponseDto })
     form: FormResponseDto;
@@ -155,4 +167,61 @@ export class ApprovalSnapshotResponseDto {
 
     @ApiPropertyOptional({ description: '결재 단계 목록', type: [ApprovalStepSnapshotResponseDto] })
     steps?: ApprovalStepSnapshotResponseDto[];
+}
+
+export class ApprovalStepTemplateResponseDto {
+    @ApiProperty({ description: '결재 단계 템플릿 ID' })
+    id: string;
+
+    @ApiProperty({ description: '결재선 템플릿 버전 ID' })
+    lineTemplateVersionId: string;
+
+    @ApiProperty({ description: '단계 순서' })
+    stepOrder: number;
+
+    @ApiProperty({ description: '단계 타입' })
+    stepType: string;
+
+    @ApiProperty({ description: '결재자 할당 규칙' })
+    assigneeRule: string;
+
+    @ApiPropertyOptional({ description: '고정 결재자 ID' })
+    defaultApproverId?: string;
+
+    @ApiPropertyOptional({ description: '타겟 부서 ID' })
+    targetDepartmentId?: string;
+
+    @ApiPropertyOptional({ description: '타겟 직책 ID' })
+    targetPositionId?: string;
+
+    @ApiProperty({ description: '필수 여부' })
+    required: boolean;
+
+    @ApiPropertyOptional({ description: '설명' })
+    description?: string;
+
+    @ApiPropertyOptional({ description: '고정 결재자 정보' })
+    defaultApprover?: {
+        id: string;
+        employeeNumber: string;
+        name: string;
+        email: string;
+        phoneNumber: string;
+    };
+
+    @ApiPropertyOptional({ description: '타겟 부서 정보' })
+    targetDepartment?: {
+        id: string;
+        departmentCode: string;
+        departmentName: string;
+    };
+
+    @ApiPropertyOptional({ description: '타겟 직책 정보' })
+    targetPosition?: {
+        id: string;
+        positionCode: string;
+        positionTitle: string;
+        level: number;
+        hasManagementAuthority: boolean;
+    };
 }

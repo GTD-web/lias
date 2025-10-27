@@ -2,7 +2,8 @@ export declare class CustomApprovalStepDto {
     stepOrder: number;
     stepType: string;
     isRequired: boolean;
-    employeeId: string;
+    employeeId?: string;
+    departmentId?: string;
     assigneeRule: string;
 }
 export declare class DraftContextDto {

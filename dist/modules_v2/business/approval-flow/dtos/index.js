@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApprovalStepPreviewDto = exports.PreviewApprovalLineResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.FormVersionResponseDto = exports.FormResponseDto = exports.ApprovalSnapshotResponseDto = exports.ApprovalLineTemplateVersionResponseDto = exports.ApprovalLineTemplateResponseDto = exports.UpdateFormVersionResponseDto = exports.CreateFormResponseDto = exports.PreviewApprovalLineRequestDto = exports.CreateApprovalLineTemplateRequestDto = exports.DraftContextRequestDto = exports.CreateSnapshotRequestDto = exports.CreateTemplateVersionRequestDto = exports.CloneTemplateRequestDto = exports.UpdateFormVersionRequestDto = exports.StepEditRequestDto = exports.CreateFormRequestDto = void 0;
+exports.ApprovalLineTemplateVersionWithStepsResponseDto = exports.ApprovalStepPreviewDto = exports.PreviewApprovalLineResponseDto = exports.ApprovalStepTemplateResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.FormVersionWithApprovalLineResponseDto = exports.FormVersionResponseDto = exports.FormResponseDto = exports.ApprovalSnapshotResponseDto = exports.ApprovalLineTemplateVersionResponseDto = exports.ApprovalLineTemplateResponseDto = exports.UpdateFormVersionResponseDto = exports.CreateFormResponseDto = exports.PreviewApprovalLineRequestDto = exports.CreateApprovalLineTemplateRequestDto = exports.DraftContextRequestDto = exports.CreateSnapshotRequestDto = exports.CreateTemplateVersionRequestDto = exports.CloneTemplateRequestDto = exports.UpdateFormVersionRequestDto = exports.StepEditRequestDto = exports.CreateFormRequestDto = void 0;
 var create_form_request_dto_1 = require("./create-form-request.dto");
 Object.defineProperty(exports, "CreateFormRequestDto", { enumerable: true, get: function () { return create_form_request_dto_1.CreateFormRequestDto; } });
 Object.defineProperty(exports, "StepEditRequestDto", { enumerable: true, get: function () { return create_form_request_dto_1.StepEditRequestDto; } });
@@ -25,8 +25,12 @@ Object.defineProperty(exports, "ApprovalLineTemplateVersionResponseDto", { enume
 Object.defineProperty(exports, "ApprovalSnapshotResponseDto", { enumerable: true, get: function () { return approval_flow_response_dto_1.ApprovalSnapshotResponseDto; } });
 Object.defineProperty(exports, "FormResponseDto", { enumerable: true, get: function () { return approval_flow_response_dto_1.FormResponseDto; } });
 Object.defineProperty(exports, "FormVersionResponseDto", { enumerable: true, get: function () { return approval_flow_response_dto_1.FormVersionResponseDto; } });
+Object.defineProperty(exports, "FormVersionWithApprovalLineResponseDto", { enumerable: true, get: function () { return approval_flow_response_dto_1.FormVersionWithApprovalLineResponseDto; } });
 Object.defineProperty(exports, "ApprovalStepSnapshotResponseDto", { enumerable: true, get: function () { return approval_flow_response_dto_1.ApprovalStepSnapshotResponseDto; } });
+Object.defineProperty(exports, "ApprovalStepTemplateResponseDto", { enumerable: true, get: function () { return approval_flow_response_dto_1.ApprovalStepTemplateResponseDto; } });
 var preview_approval_line_response_dto_1 = require("./preview-approval-line-response.dto");
 Object.defineProperty(exports, "PreviewApprovalLineResponseDto", { enumerable: true, get: function () { return preview_approval_line_response_dto_1.PreviewApprovalLineResponseDto; } });
 Object.defineProperty(exports, "ApprovalStepPreviewDto", { enumerable: true, get: function () { return preview_approval_line_response_dto_1.ApprovalStepPreviewDto; } });
+var approval_line_template_version_with_steps_response_dto_1 = require("./approval-line-template-version-with-steps-response.dto");
+Object.defineProperty(exports, "ApprovalLineTemplateVersionWithStepsResponseDto", { enumerable: true, get: function () { return approval_line_template_version_with_steps_response_dto_1.ApprovalLineTemplateVersionWithStepsResponseDto; } });
 //# sourceMappingURL=index.js.map

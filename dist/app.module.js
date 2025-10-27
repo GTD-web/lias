@@ -37,19 +37,19 @@ exports.AppModule = AppModule = __decorate([
                     module: business_1.MetadataModule,
                 },
                 {
-                    path: 'v2/approval-flow',
+                    path: 'approval-flow',
                     module: business_1.ApprovalFlowBusinessModule,
                 },
                 {
-                    path: 'v2/document',
+                    path: 'document',
                     module: business_1.DocumentBusinessModule,
                 },
                 {
-                    path: 'v2/approval-process',
+                    path: 'approval-process',
                     module: business_1.ApprovalProcessBusinessModule,
                 },
                 {
-                    path: 'v2/test-data',
+                    path: 'test-data',
                     module: business_1.TestDataBusinessModule,
                 },
             ]),

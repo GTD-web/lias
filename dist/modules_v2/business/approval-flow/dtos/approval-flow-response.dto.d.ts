@@ -16,6 +16,14 @@ export declare class FormVersionResponseDto {
     changeReason?: string;
     createdAt: Date;
 }
+export declare class FormVersionWithApprovalLineResponseDto extends FormVersionResponseDto {
+    template?: string;
+    approvalLineInfo?: {
+        template: ApprovalLineTemplateResponseDto;
+        templateVersion: ApprovalLineTemplateVersionResponseDto;
+        steps: ApprovalStepTemplateResponseDto[];
+    };
+}
 export declare class CreateFormResponseDto {
     form: FormResponseDto;
     formVersion: FormVersionResponseDto;
@@ -60,4 +68,35 @@ export declare class ApprovalSnapshotResponseDto {
     documentId: string;
     frozenAt: Date;
     steps?: ApprovalStepSnapshotResponseDto[];
+}
+export declare class ApprovalStepTemplateResponseDto {
+    id: string;
+    lineTemplateVersionId: string;
+    stepOrder: number;
+    stepType: string;
+    assigneeRule: string;
+    defaultApproverId?: string;
+    targetDepartmentId?: string;
+    targetPositionId?: string;
+    required: boolean;
+    description?: string;
+    defaultApprover?: {
+        id: string;
+        employeeNumber: string;
+        name: string;
+        email: string;
+        phoneNumber: string;
+    };
+    targetDepartment?: {
+        id: string;
+        departmentCode: string;
+        departmentName: string;
+    };
+    targetPosition?: {
+        id: string;
+        positionCode: string;
+        positionTitle: string;
+        level: number;
+        hasManagementAuthority: boolean;
+    };
 }

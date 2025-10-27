@@ -6,7 +6,7 @@ export declare class DraftContextDto {
     customFields?: Record<string, any>;
 }
 export declare class ResolvedApproverDto {
-    employeeId: string;
+    employeeId?: string;
     employeeName?: string;
     departmentId?: string;
     positionId?: string;
@@ -19,7 +19,8 @@ export declare class CustomApprovalStepDto {
     stepOrder: number;
     stepType: string;
     assigneeRule: string;
-    employeeId: string;
+    employeeId?: string;
+    departmentId?: string;
     isRequired: boolean;
 }
 export declare class CreateSnapshotDto {

@@ -53,7 +53,7 @@ __decorate([
     __metadata("design:type", String)
 ], ApprovalStepTemplate.prototype, "defaultApproverId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid', nullable: true, comment: '부서 ID (DEPARTMENT_HEAD인 경우)' }),
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true, comment: '부서 ID (DEPARTMENT_HEAD, DEPARTMENT_REFERENCE인 경우)' }),
     __metadata("design:type", String)
 ], ApprovalStepTemplate.prototype, "targetDepartmentId", void 0);
 __decorate([

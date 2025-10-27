@@ -272,7 +272,7 @@ export class PreviewApprovalLineUsecase {
                     employeeName: employee?.name || '알 수 없음',
                     departmentName: department?.departmentName,
                     positionTitle,
-                    assigneeRule: AssigneeRule.DEPARTMENT_HEAD,
+                    assigneeRule: AssigneeRule.DRAFTER_SUPERIOR,
                 });
 
                 this.logger.debug(`단계 ${stepOrder}: 부서 ${currentDepartmentId}의 부서장 ${employee?.name} 추가`);
@@ -322,11 +322,8 @@ export class PreviewApprovalLineUsecase {
             case AssigneeRule.DRAFTER_SUPERIOR:
                 return this.resolveDirectManager(context);
 
-            case AssigneeRule.DEPARTMENT_HEAD:
-                return this.resolveDepartmentHead(stepTemplate, context);
-
-            case AssigneeRule.POSITION_BASED:
-                return this.resolvePositionBased(stepTemplate, context);
+            case AssigneeRule.DEPARTMENT_REFERENCE:
+                return this.resolveDepartmentReference(stepTemplate, context);
 
             default:
                 this.logger.warn(`지원하지 않는 assignee_rule 타입: ${rule}`);
@@ -403,81 +400,31 @@ export class PreviewApprovalLineUsecase {
         ];
     }
 
-    private async resolveDepartmentHead(stepTemplate: any, context: any) {
-        const targetDepartmentId = stepTemplate.targetDepartmentId || context.drafterDepartmentId;
+    private async resolveDepartmentReference(stepTemplate: any, context: any) {
+        const targetDepartmentId = stepTemplate.targetDepartmentId;
         if (!targetDepartmentId) {
             throw new BadRequestException('부서 정보가 없습니다.');
         }
 
-        // 1순위: isManager=true인 직원 찾기
-        let head = await this.employeeDepartmentPositionService.findOne({
-            where: { departmentId: targetDepartmentId, isManager: true },
+        // 해당 부서의 모든 직원 조회
+        const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+            where: { departmentId: targetDepartmentId },
         });
 
-        // 2순위: hasManagementAuthority=true인 직책을 가진 직원 찾기
-        if (!head) {
-            const allEdps = await this.employeeDepartmentPositionService.findAll({
-                where: { departmentId: targetDepartmentId },
+        const result = [];
+        for (const edp of departmentEdps) {
+            const employee = await this.employeeService.findOne({
+                where: { id: edp.employeeId },
             });
-
-            for (const edp of allEdps) {
-                if (edp.positionId) {
-                    const position = await this.positionService.findOne({
-                        where: { id: edp.positionId },
-                    });
-
-                    if (position?.hasManagementAuthority) {
-                        head = edp;
-                        break;
-                    }
-                }
+            if (employee) {
+                result.push({
+                    employeeId: employee.id,
+                    departmentId: edp.departmentId,
+                    positionId: edp.positionId,
+                });
             }
         }
 
-        if (!head) {
-            throw new NotFoundException(
-                '부서장을 찾을 수 없습니다. (isManager 또는 hasManagementAuthority를 가진 직원이 없음)',
-            );
-        }
-
-        return [
-            {
-                employeeId: head.employeeId,
-                departmentId: head.departmentId,
-                positionId: head.positionId,
-            },
-        ];
-    }
-
-    private async resolvePositionBased(stepTemplate: any, context: any) {
-        let position;
-        if (stepTemplate.targetPositionId) {
-            position = await this.positionService.findOne({
-                where: { id: stepTemplate.targetPositionId },
-            });
-        }
-
-        if (!position) {
-            throw new NotFoundException('직책을 찾을 수 없습니다.');
-        }
-
-        const edpQuery: any = { positionId: position.id };
-        if (stepTemplate.targetDepartmentId) {
-            edpQuery.departmentId = stepTemplate.targetDepartmentId;
-        }
-
-        const edp = await this.employeeDepartmentPositionService.findOne({ where: edpQuery });
-
-        if (!edp) {
-            throw new NotFoundException('해당 직책을 가진 직원을 찾을 수 없습니다.');
-        }
-
-        return [
-            {
-                employeeId: edp.employeeId,
-                departmentId: edp.departmentId,
-                positionId: edp.positionId,
-            },
-        ];
+        return result;
     }
 }

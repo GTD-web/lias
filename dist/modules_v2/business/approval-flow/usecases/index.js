@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PreviewApprovalLineUsecase = exports.CreateApprovalSnapshotUsecase = exports.CreateApprovalLineTemplateUsecase = exports.CreateApprovalLineTemplateVersionUsecase = exports.CloneApprovalLineTemplateUsecase = exports.UpdateFormVersionUsecase = exports.CreateFormWithApprovalLineUsecase = void 0;
+exports.GetApprovalLineTemplateVersionUsecase = exports.PreviewApprovalLineUsecase = exports.CreateApprovalSnapshotUsecase = exports.CreateApprovalLineTemplateUsecase = exports.CreateApprovalLineTemplateVersionUsecase = exports.CloneApprovalLineTemplateUsecase = exports.UpdateFormVersionUsecase = exports.CreateFormWithApprovalLineUsecase = void 0;
 var create_form_with_approval_line_usecase_1 = require("./create-form-with-approval-line.usecase");
 Object.defineProperty(exports, "CreateFormWithApprovalLineUsecase", { enumerable: true, get: function () { return create_form_with_approval_line_usecase_1.CreateFormWithApprovalLineUsecase; } });
 var update_form_version_usecase_1 = require("./update-form-version.usecase");
@@ -15,4 +15,6 @@ var create_approval_snapshot_usecase_1 = require("./create-approval-snapshot.use
 Object.defineProperty(exports, "CreateApprovalSnapshotUsecase", { enumerable: true, get: function () { return create_approval_snapshot_usecase_1.CreateApprovalSnapshotUsecase; } });
 var preview_approval_line_usecase_1 = require("./preview-approval-line.usecase");
 Object.defineProperty(exports, "PreviewApprovalLineUsecase", { enumerable: true, get: function () { return preview_approval_line_usecase_1.PreviewApprovalLineUsecase; } });
+var get_approval_line_template_version_usecase_1 = require("./get-approval-line-template-version.usecase");
+Object.defineProperty(exports, "GetApprovalLineTemplateVersionUsecase", { enumerable: true, get: function () { return get_approval_line_template_version_usecase_1.GetApprovalLineTemplateVersionUsecase; } });
 //# sourceMappingURL=index.js.map

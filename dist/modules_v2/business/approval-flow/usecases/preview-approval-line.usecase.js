@@ -209,7 +209,7 @@ let PreviewApprovalLineUsecase = PreviewApprovalLineUsecase_1 = class PreviewApp
                     employeeName: employee?.name || '알 수 없음',
                     departmentName: department?.departmentName,
                     positionTitle,
-                    assigneeRule: approval_enum_1.AssigneeRule.DEPARTMENT_HEAD,
+                    assigneeRule: approval_enum_1.AssigneeRule.DRAFTER_SUPERIOR,
                 });
                 this.logger.debug(`단계 ${stepOrder}: 부서 ${currentDepartmentId}의 부서장 ${employee?.name} 추가`);
                 stepOrder++;
@@ -238,10 +238,8 @@ let PreviewApprovalLineUsecase = PreviewApprovalLineUsecase_1 = class PreviewApp
                 return this.resolveDrafter(context);
             case approval_enum_1.AssigneeRule.DRAFTER_SUPERIOR:
                 return this.resolveDirectManager(context);
-            case approval_enum_1.AssigneeRule.DEPARTMENT_HEAD:
-                return this.resolveDepartmentHead(stepTemplate, context);
-            case approval_enum_1.AssigneeRule.POSITION_BASED:
-                return this.resolvePositionBased(stepTemplate, context);
+            case approval_enum_1.AssigneeRule.DEPARTMENT_REFERENCE:
+                return this.resolveDepartmentReference(stepTemplate, context);
             default:
                 this.logger.warn(`지원하지 않는 assignee_rule 타입: ${rule}`);
                 return [];
@@ -304,66 +302,28 @@ let PreviewApprovalLineUsecase = PreviewApprovalLineUsecase_1 = class PreviewApp
             },
         ];
     }
-    async resolveDepartmentHead(stepTemplate, context) {
-        const targetDepartmentId = stepTemplate.targetDepartmentId || context.drafterDepartmentId;
+    async resolveDepartmentReference(stepTemplate, context) {
+        const targetDepartmentId = stepTemplate.targetDepartmentId;
         if (!targetDepartmentId) {
             throw new common_1.BadRequestException('부서 정보가 없습니다.');
         }
-        let head = await this.employeeDepartmentPositionService.findOne({
-            where: { departmentId: targetDepartmentId, isManager: true },
+        const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+            where: { departmentId: targetDepartmentId },
         });
-        if (!head) {
-            const allEdps = await this.employeeDepartmentPositionService.findAll({
-                where: { departmentId: targetDepartmentId },
+        const result = [];
+        for (const edp of departmentEdps) {
+            const employee = await this.employeeService.findOne({
+                where: { id: edp.employeeId },
             });
-            for (const edp of allEdps) {
-                if (edp.positionId) {
-                    const position = await this.positionService.findOne({
-                        where: { id: edp.positionId },
-                    });
-                    if (position?.hasManagementAuthority) {
-                        head = edp;
-                        break;
-                    }
-                }
+            if (employee) {
+                result.push({
+                    employeeId: employee.id,
+                    departmentId: edp.departmentId,
+                    positionId: edp.positionId,
+                });
             }
         }
-        if (!head) {
-            throw new common_1.NotFoundException('부서장을 찾을 수 없습니다. (isManager 또는 hasManagementAuthority를 가진 직원이 없음)');
-        }
-        return [
-            {
-                employeeId: head.employeeId,
-                departmentId: head.departmentId,
-                positionId: head.positionId,
-            },
-        ];
-    }
-    async resolvePositionBased(stepTemplate, context) {
-        let position;
-        if (stepTemplate.targetPositionId) {
-            position = await this.positionService.findOne({
-                where: { id: stepTemplate.targetPositionId },
-            });
-        }
-        if (!position) {
-            throw new common_1.NotFoundException('직책을 찾을 수 없습니다.');
-        }
-        const edpQuery = { positionId: position.id };
-        if (stepTemplate.targetDepartmentId) {
-            edpQuery.departmentId = stepTemplate.targetDepartmentId;
-        }
-        const edp = await this.employeeDepartmentPositionService.findOne({ where: edpQuery });
-        if (!edp) {
-            throw new common_1.NotFoundException('해당 직책을 가진 직원을 찾을 수 없습니다.');
-        }
-        return [
-            {
-                employeeId: edp.employeeId,
-                departmentId: edp.departmentId,
-                positionId: edp.positionId,
-            },
-        ];
+        return result;
     }
 };
 exports.PreviewApprovalLineUsecase = PreviewApprovalLineUsecase;

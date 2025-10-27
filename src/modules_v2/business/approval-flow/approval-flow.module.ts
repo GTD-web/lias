@@ -9,6 +9,7 @@ import {
     CreateApprovalLineTemplateUsecase,
     CreateApprovalSnapshotUsecase,
     PreviewApprovalLineUsecase,
+    GetApprovalLineTemplateVersionUsecase,
 } from './usecases';
 
 /**
@@ -29,6 +30,7 @@ import {
         CreateApprovalLineTemplateUsecase,
         CreateApprovalSnapshotUsecase,
         PreviewApprovalLineUsecase,
+        GetApprovalLineTemplateVersionUsecase,
     ],
     exports: [
         CreateFormWithApprovalLineUsecase,
@@ -38,6 +40,7 @@ import {
         CreateApprovalLineTemplateUsecase,
         CreateApprovalSnapshotUsecase,
         PreviewApprovalLineUsecase,
+        GetApprovalLineTemplateVersionUsecase,
     ],
 })
 export class ApprovalFlowBusinessModule {}

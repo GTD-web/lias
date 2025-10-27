@@ -63,8 +63,7 @@ export enum AssigneeRule {
     FIXED = 'FIXED', // 고정 결재자
     DRAFTER = 'DRAFTER', // 기안자
     DRAFTER_SUPERIOR = 'DRAFTER_SUPERIOR', // 기안자 상급자
-    DEPARTMENT_HEAD = 'DEPARTMENT_HEAD', // 부서장
-    POSITION_BASED = 'POSITION_BASED', // 직책 기반
+    DEPARTMENT_REFERENCE = 'DEPARTMENT_REFERENCE', // 부서 전체 참조
 }
 
 export enum DocumentStatus {

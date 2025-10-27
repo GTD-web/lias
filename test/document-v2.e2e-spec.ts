@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { DataSource } from 'typeorm';
+import { DataSource, Not, IsNull } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 
 /**
@@ -372,6 +372,250 @@ describe('DocumentController (e2e)', () => {
             expect(response.body.status).toBe('PENDING');
             expect(response.body).toHaveProperty('approvalLineSnapshotId');
             expect(response.body).toHaveProperty('submittedAt');
+        });
+
+        it('정상: DEPARTMENT_REFERENCE 룰로 부서 전체 참조자 설정', async () => {
+            // 부서 정보 조회 - 부모부서가 있는 실제 부서들만 조회
+            const departmentRepo = dataSource.getRepository('Department');
+            const departments = await departmentRepo.find({
+                where: { parentDepartmentId: Not(IsNull()) }, // 부모부서가 있는 부서들만
+                order: { createdAt: 'ASC' },
+            });
+
+            if (!departments || departments.length === 0) {
+                throw new Error('데이터베이스에 하위 부서 정보가 없습니다. 메타데이터를 먼저 생성해주세요.');
+            }
+
+            // 랜덤하게 부서 선택
+            const randomIndex = Math.floor(Math.random() * departments.length);
+            const testDepartment = departments[randomIndex];
+            const departmentId = testDepartment.id;
+
+            // 해당 부서의 직원 수 조회
+            const employeeDepartmentPositionRepo = dataSource.getRepository('EmployeeDepartmentPosition');
+            const departmentEmployees = await employeeDepartmentPositionRepo.find({
+                where: { departmentId },
+            });
+
+            expect(departmentEmployees.length).toBeGreaterThan(0);
+
+            // 제출할 문서 생성
+            const createResponse = await request(app.getHttpServer())
+                .post('/v2/document')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    formVersionId,
+                    title: '부서 전체 참조자 테스트 문서',
+                    content: '<p>부서 전체가 참조자로 설정되는 문서</p>',
+                });
+
+            const documentId = createResponse.body.id;
+
+            // DEPARTMENT_REFERENCE 룰로 문서 제출
+            const response = await request(app.getHttpServer())
+                .post(`/v2/document/${documentId}/submit`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'REFERENCE',
+                            assigneeRule: 'DEPARTMENT_REFERENCE',
+                            departmentId: departmentId,
+                            isRequired: false,
+                        },
+                    ],
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.id).toBe(documentId);
+            expect(response.body.status).toBe('PENDING');
+            expect(response.body).toHaveProperty('approvalLineSnapshotId');
+
+            // 생성된 스냅샷에서 참조자 수 확인
+            const approvalLineSnapshotRepo = dataSource.getRepository('ApprovalLineSnapshot');
+            const approvalStepSnapshotRepo = dataSource.getRepository('ApprovalStepSnapshot');
+
+            const snapshot = await approvalLineSnapshotRepo.findOne({
+                where: { documentId },
+            });
+
+            expect(snapshot).toBeDefined();
+
+            const stepSnapshots = await approvalStepSnapshotRepo.find({
+                where: { snapshotId: snapshot.id },
+            });
+
+            // 부서의 모든 직원이 참조자로 설정되었는지 확인
+            expect(stepSnapshots.length).toBe(departmentEmployees.length);
+
+            // 모든 스냅샷이 REFERENCE 타입인지 확인
+            stepSnapshots.forEach((step) => {
+                expect(step.stepType).toBe('REFERENCE');
+                expect(step.assigneeRule).toBe('DEPARTMENT_REFERENCE');
+                expect(step.required).toBe(false);
+            });
+
+            // 각 부서원이 개별적으로 참조자로 설정되었는지 확인
+            const approverIds = stepSnapshots.map((step) => step.approverId);
+            const departmentEmployeeIds = departmentEmployees.map((edp) => edp.employeeId);
+
+            expect(approverIds.sort()).toEqual(departmentEmployeeIds.sort());
+        });
+
+        it('정상: 개별 직원과 부서 참조자가 혼재된 결재선 설정', async () => {
+            // 부서 정보 조회 - 부모부서가 있는 실제 부서들만 조회
+            const departmentRepo = dataSource.getRepository('Department');
+            const departments = await departmentRepo.find({
+                where: { parentDepartmentId: Not(IsNull()) }, // 부모부서가 있는 부서들만
+                order: { createdAt: 'ASC' },
+            });
+
+            if (!departments || departments.length === 0) {
+                throw new Error('데이터베이스에 하위 부서 정보가 없습니다. 메타데이터를 먼저 생성해주세요.');
+            }
+
+            // 랜덤하게 부서 선택
+            const randomIndex = Math.floor(Math.random() * departments.length);
+            const testDepartment = departments[randomIndex];
+            const departmentId = testDepartment.id;
+
+            // 해당 부서의 직원 수 조회
+            const employeeDepartmentPositionRepo = dataSource.getRepository('EmployeeDepartmentPosition');
+            const departmentEmployees = await employeeDepartmentPositionRepo.find({
+                where: { departmentId },
+            });
+
+            expect(departmentEmployees.length).toBeGreaterThan(0);
+
+            // 다른 부서의 직원도 조회 (개별 참조자용)
+            const allEmployees = await dataSource.getRepository('Employee').find({
+                take: 2,
+                order: { createdAt: 'ASC' },
+            });
+
+            expect(allEmployees.length).toBeGreaterThanOrEqual(2);
+
+            const individualEmployee1 = allEmployees[0];
+            const individualEmployee2 = allEmployees[1];
+
+            // 제출할 문서 생성
+            const createResponse = await request(app.getHttpServer())
+                .post('/v2/document')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    formVersionId,
+                    title: '혼재 참조자 테스트 문서',
+                    content: '<p>개별 직원과 부서가 혼재된 참조자 설정 문서</p>',
+                });
+
+            const documentId = createResponse.body.id;
+
+            // 개별 직원과 부서 참조자가 혼재된 결재선으로 문서 제출
+            const response = await request(app.getHttpServer())
+                .post(`/v2/document/${documentId}/submit`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    draftContext: {},
+                    customApprovalSteps: [
+                        {
+                            stepOrder: 1,
+                            stepType: 'APPROVAL',
+                            assigneeRule: 'FIXED',
+                            employeeId: employeeId,
+                            isRequired: true,
+                        },
+                        {
+                            stepOrder: 2,
+                            stepType: 'REFERENCE',
+                            assigneeRule: 'FIXED',
+                            employeeId: individualEmployee1.id,
+                            isRequired: false,
+                        },
+                        {
+                            stepOrder: 3,
+                            stepType: 'REFERENCE',
+                            assigneeRule: 'DEPARTMENT_REFERENCE',
+                            departmentId: departmentId,
+                            isRequired: false,
+                        },
+                        {
+                            stepOrder: 4,
+                            stepType: 'REFERENCE',
+                            assigneeRule: 'FIXED',
+                            employeeId: individualEmployee2.id,
+                            isRequired: false,
+                        },
+                    ],
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.id).toBe(documentId);
+            expect(response.body.status).toBe('PENDING');
+            expect(response.body).toHaveProperty('approvalLineSnapshotId');
+
+            // 생성된 스냅샷에서 참조자 수 확인
+            const approvalLineSnapshotRepo = dataSource.getRepository('ApprovalLineSnapshot');
+            const approvalStepSnapshotRepo = dataSource.getRepository('ApprovalStepSnapshot');
+
+            const snapshot = await approvalLineSnapshotRepo.findOne({
+                where: { documentId },
+            });
+
+            expect(snapshot).toBeDefined();
+
+            const stepSnapshots = await approvalStepSnapshotRepo.find({
+                where: { snapshotId: snapshot.id },
+                order: { stepOrder: 'ASC' },
+            });
+
+            // 예상 참조자 수: 1(개별) + 부서원수 + 1(개별) = 부서원수 + 2
+            const expectedReferenceCount = departmentEmployees.length + 2;
+            const referenceSteps = stepSnapshots.filter((step) => step.stepType === 'REFERENCE');
+            expect(referenceSteps.length).toBe(expectedReferenceCount);
+
+            // 결재자 1명 + 참조자들
+            const approvalSteps = stepSnapshots.filter((step) => step.stepType === 'APPROVAL');
+            expect(approvalSteps.length).toBe(1);
+
+            // 단계별 검증
+            const step1 = stepSnapshots.find((step) => step.stepOrder === 1);
+            expect(step1.stepType).toBe('APPROVAL');
+            expect(step1.assigneeRule).toBe('FIXED');
+            expect(step1.required).toBe(true);
+
+            const step2 = stepSnapshots.find((step) => step.stepOrder === 2);
+            expect(step2.stepType).toBe('REFERENCE');
+            expect(step2.assigneeRule).toBe('FIXED');
+            expect(step2.approverId).toBe(individualEmployee1.id);
+            expect(step2.required).toBe(false);
+
+            // 부서 참조자들 (stepOrder 3)
+            const departmentReferenceSteps = stepSnapshots.filter(
+                (step) =>
+                    step.stepOrder === 3 &&
+                    step.stepType === 'REFERENCE' &&
+                    step.assigneeRule === 'DEPARTMENT_REFERENCE',
+            );
+            expect(departmentReferenceSteps.length).toBe(departmentEmployees.length);
+
+            // 모든 부서 참조자가 올바른 부서원인지 확인
+            const departmentReferenceApproverIds = departmentReferenceSteps.map((step) => step.approverId);
+            const departmentEmployeeIds = departmentEmployees.map((edp) => edp.employeeId);
+            expect(departmentReferenceApproverIds.sort()).toEqual(departmentEmployeeIds.sort());
+
+            const step4 = stepSnapshots.find((step) => step.stepOrder === 4);
+            expect(step4.stepType).toBe('REFERENCE');
+            expect(step4.assigneeRule).toBe('FIXED');
+            expect(step4.approverId).toBe(individualEmployee2.id);
+            expect(step4.required).toBe(false);
+
+            // 전체 참조자 ID 목록 확인
+            const allReferenceApproverIds = referenceSteps.map((step) => step.approverId);
+            const expectedApproverIds = [individualEmployee1.id, individualEmployee2.id, ...departmentEmployeeIds];
+
+            expect(allReferenceApproverIds.sort()).toEqual(expectedApproverIds.sort());
         });
 
         it('실패: 이미 제출된 문서 재제출 시도', async () => {
