@@ -11,7 +11,7 @@ export class DraftContextDto {
 }
 
 export class ResolvedApproverDto {
-    employeeId: string;
+    employeeId?: string; // 부서 선택의 경우 undefined
     employeeName?: string;
     departmentId?: string;
     positionId?: string;
@@ -25,7 +25,8 @@ export class CustomApprovalStepDto {
     stepOrder: number;
     stepType: string;
     assigneeRule: string;
-    employeeId: string;
+    employeeId?: string;
+    departmentId?: string;
     isRequired: boolean;
 }
 

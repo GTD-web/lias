@@ -20,6 +20,7 @@ import {
     CreateApprovalLineTemplateUsecase,
     CreateApprovalSnapshotUsecase,
     PreviewApprovalLineUsecase,
+    GetApprovalLineTemplateVersionUsecase,
 } from '../usecases';
 import {
     CreateFormRequestDto,
@@ -32,8 +33,10 @@ import {
     UpdateFormVersionResponseDto,
     ApprovalLineTemplateResponseDto,
     ApprovalLineTemplateVersionResponseDto,
+    ApprovalLineTemplateVersionWithStepsResponseDto,
     ApprovalSnapshotResponseDto,
     FormResponseDto,
+    FormVersionWithApprovalLineResponseDto,
     PreviewApprovalLineRequestDto,
     PreviewApprovalLineResponseDto,
 } from '../dtos';
@@ -58,7 +61,7 @@ import { ApprovalFlowContext } from '../../../context/approval-flow/approval-flo
  * 5. 결재선 미리보기
  * 6. 조회 API들
  */
-@ApiTags('Approval Flow (v2)')
+@ApiTags('템플릿 관리')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller()
@@ -71,6 +74,7 @@ export class ApprovalFlowController {
         private readonly createApprovalLineTemplateUsecase: CreateApprovalLineTemplateUsecase,
         private readonly createApprovalSnapshotUsecase: CreateApprovalSnapshotUsecase,
         private readonly previewApprovalLineUsecase: PreviewApprovalLineUsecase,
+        private readonly getApprovalLineTemplateVersionUsecase: GetApprovalLineTemplateVersionUsecase,
         private readonly approvalFlowContext: ApprovalFlowContext,
     ) {}
 
@@ -347,13 +351,14 @@ export class ApprovalFlowController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: '결재선 템플릿 버전 상세 조회',
-        description: '특정 결재선 템플릿의 특정 버전 상세 정보를 조회합니다.',
+        description: '특정 결재선 템플릿의 특정 버전 상세 정보를 조회합니다. step 정보와 직원/부서 정보가 포함됩니다.',
     })
     @ApiParam({ name: 'templateId', description: '결재선 템플릿 ID' })
     @ApiParam({ name: 'versionId', description: '결재선 템플릿 버전 ID' })
     @ApiResponse({
         status: HttpStatus.OK,
         description: '결재선 템플릿 버전 상세 조회 성공',
+        type: ApprovalLineTemplateVersionWithStepsResponseDto,
     })
     @ApiResponse({
         status: HttpStatus.NOT_FOUND,
@@ -367,7 +372,7 @@ export class ApprovalFlowController {
         @Param('templateId') templateId: string,
         @Param('versionId') versionId: string,
     ) {
-        return await this.approvalFlowContext.getApprovalLineTemplateVersion(templateId, versionId);
+        return await this.getApprovalLineTemplateVersionUsecase.execute(templateId, versionId);
     }
 
     @Get('forms')
@@ -421,13 +426,14 @@ export class ApprovalFlowController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: '문서양식 버전 상세 조회',
-        description: '특정 문서양식의 특정 버전 상세 정보를 조회합니다.',
+        description: '특정 문서양식의 특정 버전 상세 정보를 조회합니다. 결재선 정보와 직원/부서 정보가 포함됩니다.',
     })
     @ApiParam({ name: 'formId', description: '문서양식 ID' })
     @ApiParam({ name: 'versionId', description: '문서양식 버전 ID' })
     @ApiResponse({
         status: HttpStatus.OK,
         description: '문서양식 버전 상세 조회 성공',
+        type: FormVersionWithApprovalLineResponseDto,
     })
     @ApiResponse({
         status: HttpStatus.NOT_FOUND,

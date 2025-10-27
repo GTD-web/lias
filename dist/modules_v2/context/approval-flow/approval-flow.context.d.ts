@@ -51,8 +51,7 @@ export declare class ApprovalFlowContext {
     private resolveFixedUser;
     private resolveDirectManager;
     private resolveManagerChain;
-    private resolveDepartmentHead;
-    private resolvePositionBased;
+    private resolveDepartmentReference;
     private resolveAmountBased;
     getApprovalLineTemplates(type?: string): Promise<import("../../domain").ApprovalLineTemplate[]>;
     getApprovalLineTemplateVersion(templateId: string, versionId: string): Promise<import("../../domain").ApprovalLineTemplateVersion>;
@@ -74,4 +73,5 @@ export declare class ApprovalFlowContext {
     }>;
     getApprovalLineTemplateById(templateId: string): Promise<import("../../domain").ApprovalLineTemplate>;
     getFormById(formId: string): Promise<import("../../domain").Form>;
+    getApprovalStepTemplatesWithDetails(versionId: string): Promise<any[]>;
 }

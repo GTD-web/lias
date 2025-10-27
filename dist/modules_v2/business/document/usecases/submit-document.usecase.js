@@ -54,6 +54,9 @@ let SubmitDocumentUsecase = SubmitDocumentUsecase_1 = class SubmitDocumentUsecas
                 this.logger.debug(`주 소속 부서 조회 성공: ${drafterDepartmentId}`);
             }
         }
+        if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
+            this.validateApprovalSteps(dto.customApprovalSteps);
+        }
         this.logger.log(`제출 요청 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
         this.logger.log(`기존 approvalLineSnapshotId: ${document.approvalLineSnapshotId}`);
         this.logger.log(`새로운 결재선 스냅샷 생성 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
@@ -94,6 +97,24 @@ let SubmitDocumentUsecase = SubmitDocumentUsecase_1 = class SubmitDocumentUsecas
             createdAt: updatedDocument.createdAt,
             updatedAt: updatedDocument.updatedAt,
         };
+    }
+    validateApprovalSteps(customApprovalSteps) {
+        const seenEmployees = new Map();
+        for (const step of customApprovalSteps) {
+            const stepType = step.stepType;
+            const employeeId = step.employeeId;
+            if (employeeId) {
+                if (!seenEmployees.has(stepType)) {
+                    seenEmployees.set(stepType, new Set());
+                }
+                const stepTypeEmployees = seenEmployees.get(stepType);
+                if (stepTypeEmployees.has(employeeId)) {
+                    throw new common_1.BadRequestException(`${stepType} 단계에서 직원 ${step.employeeName || employeeId}이 중복되었습니다. 동일한 유형에서는 같은 직원을 여러 번 선택할 수 없습니다.`);
+                }
+                stepTypeEmployees.add(employeeId);
+            }
+        }
+        this.logger.log(`결재선 중복 검증 완료: ${customApprovalSteps.length}개 단계`);
     }
 };
 exports.SubmitDocumentUsecase = SubmitDocumentUsecase;

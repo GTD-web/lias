@@ -632,7 +632,7 @@ export class ApprovalFlowContext {
                     positionId: departmentHead.positionId,
                     stepOrder,
                     stepType: ApprovalStepType.APPROVAL,
-                    assigneeRule: AssigneeRule.DEPARTMENT_HEAD,
+                    assigneeRule: AssigneeRule.DRAFTER_SUPERIOR,
                     isRequired: true,
                 });
 
@@ -705,32 +705,89 @@ export class ApprovalFlowContext {
                     this.logger.log(`사용자 정의 결재선 생성 - 단계 수: ${dto.customApprovalSteps.length}`);
 
                     for (const customStep of dto.customApprovalSteps) {
-                        // 직원 정보 조회
-                        const employee = await this.employeeService.findOne({
-                            where: { id: customStep.employeeId },
-                            queryRunner,
-                        });
+                        if (customStep.assigneeRule === 'DEPARTMENT_REFERENCE' && (customStep as any).departmentId) {
+                            // 부서 전체 참조: 해당 부서의 모든 직원을 개별 스냅샷으로 저장
+                            this.logger.log(`부서 전체 참조 처리: 부서 ${(customStep as any).departmentId}`);
 
-                        if (!employee) {
-                            throw new NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                            // 1. 부서원들을 모두 조회 (EmployeeDepartmentPosition을 통해)
+                            const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+                                where: { departmentId: (customStep as any).departmentId },
+                                queryRunner,
+                            });
+
+                            const departmentEmployees = [];
+                            for (const edp of departmentEdps) {
+                                const employee = await this.employeeService.findOne({
+                                    where: { id: edp.employeeId },
+                                    queryRunner,
+                                });
+                                if (employee) {
+                                    departmentEmployees.push(employee);
+                                }
+                            }
+
+                            // 2. 부서원들을 개별적으로 추가
+                            for (const employee of departmentEmployees) {
+                                resolvedApprovers.push({
+                                    employeeId: employee.id,
+                                    employeeName: employee.name,
+                                    departmentId: (customStep as any).departmentId,
+                                    positionId: undefined, // 부서 선택의 경우 positionId 없음
+                                    stepOrder: customStep.stepOrder,
+                                    stepType: customStep.stepType,
+                                    assigneeRule: customStep.assigneeRule,
+                                    isRequired: customStep.isRequired,
+                                });
+                            }
+
+                            this.logger.log(`부서 전체 참조 완료: ${departmentEmployees.length}명의 직원 추가`);
+                        } else if (customStep.employeeId) {
+                            // 개별 직원 처리 (기존 로직)
+                            // 직원 정보 조회
+                            const employee = await this.employeeService.findOne({
+                                where: { id: customStep.employeeId },
+                                queryRunner,
+                            });
+
+                            if (!employee) {
+                                throw new NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                            }
+
+                            // 직원의 부서/직급 정보 조회
+                            const edp = await this.employeeDepartmentPositionService.findOne({
+                                where: { employeeId: customStep.employeeId },
+                                queryRunner,
+                            });
+
+                            resolvedApprovers.push({
+                                employeeId: customStep.employeeId,
+                                employeeName: employee.name,
+                                departmentId: edp?.departmentId,
+                                positionId: edp?.positionId,
+                                stepOrder: customStep.stepOrder,
+                                stepType: customStep.stepType,
+                                assigneeRule: customStep.assigneeRule,
+                                isRequired: customStep.isRequired,
+                            });
+                        } else {
+                            // employeeId가 없는 경우 (잘못된 데이터)
+                            this.logger.warn(`employeeId가 없는 결재 단계: ${JSON.stringify(customStep)}`);
+
+                            // assigneeRule에 따라 다른 에러 메시지 제공
+                            if (customStep.assigneeRule === 'FIXED') {
+                                throw new BadRequestException(
+                                    `고정 담당자 선택 시 직원 ID가 필요합니다: ${customStep.stepOrder}번 단계`,
+                                );
+                            } else if (customStep.assigneeRule === 'DEPARTMENT_REFERENCE') {
+                                throw new BadRequestException(
+                                    `부서 선택 시 부서 ID가 필요합니다: ${customStep.stepOrder}번 단계`,
+                                );
+                            } else {
+                                throw new BadRequestException(
+                                    `결재 단계에 직원 ID가 필요합니다: ${customStep.stepOrder}번 단계`,
+                                );
+                            }
                         }
-
-                        // 직원의 부서/직급 정보 조회
-                        const edp = await this.employeeDepartmentPositionService.findOne({
-                            where: { employeeId: customStep.employeeId },
-                            queryRunner,
-                        });
-
-                        resolvedApprovers.push({
-                            employeeId: customStep.employeeId,
-                            employeeName: employee.name,
-                            departmentId: edp?.departmentId,
-                            positionId: edp?.positionId,
-                            stepOrder: customStep.stepOrder,
-                            stepType: customStep.stepType,
-                            assigneeRule: customStep.assigneeRule,
-                            isRequired: customStep.isRequired,
-                        });
                     }
                 } else {
                     // customApprovalSteps가 없으면 자동 계층적 결재선 생성
@@ -783,7 +840,7 @@ export class ApprovalFlowContext {
                             stepOrder: resolved.stepOrder,
                             stepType: resolved.stepType as ApprovalStepType,
                             assigneeRule: resolved.assigneeRule,
-                            approverId: resolved.employeeId,
+                            approverId: resolved.employeeId, // 실제 직원 ID 사용
                             approverDepartmentId: resolved.departmentId,
                             approverPositionId: resolved.positionId,
                             required: resolved.isRequired,
@@ -830,11 +887,8 @@ export class ApprovalFlowContext {
             case AssigneeRule.DRAFTER_SUPERIOR:
                 return this.resolveDirectManager(context, queryRunner);
 
-            case AssigneeRule.DEPARTMENT_HEAD:
-                return this.resolveDepartmentHead(stepTemplate, context, queryRunner);
-
-            case AssigneeRule.POSITION_BASED:
-                return this.resolvePositionBased(stepTemplate, context, queryRunner);
+            case AssigneeRule.DEPARTMENT_REFERENCE:
+                return this.resolveDepartmentReference(stepTemplate, context, queryRunner);
 
             default:
                 this.logger.warn(`지원하지 않는 assignee_rule 타입: ${ruleType}`);
@@ -951,91 +1005,46 @@ export class ApprovalFlowContext {
         return managers;
     }
 
-    private async resolveDepartmentHead(stepTemplate: any, context: DraftContextDto, queryRunner: any) {
-        const rule: any = { departmentId: stepTemplate.targetDepartmentId };
-        const targetDepartmentId = rule.departmentId || context.drafterDepartmentId;
+    private async resolveDepartmentReference(stepTemplate: any, context: DraftContextDto, queryRunner: any) {
+        // 부서 전체 참조: 해당 부서의 모든 직원을 반환
+        const targetDepartmentId = stepTemplate.targetDepartmentId;
         if (!targetDepartmentId) {
             throw new BadRequestException('부서 정보가 없습니다.');
         }
 
-        // 1순위: isManager=true인 직원 찾기
-        let head = await this.employeeDepartmentPositionService.findOne({
-            where: { departmentId: targetDepartmentId, isManager: true },
+        // 해당 부서의 모든 직원 조회 (EmployeeDepartmentPosition을 통해)
+        const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+            where: { departmentId: targetDepartmentId },
             queryRunner,
         });
 
-        // 2순위: hasManagementAuthority=true인 직책을 가진 직원 찾기
-        if (!head) {
-            const allEdps = await this.employeeDepartmentPositionService.findAll({
-                where: { departmentId: targetDepartmentId },
+        const departmentEmployees = [];
+        for (const edp of departmentEdps) {
+            const employee = await this.employeeService.findOne({
+                where: { id: edp.employeeId },
                 queryRunner,
             });
-
-            for (const edp of allEdps) {
-                if (edp.positionId) {
-                    const position = await this.positionService.findOne({
-                        where: { id: edp.positionId },
-                        queryRunner,
-                    });
-
-                    if (position?.hasManagementAuthority) {
-                        head = edp;
-                        break;
-                    }
-                }
+            if (employee) {
+                departmentEmployees.push(employee);
             }
         }
 
-        if (!head) {
-            throw new NotFoundException(
-                '부서장을 찾을 수 없습니다. (isManager 또는 hasManagementAuthority를 가진 직원이 없음)',
-            );
+        const result = [];
+        for (const employee of departmentEmployees) {
+            // 직원의 부서/직급 정보 조회
+            const edp = await this.employeeDepartmentPositionService.findOne({
+                where: { employeeId: employee.id },
+                queryRunner,
+            });
+
+            result.push({
+                employeeId: employee.id,
+                departmentId: edp?.departmentId,
+                positionId: edp?.positionId,
+            });
         }
 
-        return [
-            {
-                employeeId: head.employeeId,
-                departmentId: head.departmentId,
-                positionId: head.positionId,
-            },
-        ];
-    }
-
-    private async resolvePositionBased(stepTemplate: any, context: DraftContextDto, queryRunner: any) {
-        const rule: any = {
-            positionId: stepTemplate.targetPositionId,
-            departmentId: stepTemplate.targetDepartmentId,
-        };
-        // 특정 직책을 가진 직원 찾기
-        let position;
-        if (rule.positionId) {
-            position = await this.positionService.findOne({ where: { id: rule.positionId }, queryRunner });
-        } else if (rule.positionCode) {
-            position = await this.positionService.findOne({ where: { positionCode: rule.positionCode }, queryRunner });
-        }
-
-        if (!position) {
-            throw new NotFoundException('직책을 찾을 수 없습니다.');
-        }
-
-        const edpQuery: any = { positionId: position.id };
-        if (rule.departmentId) {
-            edpQuery.departmentId = rule.departmentId;
-        }
-
-        const edp = await this.employeeDepartmentPositionService.findOne({ where: edpQuery, queryRunner });
-
-        if (!edp) {
-            throw new NotFoundException('해당 직책을 가진 직원을 찾을 수 없습니다.');
-        }
-
-        return [
-            {
-                employeeId: edp.employeeId,
-                departmentId: edp.departmentId,
-                positionId: edp.positionId,
-            },
-        ];
+        return result;
     }
 
     private async resolveAmountBased(rule: any, context: DraftContextDto, queryRunner: any) {
@@ -1049,8 +1058,6 @@ export class ApprovalFlowContext {
 
         if (threshold.userId) {
             return this.resolveFixedUser({ userId: threshold.userId }, queryRunner);
-        } else if (threshold.positionCode) {
-            return this.resolvePositionBased({ positionCode: threshold.positionCode }, context, queryRunner);
         }
 
         return [];
@@ -1113,10 +1120,8 @@ export class ApprovalFlowContext {
                     where: { id: templateVersion.templateId },
                 });
 
-                const steps = await this.approvalStepTemplateService.findAll({
-                    where: { lineTemplateVersionId: templateVersion.id },
-                    order: { stepOrder: 'ASC' },
-                });
+                // Step 정보와 직원/부서 정보 조회
+                const steps = await this.getApprovalStepTemplatesWithDetails(templateVersion.id);
 
                 approvalLineInfo = {
                     template,
@@ -1146,5 +1151,71 @@ export class ApprovalFlowContext {
     async getFormById(formId: string) {
         this.logger.debug(`문서양식 조회: formId=${formId}`);
         return await this.formService.findByFormId(formId);
+    }
+
+    /**
+     * 결재 단계 템플릿 조회 (직원/부서 정보 포함)
+     */
+    async getApprovalStepTemplatesWithDetails(versionId: string) {
+        this.logger.debug(`결재 단계 템플릿 조회: versionId=${versionId}`);
+        const steps = await this.approvalStepTemplateService.findAll({
+            where: { lineTemplateVersionId: versionId },
+            order: { stepOrder: 'ASC' },
+        });
+
+        // 각 step에 직원/부서 정보 추가
+        const stepsWithDetails = await Promise.all(
+            steps.map(async (step) => {
+                const stepDetail: any = { ...step };
+
+                // 직원 정보 추가
+                if (step.defaultApproverId) {
+                    const employee = await this.employeeService.findByEmployeeId(step.defaultApproverId);
+                    if (employee) {
+                        stepDetail.defaultApprover = {
+                            id: employee.id,
+                            employeeNumber: employee.employeeNumber,
+                            name: employee.name,
+                            email: employee.email,
+                            phoneNumber: employee.phoneNumber,
+                        };
+                    }
+                }
+
+                // 부서 정보 추가
+                if (step.targetDepartmentId) {
+                    const department = await this.departmentService.findOne({
+                        where: { id: step.targetDepartmentId },
+                    });
+                    if (department) {
+                        stepDetail.targetDepartment = {
+                            id: department.id,
+                            departmentCode: department.departmentCode,
+                            departmentName: department.departmentName,
+                        };
+                    }
+                }
+
+                // 직책 정보 추가
+                if (step.targetPositionId) {
+                    const position = await this.positionService.findOne({
+                        where: { id: step.targetPositionId },
+                    });
+                    if (position) {
+                        stepDetail.targetPosition = {
+                            id: position.id,
+                            positionCode: position.positionCode,
+                            positionTitle: position.positionTitle,
+                            level: position.level,
+                            hasManagementAuthority: position.hasManagementAuthority,
+                        };
+                    }
+                }
+
+                return stepDetail;
+            }),
+        );
+
+        return stepsWithDetails;
     }
 }

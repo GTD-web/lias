@@ -1,53 +1,48 @@
-# 테스트 데이터 API 문서
+# Test Data API 문서
 
-## 📋 개요
+## 개요
 
-개발 및 테스트 환경에서 결재 시스템의 다양한 시나리오를 테스트할 수 있도록 샘플 데이터를 생성하고 삭제하는 API입니다.
+Test Data API는 개발 및 테스트 환경에서 사용할 테스트 데이터를 생성하고 관리하는 API입니다.
 
-**⚠️ 중요:** 이 API는 개발/테스트 환경에서만 사용해야 합니다.
+- JWT 토큰 생성 (테스트용)
+- 시나리오 기반 테스트 데이터 생성
+- 테스트 데이터 삭제
 
----
+**Base URL**: `/api/test-data`
 
-## 🎯 Base URL
+**인증**: 대부분의 엔드포인트는 `Bearer Token` 인증이 필요합니다. (토큰 생성 API는 제외)
 
-```
-/v2/test-data
-```
-
----
-
-## 🔐 인증
-
-모든 API는 JWT 인증이 필요합니다.
-
-```
-Authorization: Bearer {JWT_TOKEN}
-```
+⚠️ **주의**: 이 API는 개발/테스트 환경에서만 사용해야 합니다!
 
 ---
 
-## 📡 API 목록
+## API 엔드포인트 목록
 
-### 1. JWT 액세스 토큰 생성
+### 토큰 생성 API
 
-```
-POST /v2/test-data/token
-```
+1. [JWT 액세스 토큰 생성](#1-jwt-액세스-토큰-생성)
 
-#### 설명
+### 테스트 데이터 생성 API
 
-테스트 목적으로 JWT 액세스 토큰을 생성합니다. 직원번호 또는 이메일을 입력하여 해당 직원의 토큰을 발급받을 수 있습니다.
+2. [시나리오 기반 테스트 데이터 생성](#2-시나리오-기반-테스트-데이터-생성)
 
-**⚠️ 주의:** 이 API는 인증이 필요하지 않습니다.
+### 테스트 데이터 삭제 API
 
-#### Request
+3. [모든 문서 및 결재 프로세스 삭제](#3-모든-문서-및-결재-프로세스-삭제)
+4. [모든 결재선 및 양식 삭제](#4-모든-결재선-및-양식-삭제)
+5. [모든 테스트 데이터 삭제](#5-모든-테스트-데이터-삭제)
 
-```http
-POST /v2/test-data/token
-Content-Type: application/json
-```
+---
 
-**Body:**
+## 1. JWT 액세스 토큰 생성
+
+테스트 목적으로 JWT 액세스 토큰을 생성합니다.
+
+**Endpoint**: `POST /api/test-data/token`
+
+⚠️ **이 API는 인증이 필요하지 않습니다!**
+
+**Request Body**:
 
 ```json
 {
@@ -63,16 +58,25 @@ Content-Type: application/json
 }
 ```
 
-#### Response (200 OK)
+**필드 설명**:
+
+| 필드             | 타입   | 필수 | 설명      |
+| ---------------- | ------ | ---- | --------- |
+| `employeeNumber` | string | ❌   | 직원 번호 |
+| `email`          | string | ❌   | 이메일    |
+
+**참고**: employeeNumber 또는 email 중 하나는 필수입니다.
+
+**Response 200 OK**:
 
 ```json
 {
     "success": true,
-    "message": "JWT 토큰이 생성되었습니다.",
+    "message": "토큰이 생성되었습니다",
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "expiresIn": 3600,
     "employee": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "id": "emp-uuid",
         "employeeNumber": "20230001",
         "name": "홍길동",
         "email": "hong@company.com"
@@ -80,459 +84,570 @@ Content-Type: application/json
 }
 ```
 
-#### Response Codes
+**에러 응답**:
 
-- `200`: JWT 토큰 생성 성공
-- `400`: 잘못된 요청 (직원번호 또는 이메일 누락)
-- `404`: 직원을 찾을 수 없음
+- `400 Bad Request`: 잘못된 요청 (직원번호 또는 이메일 누락)
+- `404 Not Found`: 직원을 찾을 수 없음
+
+**테스트 시나리오**:
+
+- ✅ 정상: 직원번호로 토큰 생성
+- ✅ 정상: 이메일로 토큰 생성
+- ❌ 실패: 직원번호와 이메일 모두 누락 (400 반환)
+- ❌ 실패: 존재하지 않는 직원 (404 반환)
 
 ---
 
-### 2. 테스트 데이터 생성
+## 2. 시나리오 기반 테스트 데이터 생성
 
+결재 시스템에서 발생할 수 있는 다양한 시나리오의 테스트 데이터를 생성합니다.
+
+**Endpoint**: `POST /api/test-data`
+
+### 지원 시나리오
+
+#### 1️⃣ SIMPLE_APPROVAL (간단한 결재)
+
+기안자 → 부서장 → 본부장 → 완료
+
+- 기본적인 3단계 결재 흐름
+- 기안자가 첫 번째 결재자로 포함됨
+
+#### 2️⃣ MULTI_LEVEL_APPROVAL (복잡한 다단계 결재)
+
+기안자 → 팀장 → 부서장 → 본부장 → 완료
+
+- 4단계 결재 흐름
+- 순차적 결재 진행 (이전 단계 완료 필수)
+
+#### 3️⃣ AGREEMENT_PROCESS (협의 프로세스)
+
+기안자 → 협의자 2명 동시 검토 → 부서장 → 완료
+
+- 협의는 순서 무관하게 동시 진행 가능
+- 모든 협의 완료 후 결재 진행
+
+#### 4️⃣ IMPLEMENTATION_PROCESS (시행 프로세스)
+
+기안자 → 부서장 → 시행자 실행 → 완료
+
+- 모든 결재 완료 후 시행 가능
+- 시행 완료 시 IMPLEMENTED 상태
+
+#### 5️⃣ REJECTED_DOCUMENT (반려 시나리오)
+
+기안자 → 부서장 반려 → REJECTED 상태
+
+- 결재 중 반려 발생
+- 순서가 되어야 반려 가능
+
+#### 6️⃣ CANCELLED_DOCUMENT (취소 시나리오)
+
+기안자 → 진행 중 기안자가 취소 → CANCELLED 상태
+
+- 기안자만 취소 가능
+- PENDING 상태에서만 취소 가능
+
+#### 7️⃣ WITH_REFERENCE (참조자 포함)
+
+기안자 → 결재 진행 → 참조자들에게 알림
+
+- 참조자는 처리 불필요
+- 열람만 가능
+
+#### 8️⃣ PARALLEL_AGREEMENT (병렬 협의)
+
+기안자 → 여러 부서 동시 협의 → 최종 승인
+
+- 여러 협의자가 동시 협의
+- 모든 협의 완료 후 결재 진행
+
+#### 9️⃣ FULL_PROCESS (전체 프로세스)
+
+기안자 → 협의 → 결재 → 시행 → 참조 (모든 단계 포함)
+
+- 모든 유형의 단계가 포함된 종합 시나리오
+- 실제 업무 프로세스와 가장 유사
+
+#### 🔟 NO_APPROVAL_LINE (결재선 없는 양식)
+
+결재선이 없는 양식으로 문서 생성 → 자동 결재선 생성
+
+- 양식에 결재선이 연결되지 않은 상태
+- 문서 제출 시 자동으로 계층적 결재선 생성
+- 기안자 → 부서장 → 상위 부서장 → 최상위까지 자동 생성
+
+### 추가 옵션
+
+- **documentCount**: 생성할 문서 개수 (1-10)
+- **titlePrefix**: 문서 제목 접두사
+- **progress**: 시나리오 진행 정도 (0: 초기/DRAFT, 50: 중간/진행중, 100: 완료)
+
+**Request Body**:
+
+```json
+{
+    "scenario": "SIMPLE_APPROVAL",
+    "documentCount": 1,
+    "titlePrefix": "지출 결의서",
+    "progress": 0
+}
 ```
-POST /v2/test-data
-```
 
-#### 설명
+**필드 설명**:
 
-다양한 시나리오의 테스트 데이터를 일괄 생성합니다.
+| 필드            | 타입   | 필수 | 설명                                   |
+| --------------- | ------ | ---- | -------------------------------------- |
+| `scenario`      | enum   | ✅   | 생성할 테스트 데이터 시나리오          |
+| `documentCount` | number | ❌   | 생성할 문서 개수 (기본값: 1, 최대: 10) |
+| `titlePrefix`   | string | ❌   | 문서 제목 접두사                       |
+| `progress`      | number | ❌   | 시나리오 진행 정도 (0-100)             |
 
-#### 생성되는 데이터
+**지원되는 시나리오** (TestDataScenario):
 
-**문서양식 (3개)**
+- `SIMPLE_APPROVAL`: 간단한 결재
+- `MULTI_LEVEL_APPROVAL`: 복잡한 다단계 결재
+- `AGREEMENT_PROCESS`: 협의 프로세스
+- `IMPLEMENTATION_PROCESS`: 시행 프로세스
+- `REJECTED_DOCUMENT`: 반려 시나리오
+- `CANCELLED_DOCUMENT`: 취소 시나리오
+- `WITH_REFERENCE`: 참조자 포함
+- `PARALLEL_AGREEMENT`: 병렬 협의
+- `FULL_PROCESS`: 전체 프로세스
+- `NO_APPROVAL_LINE`: 결재선 없는 양식
 
-- 지출 결의서
-- 예산 신청서
-- 구매 요청서
-
-**결재선 템플릿 (3개)**
-
-- 간단한 2단계 결재선
-- 복잡한 4단계 결재선 (협의 + 결재 + 시행)
-- 협의 중심 결재선
-
-**문서 (6개 - 다양한 상태)**
-
-- DRAFT (임시저장): 1개
-- PENDING (결재 대기): 2개 (1개는 1단계 승인 완료)
-- REJECTED (반려): 1개
-- APPROVED (승인 완료): 1개
-- CANCELLED (취소): 1개
-
-#### Request
-
-```http
-POST /v2/test-data
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-Content-Type: application/json
-```
-
-**Body**: 없음 (JWT 토큰에서 사용자 정보 자동 추출)
-
-#### Response (201 Created)
+**Response 201 Created**:
 
 ```json
 {
     "success": true,
-    "message": "테스트 데이터가 생성되었습니다.",
+    "message": "테스트 데이터가 생성되었습니다",
     "data": {
-        "forms": [
-            "550e8400-e29b-41d4-a716-446655440000",
-            "550e8400-e29b-41d4-a716-446655440001",
-            "550e8400-e29b-41d4-a716-446655440002"
-        ],
-        "formVersions": [
-            "660e8400-e29b-41d4-a716-446655440000",
-            "660e8400-e29b-41d4-a716-446655440001",
-            "660e8400-e29b-41d4-a716-446655440002"
-        ],
-        "documents": [
-            "770e8400-e29b-41d4-a716-446655440000",
-            "770e8400-e29b-41d4-a716-446655440001",
-            "770e8400-e29b-41d4-a716-446655440002",
-            "770e8400-e29b-41d4-a716-446655440003",
-            "770e8400-e29b-41d4-a716-446655440004",
-            "770e8400-e29b-41d4-a716-446655440005"
-        ],
-        "approvalLineTemplates": [
-            "880e8400-e29b-41d4-a716-446655440000",
-            "880e8400-e29b-41d4-a716-446655440001",
-            "880e8400-e29b-41d4-a716-446655440002"
-        ],
-        "approvalLineTemplateVersions": [
-            "990e8400-e29b-41d4-a716-446655440000",
-            "990e8400-e29b-41d4-a716-446655440001",
-            "990e8400-e29b-41d4-a716-446655440002"
-        ],
-        "approvalStepTemplates": [
-            "aa0e8400-e29b-41d4-a716-446655440000",
-            "aa0e8400-e29b-41d4-a716-446655440001",
-            "..."
-        ],
-        "approvalLineSnapshots": [
-            "bb0e8400-e29b-41d4-a716-446655440000",
-            "bb0e8400-e29b-41d4-a716-446655440001",
-            "..."
-        ],
-        "approvalStepSnapshots": ["cc0e8400-e29b-41d4-a716-446655440000", "cc0e8400-e29b-41d4-a716-446655440001", "..."]
+        "forms": ["form-uuid"],
+        "formVersions": ["form-version-uuid"],
+        "documents": ["document-uuid"],
+        "approvalLineTemplates": ["template-uuid"],
+        "approvalLineTemplateVersions": ["template-version-uuid"],
+        "approvalStepTemplates": ["step-template-uuid"],
+        "approvalLineSnapshots": ["snapshot-uuid"],
+        "approvalStepSnapshots": ["step-snapshot-uuid"]
     }
 }
 ```
 
-#### Response Codes
+**에러 응답**:
 
-- `201`: 테스트 데이터 생성 성공
-- `400`: 잘못된 요청 (직원 정보 또는 부서 정보 없음)
-- `401`: 인증 실패 (JWT 토큰 없음 또는 유효하지 않음)
+- `400 Bad Request`: 잘못된 요청 (시나리오 누락, 잘못된 값 등)
+- `401 Unauthorized`: 인증 실패
+
+**순서 검증 규칙**:
+
+1. **협의**: 순서 무관, 동시 진행 가능
+2. **결재**: 협의 완료 + 이전 결재 완료 필수
+3. **시행**: 모든 협의 + 모든 결재 완료 필수
+4. **반려**: 협의 완료 + 이전 결재 완료 필수
+
+**테스트 시나리오**:
+
+- ✅ 정상: 모든 시나리오로 테스트 데이터 생성
+- ✅ 정상: documentCount로 여러 문서 생성
+- ✅ 정상: progress로 시나리오 진행 상태 설정
+- ❌ 실패: 시나리오 누락 (400 반환)
+- ❌ 실패: 잘못된 시나리오 값 (400 반환)
+- ❌ 실패: documentCount가 범위를 벗어남 (400 반환)
+- ❌ 실패: 인증 토큰 없음 (401 반환)
 
 ---
 
-### 3. 테스트 데이터 삭제 (특정 데이터)
+## 3. 모든 문서 및 결재 프로세스 삭제
 
-```
-DELETE /v2/test-data
-```
+모든 문서, 결재 스냅샷, 결재 단계를 삭제합니다.
 
-#### 설명
+**Endpoint**: `DELETE /api/test-data/documents`
 
-생성 시 받은 ID 목록을 제공하여 특정 테스트 데이터를 삭제합니다.
+### 삭제 대상
 
-#### Request
+- 📄 모든 문서 (Documents)
+- 📸 결재선 스냅샷 (ApprovalLineSnapshots)
+- 📋 결재 단계 스냅샷 (ApprovalStepSnapshots)
 
-```http
-DELETE /v2/test-data
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-Content-Type: application/json
-```
-
-**Body:**
-
-```json
-{
-    "forms": ["form-id-1", "form-id-2", "form-id-3"],
-    "formVersions": ["version-id-1", "version-id-2", "version-id-3"],
-    "documents": ["doc-id-1", "doc-id-2", "doc-id-3", "doc-id-4", "doc-id-5", "doc-id-6"],
-    "approvalLineTemplates": ["template-id-1", "template-id-2", "template-id-3"],
-    "approvalLineTemplateVersions": ["version-id-1", "version-id-2", "version-id-3"],
-    "approvalStepTemplates": ["step-id-1", "step-id-2", "..."],
-    "approvalLineSnapshots": ["snapshot-id-1", "snapshot-id-2", "..."],
-    "approvalStepSnapshots": ["step-snapshot-id-1", "step-snapshot-id-2", "..."]
-}
-```
-
-#### Response (200 OK)
+**Response 200 OK**:
 
 ```json
 {
     "success": true,
-    "message": "테스트 데이터가 삭제되었습니다."
+    "message": "모든 문서 및 결재 프로세스가 삭제되었습니다"
 }
 ```
 
-#### Response Codes
+**에러 응답**:
 
-- `200`: 테스트 데이터 삭제 성공
-- `400`: 잘못된 요청
-- `401`: 인증 실패
+- `401 Unauthorized`: 인증 실패
+
+**주의사항**:
+
+- ⚠️ 이 작업은 되돌릴 수 없습니다
+- ⚠️ 개발/테스트 환경에서만 사용하세요
+- ⚠️ 실제 운영 데이터도 모두 삭제됩니다
 
 ---
 
-### 4. 모든 테스트 데이터 삭제
+## 4. 모든 결재선 및 양식 삭제
 
-```
-DELETE /v2/test-data/all
-```
+모든 결재선 템플릿, 문서 양식, 관련 버전을 삭제합니다.
 
-#### 설명
+**Endpoint**: `DELETE /api/test-data/forms-and-templates`
 
-`metadata.testData: true`가 설정된 모든 테스트 문서를 찾아서 삭제합니다.
+### 삭제 대상
 
-#### Request
+- 📋 문서양식 (Forms)
+- 📝 문서양식 버전 (FormVersions)
+- 🔗 양식-결재선 연결 (FormVersionApprovalLineTemplateVersions)
+- 📜 결재선 템플릿 (ApprovalLineTemplates)
+- 📜 결재선 템플릿 버전 (ApprovalLineTemplateVersions)
+- 📌 결재 단계 템플릿 (ApprovalStepTemplates)
 
-```http
-DELETE /v2/test-data/all
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-**Body**: 없음
-
-#### Response (200 OK)
+**Response 200 OK**:
 
 ```json
 {
     "success": true,
-    "message": "6개의 테스트 문서가 삭제되었습니다."
+    "message": "모든 결재선 및 양식이 삭제되었습니다"
 }
 ```
 
-#### Response Codes
+**에러 응답**:
 
-- `200`: 모든 테스트 데이터 삭제 성공
-- `401`: 인증 실패
+- `400 Bad Request`: 문서가 먼저 삭제되지 않음 (외래키 제약)
+- `401 Unauthorized`: 인증 실패
 
----
+**주의사항**:
 
-## 📊 생성된 데이터 구조
-
-### 간단한 2단계 결재선
-
-```
-지출 결의서
-  └─ 간단한 2단계 결재선
-       ├─ 1단계: 고정 결재자 (APPROVAL)
-       └─ 2단계: 부서장 (APPROVAL)
-```
-
-### 복잡한 4단계 결재선
-
-```
-예산 신청서
-  └─ 복잡한 4단계 결재선
-       ├─ 1단계: 사전 협의 (AGREEMENT)
-       ├─ 2단계: 1차 결재 (APPROVAL)
-       ├─ 3단계: 2차 결재 - 부서장 (APPROVAL)
-       └─ 4단계: 시행 처리 (IMPLEMENTATION)
-```
-
-### 협의 중심 결재선
-
-```
-구매 요청서
-  └─ 협의 중심 결재선
-       ├─ 1단계: 협의 A (AGREEMENT)
-       ├─ 2단계: 협의 B (AGREEMENT)
-       └─ 3단계: 최종 결재 - 부서장 (APPROVAL)
-```
+- ⚠️ 이 작업은 되돌릴 수 없습니다
+- ⚠️ 개발/테스트 환경에서만 사용하세요
+- ⚠️ 실제 운영 데이터도 모두 삭제됩니다
+- ⚠️ 문서가 먼저 삭제되어야 합니다 (외래키 제약)
 
 ---
 
-## 🔄 데이터 생명주기
+## 5. 모든 테스트 데이터 삭제
 
+모든 테스트 데이터를 한 번에 삭제합니다 (문서 + 결재 프로세스 + 결재선 + 양식).
+
+**Endpoint**: `DELETE /api/test-data/all`
+
+### 삭제 순서
+
+1. 문서 및 결재 프로세스
+2. 결재선 및 양식
+
+**Response 200 OK**:
+
+```json
+{
+    "success": true,
+    "message": "모든 테스트 데이터가 삭제되었습니다"
+}
 ```
-1. POST /v2/test-data
-   ↓
-   [테스트 데이터 생성]
-   - 3개 문서양식 + 결재선
-   - 6개 문서 (다양한 상태)
-   ↓
-2. 개발/테스트 진행
-   - API 테스트
-   - 기능 검증
-   ↓
-3. DELETE /v2/test-data 또는 DELETE /v2/test-data/all
-   ↓
-   [테스트 데이터 삭제]
-   - 외래키 제약 고려하여 역순 삭제
-   - 스냅샷 → 문서 → 양식 → 템플릿
+
+**에러 응답**:
+
+- `401 Unauthorized`: 인증 실패
+
+**주의사항**:
+
+- ⚠️ 이 작업은 되돌릴 수 없습니다
+- ⚠️ 개발/테스트 환경에서만 사용하세요
+- ⚠️ 실제 운영 데이터도 모두 삭제됩니다
+- 🔴 **매우 위험한 작업입니다!**
+
+---
+
+## 공통 에러 응답
+
+### 400 Bad Request
+
+잘못된 요청입니다. 필수 파라미터 누락, 잘못된 시나리오 값 등이 원인입니다.
+
+```json
+{
+    "statusCode": 400,
+    "message": "시나리오를 선택해주세요",
+    "error": "Bad Request"
+}
+```
+
+### 401 Unauthorized
+
+인증이 필요합니다. Bearer Token을 헤더에 포함해야 합니다.
+
+```json
+{
+    "statusCode": 401,
+    "message": "Unauthorized",
+    "error": "인증 실패"
+}
+```
+
+### 404 Not Found
+
+요청한 리소스를 찾을 수 없습니다.
+
+```json
+{
+    "statusCode": 404,
+    "message": "직원을 찾을 수 없습니다",
+    "error": "Not Found"
+}
 ```
 
 ---
 
-## 💡 사용 예시
+## 주요 시나리오 설명
 
-### cURL 예시
+### SIMPLE_APPROVAL
+
+가장 기본적인 결재 흐름을 테스트합니다.
+
+**결재 라인**:
+
+- 결재자 1: 고정 결재자
+- 결재자 2: 기안자의 상급자
+
+**프로세스**:
+
+- DRAFT → PENDING → APPROVED
+
+### MULTI_LEVEL_APPROVAL
+
+복잡한 다단계 결재 흐름을 테스트합니다.
+
+**결재 라인**:
+
+- 결재자 1: 고정 결재자
+- 결재자 2: 기안자의 상급자
+- 결재자 3: 고정 결재자 (상위)
+
+**프로세스**:
+
+- 순차적 결재 진행 (이전 단계 완료 필수)
+
+### AGREEMENT_PROCESS
+
+협의 프로세스를 테스트합니다.
+
+**결재 라인**:
+
+- 협의자 1: 고정 협의자
+- 협의자 2: 고정 협의자
+- 결재자: 기안자의 상급자
+
+**프로세스**:
+
+- 협의는 순서 무관하게 동시 진행 가능
+- 모든 협의 완료 후 결재 진행
+
+### IMPLEMENTATION_PROCESS
+
+시행 프로세스를 테스트합니다.
+
+**결재 라인**:
+
+- 결재자: 기안자의 상급자
+- 시행자: 고정 시행자
+
+**프로세스**:
+
+- 결재 완료 후 시행 가능
+- 시행 완료 시 IMPLEMENTED 상태
+
+### REJECTED_DOCUMENT
+
+반려 시나리오를 테스트합니다.
+
+**결재 라인**:
+
+- 결재자: 기안자의 상급자
+
+**프로세스**:
+
+- 결재 중 반려 발생
+- REJECTED 상태로 종료
+
+### CANCELLED_DOCUMENT
+
+취소 시나리오를 테스트합니다.
+
+**결재 라인**:
+
+- 결재자: 기안자의 상급자
+
+**프로세스**:
+
+- 진행 중 기안자가 취소
+- CANCELLED 상태로 종료
+
+### WITH_REFERENCE
+
+참조자 포함 시나리오를 테스트합니다.
+
+**결재 라인**:
+
+- 결재자: 기안자의 상급자
+- 참조자: 부서 전체
+
+**프로세스**:
+
+- 참조자는 처리 불필요
+- 열람만 가능
+
+### PARALLEL_AGREEMENT
+
+병렬 협의 시나리오를 테스트합니다.
+
+**결재 라인**:
+
+- 협의자 1: 고정 협의자
+- 협의자 2: 고정 협의자
+- 결재자: 기안자의 상급자
+
+**프로세스**:
+
+- 여러 협의자가 동시 협의
+- 모든 협의 완료 후 결재 진행
+
+### FULL_PROCESS
+
+전체 프로세스를 테스트합니다.
+
+**결재 라인**:
+
+- 협의자 1: 고정 협의자
+- 협의자 2: 고정 협의자
+- 결재자 1: 고정 결재자
+- 결재자 2: 기안자의 상급자
+- 시행자: 고정 시행자
+- 참조자: 부서 전체
+
+**프로세스**:
+
+- 모든 유형의 단계가 포함된 종합 시나리오
+- 실제 업무 프로세스와 가장 유사
+
+### NO_APPROVAL_LINE
+
+결재선 자동 생성 기능을 테스트합니다.
+
+**문서 양식**:
+
+- 결재선이 연결되지 않은 상태
+
+**프로세스**:
+
+- 문서 제출 시 자동으로 계층적 결재선 생성
+- 기안자 → 부서장 → 상위 부서장 → 최상위까지
+
+---
+
+## 순서 검증 규칙
+
+### 협의 단계
+
+- 순서 제약 없음
+- 모든 협의자가 동시에 처리 가능
+- 완료 여부가 결재 진행에 영향 없음 (단, 결재 전 모든 협의 완료 권장)
+
+### 결재 단계
+
+- 순차 처리 (이전 결재 완료 후 다음 결재 가능)
+- 협의가 있다면 모든 협의 완료 후 결재 가능
+- 승인 또는 반려 가능
+
+### 시행 단계
+
+- 모든 협의와 결재 완료 후 처리 가능
+- 시행 결과 보고 및 데이터 저장
+
+---
+
+## 테스트 시나리오
+
+### 정상 시나리오
+
+- ✅ 모든 시나리오로 테스트 데이터 생성
+- ✅ documentCount로 여러 문서 생성
+- ✅ progress로 시나리오 진행 상태 설정
+- ✅ 특정 시나리오 생성
+- ✅ 전체 데이터 삭제
+
+### 예외 시나리오
+
+- ❌ 시나리오 누락 (400 반환)
+- ❌ 잘못된 시나리오 값 (400 반환)
+- ❌ documentCount가 범위를 벗어남 (400 반환)
+- ❌ progress가 범위를 벗어남 (400 반환)
+- ❌ 인증 토큰 없음 (401 반환)
+- ❌ 존재하지 않는 직원 (404 반환)
+
+---
+
+## 주의사항
+
+### ⚠️ 개발/테스트 환경 전용
+
+이 API는 개발 및 테스트 환경에서만 사용하세요!
+
+### ⚠️ 데이터 삭제는 되돌릴 수 없음
+
+모든 삭제 작업은 영구적으로 데이터를 제거합니다.
+
+### ⚠️ 운영 데이터도 영향받음
+
+실제 운영 데이터도 함께 삭제될 수 있습니다.
+
+### ⚠️ 외래키 제약
+
+양식 및 템플릿을 삭제하기 전에 먼저 문서를 삭제해야 합니다.
+
+---
+
+## 추천 사용 순서
+
+### 1. 테스트 환경 초기화
 
 ```bash
-# 1. JWT 토큰 생성 (직원번호로)
-curl -X POST http://localhost:3000/v2/test-data/token \
-  -H "Content-Type: application/json" \
-  -d '{"employeeNumber": "20230001"}'
-
-# 2. JWT 토큰 생성 (이메일로)
-curl -X POST http://localhost:3000/v2/test-data/token \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@company.com"}'
-
-# 3. 테스트 데이터 생성
-curl -X POST http://localhost:3000/v2/test-data \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json"
-
-# 4. 모든 테스트 데이터 삭제
-curl -X DELETE http://localhost:3000/v2/test-data/all \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+# 전체 데이터 삭제
+DELETE /api/test-data/all
 ```
 
-### JavaScript/TypeScript 예시
+### 2. 토큰 생성
 
-```typescript
-// 1. JWT 토큰 생성
-const tokenResponse = await fetch('http://localhost:3000/v2/test-data/token', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        employeeNumber: '20230001',
-    }),
-});
-
-const { accessToken } = await tokenResponse.json();
-console.log('생성된 토큰:', accessToken);
-
-// 2. 테스트 데이터 생성
-const createResponse = await fetch('http://localhost:3000/v2/test-data', {
-    method: 'POST',
-    headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-    },
-});
-
-const { data } = await createResponse.json();
-console.log('생성된 데이터 ID:', data);
-
-// 3. 나중에 삭제
-await fetch('http://localhost:3000/v2/test-data', {
-    method: 'DELETE',
-    headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-});
+```bash
+# 테스트용 토큰 생성
+POST /api/test-data/token
+Body: { "employeeNumber": "20230001" }
 ```
 
-### E2E 테스트 예시
+### 3. 테스트 데이터 생성
 
-```typescript
-describe('Approval System E2E', () => {
-    let testDataIds;
-    let authToken;
-
-    beforeAll(async () => {
-        // 1. JWT 토큰 생성
-        const tokenResponse = await request(app.getHttpServer())
-            .post('/v2/test-data/token')
-            .send({ employeeNumber: '20230001' })
-            .expect(200);
-
-        authToken = tokenResponse.body.accessToken;
-
-        // 2. 테스트 데이터 생성
-        const response = await request(app.getHttpServer())
-            .post('/v2/test-data')
-            .set('Authorization', `Bearer ${authToken}`)
-            .expect(201);
-
-        testDataIds = response.body.data;
-    });
-
-    afterAll(async () => {
-        // 테스트 데이터 삭제
-        await request(app.getHttpServer())
-            .delete('/v2/test-data')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(testDataIds)
-            .expect(200);
-    });
-
-    it('should handle document approval flow', async () => {
-        // 테스트 코드
-        const document = await findDocumentByStatus('PENDING');
-        // ...
-    });
-});
+```bash
+# 특정 시나리오 생성
+POST /api/test-data
+Body: {
+  "scenario": "SIMPLE_APPROVAL",
+  "documentCount": 1,
+  "titlePrefix": "테스트 문서",
+  "progress": 0
+}
 ```
 
----
+### 4. 테스트 진행
 
-## 🎯 테스트 가능한 시나리오
+실제 결재 프로세스를 테스트합니다.
 
-생성된 데이터로 다음 시나리오를 테스트할 수 있습니다:
+### 5. 테스트 후 정리
 
-### 문서 관리
-
-- ✅ 문서 임시저장 (DRAFT)
-- ✅ 문서 제출 및 스냅샷 생성
-- ✅ 문서 취소 (CANCELLED)
-- ✅ 상태별 문서 조회
-
-### 결재 프로세스
-
-- ✅ 결재 승인 (단계별)
-- ✅ 결재 반려
-- ✅ 부분 승인 상태 확인
-- ✅ 완전 승인 상태 확인
-
-### 협의 프로세스
-
-- ✅ 협의 의견 작성
-- ✅ 협의 완료 처리
-- ✅ 협의 완료 후 결재 진행
-
-### 시행 프로세스
-
-- ✅ 시행 대기
-- ✅ 시행 완료 처리
-
-### 결재선 관리
-
-- ✅ 다양한 패턴의 결재선 테스트
-- ✅ AssigneeRule 해석 (FIXED, DEPARTMENT_HEAD 등)
-- ✅ 스냅샷 동결 검증
-
----
-
-## ⚠️ 주의사항
-
-### 1. 환경 제한
-
-- **개발/테스트 환경에서만 사용**하세요.
-- 운영 환경에서는 이 API를 비활성화해야 합니다.
-
-### 2. 데이터 정리
-
-- 테스트 후 반드시 데이터를 삭제하세요.
-- `DELETE /v2/test-data/all`을 사용하면 편리합니다.
-
-### 3. 인증 필수
-
-- 모든 API는 JWT 인증이 필요합니다.
-- 유효한 직원 정보와 부서 정보가 있어야 합니다.
-
-### 4. 외래키 제약
-
-- 삭제 시 외래키 제약을 고려하여 역순으로 삭제됩니다.
-- 수동 삭제 시 순서를 지켜야 합니다.
-
-### 5. 메타데이터
-
-- 모든 생성된 문서는 `metadata.testData: true`가 설정됩니다.
-- 이를 통해 테스트 데이터를 구별할 수 있습니다.
-
----
-
-## 🔧 운영 환경 비활성화
-
-운영 환경에서 이 모듈을 비활성화하는 방법:
-
-```typescript
-// app.module.ts
-@Module({
-    imports: [
-        // 개발 환경에서만 활성화
-        ...(process.env.NODE_ENV !== 'production' ? [TestDataBusinessModule] : []),
-    ],
-})
-export class AppModule {}
+```bash
+# 전체 데이터 삭제
+DELETE /api/test-data/all
 ```
-
-또는 환경변수 기반 제어:
-
-```typescript
-// app.module.ts
-@Module({
-    imports: [...(process.env.ENABLE_TEST_DATA === 'true' ? [TestDataBusinessModule] : [])],
-})
-export class AppModule {}
-```
-
----
-
-## 📝 문서 버전
-
-- **버전**: 1.0.0
-- **최종 수정일**: 2025-10-21
-- **작성자**: LIAS Development Team

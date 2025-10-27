@@ -13,6 +13,9 @@ export {
     ApprovalSnapshotResponseDto,
     FormResponseDto,
     FormVersionResponseDto,
+    FormVersionWithApprovalLineResponseDto,
     ApprovalStepSnapshotResponseDto,
+    ApprovalStepTemplateResponseDto,
 } from './approval-flow-response.dto';
 export { PreviewApprovalLineResponseDto, ApprovalStepPreviewDto } from './preview-approval-line-response.dto';
+export { ApprovalLineTemplateVersionWithStepsResponseDto } from './approval-line-template-version-with-steps-response.dto';

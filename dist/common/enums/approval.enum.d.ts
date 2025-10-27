@@ -52,8 +52,7 @@ export declare enum AssigneeRule {
     FIXED = "FIXED",
     DRAFTER = "DRAFTER",
     DRAFTER_SUPERIOR = "DRAFTER_SUPERIOR",
-    DEPARTMENT_HEAD = "DEPARTMENT_HEAD",
-    POSITION_BASED = "POSITION_BASED"
+    DEPARTMENT_REFERENCE = "DEPARTMENT_REFERENCE"
 }
 export declare enum DocumentStatus {
     DRAFT = "DRAFT",

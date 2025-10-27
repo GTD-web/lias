@@ -57,7 +57,12 @@ export class SubmitDocumentUsecase {
             }
         }
 
-        // 3. 결재선 스냅샷 처리
+        // 3. 결재선 중복 검증
+        if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
+            this.validateApprovalSteps(dto.customApprovalSteps);
+        }
+
+        // 4. 결재선 스냅샷 처리
         this.logger.log(`제출 요청 - customApprovalSteps: ${JSON.stringify(dto.customApprovalSteps)}`);
         this.logger.log(`기존 approvalLineSnapshotId: ${document.approvalLineSnapshotId}`);
 
@@ -74,7 +79,7 @@ export class SubmitDocumentUsecase {
             customApprovalSteps: dto.customApprovalSteps,
         });
 
-        // 4. 문서 제출 처리
+        // 5. 문서 제출 처리
         const updatedDocument = await this.documentContext.submitDocument(
             {
                 documentId,
@@ -107,5 +112,36 @@ export class SubmitDocumentUsecase {
             createdAt: updatedDocument.createdAt,
             updatedAt: updatedDocument.updatedAt,
         };
+    }
+
+    /**
+     * 결재선 단계 중복 검증
+     */
+    private validateApprovalSteps(customApprovalSteps: any[]): void {
+        const seenEmployees = new Map<string, Set<string>>(); // stepType별로 employeeId 추적
+
+        for (const step of customApprovalSteps) {
+            const stepType = step.stepType;
+            const employeeId = step.employeeId;
+
+            // employeeId가 있는 경우에만 중복 검사
+            if (employeeId) {
+                if (!seenEmployees.has(stepType)) {
+                    seenEmployees.set(stepType, new Set());
+                }
+
+                const stepTypeEmployees = seenEmployees.get(stepType);
+
+                if (stepTypeEmployees.has(employeeId)) {
+                    throw new BadRequestException(
+                        `${stepType} 단계에서 직원 ${step.employeeName || employeeId}이 중복되었습니다. 동일한 유형에서는 같은 직원을 여러 번 선택할 수 없습니다.`,
+                    );
+                }
+
+                stepTypeEmployees.add(employeeId);
+            }
+        }
+
+        this.logger.log(`결재선 중복 검증 완료: ${customApprovalSteps.length}개 단계`);
     }
 }

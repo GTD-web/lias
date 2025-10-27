@@ -43,17 +43,28 @@ __decorate([
 ], CustomApprovalStepDto.prototype, "isRequired", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '담당자 직원 ID',
+        description: '담당자 직원 ID (개별 선택시)',
         example: '123e4567-e89b-12d3-a456-426614174001',
+        required: false,
     }),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CustomApprovalStepDto.prototype, "employeeId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
+        description: '담당 부서 ID (부서 선택시)',
+        example: '123e4567-e89b-12d3-a456-426614174001',
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], CustomApprovalStepDto.prototype, "departmentId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
         description: '담당자 할당 규칙',
-        example: 'FIXED_EMPLOYEE',
+        example: 'FIXED',
     }),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsString)(),

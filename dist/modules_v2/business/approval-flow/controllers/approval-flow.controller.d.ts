@@ -1,4 +1,4 @@
-import { CreateFormWithApprovalLineUsecase, UpdateFormVersionUsecase, CloneApprovalLineTemplateUsecase, CreateApprovalLineTemplateVersionUsecase, CreateApprovalLineTemplateUsecase, CreateApprovalSnapshotUsecase, PreviewApprovalLineUsecase } from '../usecases';
+import { CreateFormWithApprovalLineUsecase, UpdateFormVersionUsecase, CloneApprovalLineTemplateUsecase, CreateApprovalLineTemplateVersionUsecase, CreateApprovalLineTemplateUsecase, CreateApprovalSnapshotUsecase, PreviewApprovalLineUsecase, GetApprovalLineTemplateVersionUsecase } from '../usecases';
 import { CreateFormRequestDto, UpdateFormVersionRequestDto, CloneTemplateRequestDto, CreateTemplateVersionRequestDto, CreateApprovalLineTemplateRequestDto, CreateSnapshotRequestDto, CreateFormResponseDto, UpdateFormVersionResponseDto, ApprovalLineTemplateResponseDto, ApprovalLineTemplateVersionResponseDto, ApprovalSnapshotResponseDto, PreviewApprovalLineRequestDto, PreviewApprovalLineResponseDto } from '../dtos';
 import { Employee } from '../../../domain/employee/employee.entity';
 import { ApprovalFlowContext } from '../../../context/approval-flow/approval-flow.context';
@@ -10,8 +10,9 @@ export declare class ApprovalFlowController {
     private readonly createApprovalLineTemplateUsecase;
     private readonly createApprovalSnapshotUsecase;
     private readonly previewApprovalLineUsecase;
+    private readonly getApprovalLineTemplateVersionUsecase;
     private readonly approvalFlowContext;
-    constructor(createFormWithApprovalLineUsecase: CreateFormWithApprovalLineUsecase, updateFormVersionUsecase: UpdateFormVersionUsecase, cloneApprovalLineTemplateUsecase: CloneApprovalLineTemplateUsecase, createApprovalLineTemplateVersionUsecase: CreateApprovalLineTemplateVersionUsecase, createApprovalLineTemplateUsecase: CreateApprovalLineTemplateUsecase, createApprovalSnapshotUsecase: CreateApprovalSnapshotUsecase, previewApprovalLineUsecase: PreviewApprovalLineUsecase, approvalFlowContext: ApprovalFlowContext);
+    constructor(createFormWithApprovalLineUsecase: CreateFormWithApprovalLineUsecase, updateFormVersionUsecase: UpdateFormVersionUsecase, cloneApprovalLineTemplateUsecase: CloneApprovalLineTemplateUsecase, createApprovalLineTemplateVersionUsecase: CreateApprovalLineTemplateVersionUsecase, createApprovalLineTemplateUsecase: CreateApprovalLineTemplateUsecase, createApprovalSnapshotUsecase: CreateApprovalSnapshotUsecase, previewApprovalLineUsecase: PreviewApprovalLineUsecase, getApprovalLineTemplateVersionUsecase: GetApprovalLineTemplateVersionUsecase, approvalFlowContext: ApprovalFlowContext);
     createFormWithApprovalLine(user: Employee, dto: CreateFormRequestDto): Promise<CreateFormResponseDto>;
     updateFormVersion(user: Employee, formId: string, dto: UpdateFormVersionRequestDto): Promise<UpdateFormVersionResponseDto>;
     createApprovalLineTemplate(user: Employee, dto: CreateApprovalLineTemplateRequestDto): Promise<ApprovalLineTemplateResponseDto>;
@@ -20,7 +21,20 @@ export declare class ApprovalFlowController {
     createApprovalSnapshot(dto: CreateSnapshotRequestDto): Promise<ApprovalSnapshotResponseDto>;
     getApprovalLineTemplates(type?: string): Promise<import("../../../domain").ApprovalLineTemplate[]>;
     getApprovalLineTemplate(templateId: string): Promise<import("../../../domain").ApprovalLineTemplate>;
-    getApprovalLineTemplateVersion(templateId: string, versionId: string): Promise<import("../../../domain").ApprovalLineTemplateVersion>;
+    getApprovalLineTemplateVersion(templateId: string, versionId: string): Promise<{
+        steps: any[];
+        id: string;
+        templateId: string;
+        versionNo: number;
+        isActive: boolean;
+        changeReason?: string;
+        createdBy?: string;
+        createdAt: Date;
+        updatedAt: Date;
+        template: import("../../../domain").ApprovalLineTemplate;
+        formVersionMappings: import("../../../domain").FormVersionApprovalLineTemplateVersion[];
+        snapshots: import("../../../domain").ApprovalLineSnapshot[];
+    }>;
     getForms(): Promise<import("../../../domain").Form[]>;
     getForm(formId: string): Promise<import("../../../domain").Form>;
     getFormVersion(formId: string, versionId: string): Promise<{

@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApprovalSnapshotResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.ApprovalLineTemplateVersionResponseDto = exports.ApprovalLineTemplateResponseDto = exports.UpdateFormVersionResponseDto = exports.CreateFormResponseDto = exports.FormVersionResponseDto = exports.FormResponseDto = void 0;
+exports.ApprovalStepTemplateResponseDto = exports.ApprovalSnapshotResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.ApprovalLineTemplateVersionResponseDto = exports.ApprovalLineTemplateResponseDto = exports.UpdateFormVersionResponseDto = exports.CreateFormResponseDto = exports.FormVersionWithApprovalLineResponseDto = exports.FormVersionResponseDto = exports.FormResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class FormResponseDto {
 }
@@ -73,6 +73,17 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: '생성일시' }),
     __metadata("design:type", Date)
 ], FormVersionResponseDto.prototype, "createdAt", void 0);
+class FormVersionWithApprovalLineResponseDto extends FormVersionResponseDto {
+}
+exports.FormVersionWithApprovalLineResponseDto = FormVersionWithApprovalLineResponseDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '문서양식 HTML 템플릿' }),
+    __metadata("design:type", String)
+], FormVersionWithApprovalLineResponseDto.prototype, "template", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '연결된 결재선 정보' }),
+    __metadata("design:type", Object)
+], FormVersionWithApprovalLineResponseDto.prototype, "approvalLineInfo", void 0);
 class CreateFormResponseDto {
 }
 exports.CreateFormResponseDto = CreateFormResponseDto;
@@ -223,4 +234,59 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ description: '결재 단계 목록', type: [ApprovalStepSnapshotResponseDto] }),
     __metadata("design:type", Array)
 ], ApprovalSnapshotResponseDto.prototype, "steps", void 0);
+class ApprovalStepTemplateResponseDto {
+}
+exports.ApprovalStepTemplateResponseDto = ApprovalStepTemplateResponseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '결재 단계 템플릿 ID' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '결재선 템플릿 버전 ID' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "lineTemplateVersionId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '단계 순서' }),
+    __metadata("design:type", Number)
+], ApprovalStepTemplateResponseDto.prototype, "stepOrder", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '단계 타입' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "stepType", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '결재자 할당 규칙' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "assigneeRule", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '고정 결재자 ID' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "defaultApproverId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '타겟 부서 ID' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "targetDepartmentId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '타겟 직책 ID' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "targetPositionId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: '필수 여부' }),
+    __metadata("design:type", Boolean)
+], ApprovalStepTemplateResponseDto.prototype, "required", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '설명' }),
+    __metadata("design:type", String)
+], ApprovalStepTemplateResponseDto.prototype, "description", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '고정 결재자 정보' }),
+    __metadata("design:type", Object)
+], ApprovalStepTemplateResponseDto.prototype, "defaultApprover", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '타겟 부서 정보' }),
+    __metadata("design:type", Object)
+], ApprovalStepTemplateResponseDto.prototype, "targetDepartment", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '타겟 직책 정보' }),
+    __metadata("design:type", Object)
+], ApprovalStepTemplateResponseDto.prototype, "targetPosition", void 0);
 //# sourceMappingURL=approval-flow-response.dto.js.map

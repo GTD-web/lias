@@ -29,6 +29,5 @@ export declare class PreviewApprovalLineUsecase {
     private resolveDrafter;
     private resolveFixedUser;
     private resolveDirectManager;
-    private resolveDepartmentHead;
-    private resolvePositionBased;
+    private resolveDepartmentReference;
 }

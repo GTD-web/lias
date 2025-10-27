@@ -49,7 +49,7 @@ export class ApprovalStepTemplate {
     @Column({ type: 'uuid', nullable: true, comment: '고정 결재자 ID (FIXED인 경우)' })
     defaultApproverId?: string;
 
-    @Column({ type: 'uuid', nullable: true, comment: '부서 ID (DEPARTMENT_HEAD인 경우)' })
+    @Column({ type: 'uuid', nullable: true, comment: '부서 ID (DEPARTMENT_HEAD, DEPARTMENT_REFERENCE인 경우)' })
     targetDepartmentId?: string;
 
     @Column({ type: 'uuid', nullable: true, comment: '직책 ID (POSITION_BASED인 경우)' })

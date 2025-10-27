@@ -22,7 +22,7 @@ const user_decorator_1 = require("../../../../common/decorators/user.decorator")
 const employee_entity_1 = require("../../../domain/employee/employee.entity");
 const approval_flow_context_1 = require("../../../context/approval-flow/approval-flow.context");
 let ApprovalFlowController = class ApprovalFlowController {
-    constructor(createFormWithApprovalLineUsecase, updateFormVersionUsecase, cloneApprovalLineTemplateUsecase, createApprovalLineTemplateVersionUsecase, createApprovalLineTemplateUsecase, createApprovalSnapshotUsecase, previewApprovalLineUsecase, approvalFlowContext) {
+    constructor(createFormWithApprovalLineUsecase, updateFormVersionUsecase, cloneApprovalLineTemplateUsecase, createApprovalLineTemplateVersionUsecase, createApprovalLineTemplateUsecase, createApprovalSnapshotUsecase, previewApprovalLineUsecase, getApprovalLineTemplateVersionUsecase, approvalFlowContext) {
         this.createFormWithApprovalLineUsecase = createFormWithApprovalLineUsecase;
         this.updateFormVersionUsecase = updateFormVersionUsecase;
         this.cloneApprovalLineTemplateUsecase = cloneApprovalLineTemplateUsecase;
@@ -30,6 +30,7 @@ let ApprovalFlowController = class ApprovalFlowController {
         this.createApprovalLineTemplateUsecase = createApprovalLineTemplateUsecase;
         this.createApprovalSnapshotUsecase = createApprovalSnapshotUsecase;
         this.previewApprovalLineUsecase = previewApprovalLineUsecase;
+        this.getApprovalLineTemplateVersionUsecase = getApprovalLineTemplateVersionUsecase;
         this.approvalFlowContext = approvalFlowContext;
     }
     async createFormWithApprovalLine(user, dto) {
@@ -63,7 +64,7 @@ let ApprovalFlowController = class ApprovalFlowController {
         return await this.approvalFlowContext.getApprovalLineTemplateById(templateId);
     }
     async getApprovalLineTemplateVersion(templateId, versionId) {
-        return await this.approvalFlowContext.getApprovalLineTemplateVersion(templateId, versionId);
+        return await this.getApprovalLineTemplateVersionUsecase.execute(templateId, versionId);
     }
     async getForms() {
         return await this.approvalFlowContext.getForms();
@@ -342,13 +343,14 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
         summary: '결재선 템플릿 버전 상세 조회',
-        description: '특정 결재선 템플릿의 특정 버전 상세 정보를 조회합니다.',
+        description: '특정 결재선 템플릿의 특정 버전 상세 정보를 조회합니다. step 정보와 직원/부서 정보가 포함됩니다.',
     }),
     (0, swagger_1.ApiParam)({ name: 'templateId', description: '결재선 템플릿 ID' }),
     (0, swagger_1.ApiParam)({ name: 'versionId', description: '결재선 템플릿 버전 ID' }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: '결재선 템플릿 버전 상세 조회 성공',
+        type: dtos_1.ApprovalLineTemplateVersionWithStepsResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.NOT_FOUND,
@@ -418,13 +420,14 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
         summary: '문서양식 버전 상세 조회',
-        description: '특정 문서양식의 특정 버전 상세 정보를 조회합니다.',
+        description: '특정 문서양식의 특정 버전 상세 정보를 조회합니다. 결재선 정보와 직원/부서 정보가 포함됩니다.',
     }),
     (0, swagger_1.ApiParam)({ name: 'formId', description: '문서양식 ID' }),
     (0, swagger_1.ApiParam)({ name: 'versionId', description: '문서양식 버전 ID' }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: '문서양식 버전 상세 조회 성공',
+        type: dtos_1.FormVersionWithApprovalLineResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.NOT_FOUND,
@@ -479,7 +482,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ApprovalFlowController.prototype, "previewApprovalLine", null);
 exports.ApprovalFlowController = ApprovalFlowController = __decorate([
-    (0, swagger_1.ApiTags)('Approval Flow (v2)'),
+    (0, swagger_1.ApiTags)('템플릿 관리'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)(),
@@ -490,6 +493,7 @@ exports.ApprovalFlowController = ApprovalFlowController = __decorate([
         usecases_1.CreateApprovalLineTemplateUsecase,
         usecases_1.CreateApprovalSnapshotUsecase,
         usecases_1.PreviewApprovalLineUsecase,
+        usecases_1.GetApprovalLineTemplateVersionUsecase,
         approval_flow_context_1.ApprovalFlowContext])
 ], ApprovalFlowController);
 //# sourceMappingURL=approval-flow.controller.js.map

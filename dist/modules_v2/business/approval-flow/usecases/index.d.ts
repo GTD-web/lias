@@ -5,3 +5,4 @@ export { CreateApprovalLineTemplateVersionUsecase } from './create-approval-line
 export { CreateApprovalLineTemplateUsecase } from './create-approval-line-template.usecase';
 export { CreateApprovalSnapshotUsecase } from './create-approval-snapshot.usecase';
 export { PreviewApprovalLineUsecase } from './preview-approval-line.usecase';
+export { GetApprovalLineTemplateVersionUsecase } from './get-approval-line-template-version.usecase';

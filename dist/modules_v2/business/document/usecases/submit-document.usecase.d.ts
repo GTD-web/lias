@@ -11,4 +11,5 @@ export declare class SubmitDocumentUsecase {
     private readonly logger;
     constructor(documentContext: DocumentContext, approvalFlowContext: ApprovalFlowContext, formVersionService: DomainFormVersionService, employeeDepartmentPositionService: DomainEmployeeDepartmentPositionService);
     execute(drafterId: string, documentId: string, dto: SubmitDocumentRequestDto): Promise<DocumentResponseDto>;
+    private validateApprovalSteps;
 }

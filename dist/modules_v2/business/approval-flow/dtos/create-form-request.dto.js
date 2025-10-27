@@ -41,9 +41,9 @@ __decorate([
 
 **지원 규칙:**
 - FIXED: 고정 담당자 (targetEmployeeId 필수)
-- DEPARTMENT_HEAD: 부서장 (targetDepartmentId 선택)
-- DRAFTER_SUPERIOR: 기안자의 상위자
-- POSITION_BASED: 직책 기반 (targetPositionId 필수)`,
+- DRAFTER: 기안자 본인
+- DRAFTER_SUPERIOR: 기안자의 상급자
+- DEPARTMENT_REFERENCE: 부서 전체 참조 (targetDepartmentId 필수, REFERENCE 타입에서만 사용)`,
         example: 'FIXED',
         enum: approval_enum_1.AssigneeRule,
     }),
@@ -52,7 +52,7 @@ __decorate([
     __metadata("design:type", String)
 ], StepEditRequestDto.prototype, "assigneeRule", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '대상 부서 ID (DEPARTMENT_HEAD인 경우)' }),
+    (0, swagger_1.ApiPropertyOptional)({ description: '대상 부서 ID (DEPARTMENT_REFERENCE인 경우)' }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

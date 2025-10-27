@@ -404,7 +404,7 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
                     positionId: departmentHead.positionId,
                     stepOrder,
                     stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-                    assigneeRule: approval_enum_1.AssigneeRule.DEPARTMENT_HEAD,
+                    assigneeRule: approval_enum_1.AssigneeRule.DRAFTER_SUPERIOR,
                     isRequired: true,
                 });
                 this.logger.debug(`${stepOrder}단계 추가: 부서 ${currentDepartmentId}의 부서장 (${departmentHead.employeeId})`);
@@ -446,27 +446,71 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
             if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
                 this.logger.log(`사용자 정의 결재선 생성 - 단계 수: ${dto.customApprovalSteps.length}`);
                 for (const customStep of dto.customApprovalSteps) {
-                    const employee = await this.employeeService.findOne({
-                        where: { id: customStep.employeeId },
-                        queryRunner,
-                    });
-                    if (!employee) {
-                        throw new common_1.NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                    if (customStep.assigneeRule === 'DEPARTMENT_REFERENCE' && customStep.departmentId) {
+                        this.logger.log(`부서 전체 참조 처리: 부서 ${customStep.departmentId}`);
+                        const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+                            where: { departmentId: customStep.departmentId },
+                            queryRunner,
+                        });
+                        const departmentEmployees = [];
+                        for (const edp of departmentEdps) {
+                            const employee = await this.employeeService.findOne({
+                                where: { id: edp.employeeId },
+                                queryRunner,
+                            });
+                            if (employee) {
+                                departmentEmployees.push(employee);
+                            }
+                        }
+                        for (const employee of departmentEmployees) {
+                            resolvedApprovers.push({
+                                employeeId: employee.id,
+                                employeeName: employee.name,
+                                departmentId: customStep.departmentId,
+                                positionId: undefined,
+                                stepOrder: customStep.stepOrder,
+                                stepType: customStep.stepType,
+                                assigneeRule: customStep.assigneeRule,
+                                isRequired: customStep.isRequired,
+                            });
+                        }
+                        this.logger.log(`부서 전체 참조 완료: ${departmentEmployees.length}명의 직원 추가`);
                     }
-                    const edp = await this.employeeDepartmentPositionService.findOne({
-                        where: { employeeId: customStep.employeeId },
-                        queryRunner,
-                    });
-                    resolvedApprovers.push({
-                        employeeId: customStep.employeeId,
-                        employeeName: employee.name,
-                        departmentId: edp?.departmentId,
-                        positionId: edp?.positionId,
-                        stepOrder: customStep.stepOrder,
-                        stepType: customStep.stepType,
-                        assigneeRule: customStep.assigneeRule,
-                        isRequired: customStep.isRequired,
-                    });
+                    else if (customStep.employeeId) {
+                        const employee = await this.employeeService.findOne({
+                            where: { id: customStep.employeeId },
+                            queryRunner,
+                        });
+                        if (!employee) {
+                            throw new common_1.NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                        }
+                        const edp = await this.employeeDepartmentPositionService.findOne({
+                            where: { employeeId: customStep.employeeId },
+                            queryRunner,
+                        });
+                        resolvedApprovers.push({
+                            employeeId: customStep.employeeId,
+                            employeeName: employee.name,
+                            departmentId: edp?.departmentId,
+                            positionId: edp?.positionId,
+                            stepOrder: customStep.stepOrder,
+                            stepType: customStep.stepType,
+                            assigneeRule: customStep.assigneeRule,
+                            isRequired: customStep.isRequired,
+                        });
+                    }
+                    else {
+                        this.logger.warn(`employeeId가 없는 결재 단계: ${JSON.stringify(customStep)}`);
+                        if (customStep.assigneeRule === 'FIXED') {
+                            throw new common_1.BadRequestException(`고정 담당자 선택 시 직원 ID가 필요합니다: ${customStep.stepOrder}번 단계`);
+                        }
+                        else if (customStep.assigneeRule === 'DEPARTMENT_REFERENCE') {
+                            throw new common_1.BadRequestException(`부서 선택 시 부서 ID가 필요합니다: ${customStep.stepOrder}번 단계`);
+                        }
+                        else {
+                            throw new common_1.BadRequestException(`결재 단계에 직원 ID가 필요합니다: ${customStep.stepOrder}번 단계`);
+                        }
+                    }
                 }
             }
             else {
@@ -524,10 +568,8 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
                 return this.resolveDrafter(context, queryRunner);
             case approval_enum_1.AssigneeRule.DRAFTER_SUPERIOR:
                 return this.resolveDirectManager(context, queryRunner);
-            case approval_enum_1.AssigneeRule.DEPARTMENT_HEAD:
-                return this.resolveDepartmentHead(stepTemplate, context, queryRunner);
-            case approval_enum_1.AssigneeRule.POSITION_BASED:
-                return this.resolvePositionBased(stepTemplate, context, queryRunner);
+            case approval_enum_1.AssigneeRule.DEPARTMENT_REFERENCE:
+                return this.resolveDepartmentReference(stepTemplate, context, queryRunner);
             default:
                 this.logger.warn(`지원하지 않는 assignee_rule 타입: ${ruleType}`);
                 return [];
@@ -618,75 +660,38 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
         }
         return managers;
     }
-    async resolveDepartmentHead(stepTemplate, context, queryRunner) {
-        const rule = { departmentId: stepTemplate.targetDepartmentId };
-        const targetDepartmentId = rule.departmentId || context.drafterDepartmentId;
+    async resolveDepartmentReference(stepTemplate, context, queryRunner) {
+        const targetDepartmentId = stepTemplate.targetDepartmentId;
         if (!targetDepartmentId) {
             throw new common_1.BadRequestException('부서 정보가 없습니다.');
         }
-        let head = await this.employeeDepartmentPositionService.findOne({
-            where: { departmentId: targetDepartmentId, isManager: true },
+        const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+            where: { departmentId: targetDepartmentId },
             queryRunner,
         });
-        if (!head) {
-            const allEdps = await this.employeeDepartmentPositionService.findAll({
-                where: { departmentId: targetDepartmentId },
+        const departmentEmployees = [];
+        for (const edp of departmentEdps) {
+            const employee = await this.employeeService.findOne({
+                where: { id: edp.employeeId },
                 queryRunner,
             });
-            for (const edp of allEdps) {
-                if (edp.positionId) {
-                    const position = await this.positionService.findOne({
-                        where: { id: edp.positionId },
-                        queryRunner,
-                    });
-                    if (position?.hasManagementAuthority) {
-                        head = edp;
-                        break;
-                    }
-                }
+            if (employee) {
+                departmentEmployees.push(employee);
             }
         }
-        if (!head) {
-            throw new common_1.NotFoundException('부서장을 찾을 수 없습니다. (isManager 또는 hasManagementAuthority를 가진 직원이 없음)');
+        const result = [];
+        for (const employee of departmentEmployees) {
+            const edp = await this.employeeDepartmentPositionService.findOne({
+                where: { employeeId: employee.id },
+                queryRunner,
+            });
+            result.push({
+                employeeId: employee.id,
+                departmentId: edp?.departmentId,
+                positionId: edp?.positionId,
+            });
         }
-        return [
-            {
-                employeeId: head.employeeId,
-                departmentId: head.departmentId,
-                positionId: head.positionId,
-            },
-        ];
-    }
-    async resolvePositionBased(stepTemplate, context, queryRunner) {
-        const rule = {
-            positionId: stepTemplate.targetPositionId,
-            departmentId: stepTemplate.targetDepartmentId,
-        };
-        let position;
-        if (rule.positionId) {
-            position = await this.positionService.findOne({ where: { id: rule.positionId }, queryRunner });
-        }
-        else if (rule.positionCode) {
-            position = await this.positionService.findOne({ where: { positionCode: rule.positionCode }, queryRunner });
-        }
-        if (!position) {
-            throw new common_1.NotFoundException('직책을 찾을 수 없습니다.');
-        }
-        const edpQuery = { positionId: position.id };
-        if (rule.departmentId) {
-            edpQuery.departmentId = rule.departmentId;
-        }
-        const edp = await this.employeeDepartmentPositionService.findOne({ where: edpQuery, queryRunner });
-        if (!edp) {
-            throw new common_1.NotFoundException('해당 직책을 가진 직원을 찾을 수 없습니다.');
-        }
-        return [
-            {
-                employeeId: edp.employeeId,
-                departmentId: edp.departmentId,
-                positionId: edp.positionId,
-            },
-        ];
+        return result;
     }
     async resolveAmountBased(rule, context, queryRunner) {
         const amount = context.documentAmount || 0;
@@ -696,9 +701,6 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
         }
         if (threshold.userId) {
             return this.resolveFixedUser({ userId: threshold.userId }, queryRunner);
-        }
-        else if (threshold.positionCode) {
-            return this.resolvePositionBased({ positionCode: threshold.positionCode }, context, queryRunner);
         }
         return [];
     }
@@ -734,10 +736,7 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
                 const template = await this.approvalLineTemplateService.findOne({
                     where: { id: templateVersion.templateId },
                 });
-                const steps = await this.approvalStepTemplateService.findAll({
-                    where: { lineTemplateVersionId: templateVersion.id },
-                    order: { stepOrder: 'ASC' },
-                });
+                const steps = await this.getApprovalStepTemplatesWithDetails(templateVersion.id);
                 approvalLineInfo = {
                     template,
                     templateVersion,
@@ -757,6 +756,56 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
     async getFormById(formId) {
         this.logger.debug(`문서양식 조회: formId=${formId}`);
         return await this.formService.findByFormId(formId);
+    }
+    async getApprovalStepTemplatesWithDetails(versionId) {
+        this.logger.debug(`결재 단계 템플릿 조회: versionId=${versionId}`);
+        const steps = await this.approvalStepTemplateService.findAll({
+            where: { lineTemplateVersionId: versionId },
+            order: { stepOrder: 'ASC' },
+        });
+        const stepsWithDetails = await Promise.all(steps.map(async (step) => {
+            const stepDetail = { ...step };
+            if (step.defaultApproverId) {
+                const employee = await this.employeeService.findByEmployeeId(step.defaultApproverId);
+                if (employee) {
+                    stepDetail.defaultApprover = {
+                        id: employee.id,
+                        employeeNumber: employee.employeeNumber,
+                        name: employee.name,
+                        email: employee.email,
+                        phoneNumber: employee.phoneNumber,
+                    };
+                }
+            }
+            if (step.targetDepartmentId) {
+                const department = await this.departmentService.findOne({
+                    where: { id: step.targetDepartmentId },
+                });
+                if (department) {
+                    stepDetail.targetDepartment = {
+                        id: department.id,
+                        departmentCode: department.departmentCode,
+                        departmentName: department.departmentName,
+                    };
+                }
+            }
+            if (step.targetPositionId) {
+                const position = await this.positionService.findOne({
+                    where: { id: step.targetPositionId },
+                });
+                if (position) {
+                    stepDetail.targetPosition = {
+                        id: position.id,
+                        positionCode: position.positionCode,
+                        positionTitle: position.positionTitle,
+                        level: position.level,
+                        hasManagementAuthority: position.hasManagementAuthority,
+                    };
+                }
+            }
+            return stepDetail;
+        }));
+        return stepsWithDetails;
     }
 };
 exports.ApprovalFlowContext = ApprovalFlowContext;

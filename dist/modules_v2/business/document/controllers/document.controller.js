@@ -62,8 +62,9 @@ __decorate([
         description: '새로운 문서를 생성합니다 (임시저장 상태)\n\n' +
             '**CustomApprovalSteps 지원:**\n' +
             '- 문서 생성 시 결재선을 커스터마이징할 수 있습니다\n' +
-            '- 다양한 assigneeRule 지원: FIXED, DRAFTER, DRAFTER_SUPERIOR, DEPARTMENT_HEAD, POSITION_BASED\n' +
-            '- 임시저장 시에도 결재선 스냅샷이 생성됩니다\n\n' +
+            '- 다양한 assigneeRule 지원: FIXED, DRAFTER, DRAFTER_SUPERIOR, DEPARTMENT_HEAD, POSITION_BASED, DEPARTMENT_REFERENCE\n' +
+            '- 임시저장 시에도 결재선 스냅샷이 생성됩니다\n' +
+            '- DEPARTMENT_REFERENCE: 부서 전체 참조 (REFERENCE 타입에서만 사용, departmentId 필수)\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 새로운 문서 생성 (임시저장)\n' +
             '- ✅ 정상: metadata 없이 문서 생성\n' +
@@ -121,11 +122,10 @@ __decorate([
             '  - 기안자가 부서장인 경우 해당 단계는 건너뜀\n' +
             '  - drafterDepartmentId가 없으면 자동으로 기안자의 주 소속 부서 조회\n\n' +
             '**AssigneeRule 해석:**\n' +
-            '- FIXED: 고정 결재자 (defaultApproverId 사용)\n' +
+            '- FIXED: 고정 결재자 (employeeId 사용)\n' +
             '- DRAFTER: 기안자 본인\n' +
             '- DRAFTER_SUPERIOR: 기안자의 상급자\n' +
-            '- DEPARTMENT_HEAD: 지정된 부서의 부서장\n' +
-            '- POSITION_BASED: 지정된 직책의 담당자\n\n' +
+            '- DEPARTMENT_REFERENCE: 지정된 부서의 모든 직원 (REFERENCE 타입에서만 사용)\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 제출 (DRAFT → PENDING)\n' +
             '- ✅ 정상: 결재선이 없는 양식으로 제출 (자동 결재선 생성)\n' +
