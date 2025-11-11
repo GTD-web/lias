@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentFilterDto = exports.SubmitDocumentDto = exports.UpdateDocumentDto = exports.CreateDocumentDto = exports.ApprovalStepSnapshotItemDto = void 0;
+exports.DocumentFilterDto = exports.SubmitDocumentDto = exports.UpdateDocumentDto = exports.CreateDocumentDto = exports.PaginationOptionsDto = exports.ApprovalStepSnapshotItemDto = void 0;
 class ApprovalStepSnapshotItemDto {
 }
 exports.ApprovalStepSnapshotItemDto = ApprovalStepSnapshotItemDto;
+class PaginationOptionsDto {
+}
+exports.PaginationOptionsDto = PaginationOptionsDto;
 class CreateDocumentDto {
 }
 exports.CreateDocumentDto = CreateDocumentDto;

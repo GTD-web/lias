@@ -19,6 +19,7 @@ const template_service_1 = require("../services/template.service");
 const create_template_dto_1 = require("../dtos/create-template.dto");
 const update_template_dto_1 = require("../dtos/update-template.dto");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
+const template_response_dto_1 = require("../dtos/template-response.dto");
 let TemplateController = class TemplateController {
     constructor(templateService) {
         this.templateService = templateService;
@@ -58,6 +59,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 201,
         description: '템플릿 생성 성공',
+        type: template_response_dto_1.CreateTemplateResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 400,
@@ -96,6 +98,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '문서 템플릿 목록 조회 성공',
+        type: [template_response_dto_1.DocumentTemplateResponseDto],
     }),
     (0, swagger_1.ApiResponse)({
         status: 401,
@@ -124,6 +127,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '문서 템플릿 상세 조회 성공',
+        type: template_response_dto_1.DocumentTemplateResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 404,
@@ -156,6 +160,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '문서 템플릿 수정 성공',
+        type: template_response_dto_1.DocumentTemplateResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 404,

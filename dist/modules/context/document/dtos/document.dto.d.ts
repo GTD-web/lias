@@ -5,6 +5,10 @@ export declare class ApprovalStepSnapshotItemDto {
     approverId: string;
     id?: string;
 }
+export declare class PaginationOptionsDto {
+    page: number;
+    limit: number;
+}
 export declare class CreateDocumentDto {
     documentTemplateId?: string;
     title: string;
@@ -27,9 +31,13 @@ export declare class SubmitDocumentDto {
 }
 export declare class DocumentFilterDto {
     status?: DocumentStatus;
+    pendingStepType?: ApprovalStepType;
     drafterId?: string;
+    categoryId?: string;
     documentTemplateId?: string;
     startDate?: Date;
     endDate?: Date;
     searchKeyword?: string;
+    page?: number;
+    limit?: number;
 }

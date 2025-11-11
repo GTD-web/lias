@@ -39,9 +39,9 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
         this.logger.log(`결재 취소 요청: ${dto.documentId}`);
         return await this.approvalProcessContext.cancelApproval(dto);
     }
-    async getMyPendingApprovals(approverId) {
-        this.logger.debug(`내 결재 대기 목록 조회: ${approverId}`);
-        return await this.approvalProcessContext.getMyPendingApprovals(approverId);
+    async getMyPendingApprovals(userId, type, page, limit) {
+        this.logger.debug(`내 결재 대기 목록 조회: userId=${userId}, type=${type}, page=${page}, limit=${limit}`);
+        return await this.approvalProcessContext.getMyPendingApprovals(userId, type, page, limit);
     }
     async getApprovalSteps(documentId) {
         this.logger.debug(`문서 결재 단계 목록 조회: ${documentId}`);

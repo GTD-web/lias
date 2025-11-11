@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const template_service_1 = require("../services/template.service");
 const category_dto_1 = require("../dtos/category.dto");
+const template_response_dto_1 = require("../dtos/template-response.dto");
 let CategoryController = class CategoryController {
     constructor(templateService) {
         this.templateService = templateService;
@@ -54,6 +55,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 201,
         description: '카테고리 생성 성공',
+        type: template_response_dto_1.CategoryResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 400,
@@ -79,6 +81,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '카테고리 목록 조회 성공',
+        type: [template_response_dto_1.CategoryResponseDto],
     }),
     (0, swagger_1.ApiResponse)({
         status: 401,
@@ -105,6 +108,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '카테고리 상세 조회 성공',
+        type: template_response_dto_1.CategoryResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 404,
@@ -136,6 +140,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '카테고리 수정 성공',
+        type: template_response_dto_1.CategoryResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 404,

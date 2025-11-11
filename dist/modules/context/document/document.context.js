@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentContext = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("typeorm");
+const document_entity_1 = require("../../domain/document/document.entity");
 const document_service_1 = require("../../domain/document/document.service");
 const document_template_service_1 = require("../../domain/document-template/document-template.service");
 const employee_service_1 = require("../../domain/employee/employee.service");
@@ -191,17 +192,59 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         return document;
     }
     async getDocuments(filter, queryRunner) {
-        const where = {};
-        if (filter.status)
-            where.status = filter.status;
-        if (filter.drafterId)
-            where.drafterId = filter.drafterId;
-        return await this.documentService.findAll({
-            where,
-            relations: ['drafter'],
-            order: { createdAt: 'DESC' },
-            queryRunner,
-        });
+        const repository = queryRunner
+            ? queryRunner.manager.getRepository(document_entity_1.Document)
+            : this.dataSource.getRepository(document_entity_1.Document);
+        const qb = repository
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.drafter', 'drafter')
+            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
+            .orderBy('document.createdAt', 'DESC');
+        if (filter.status) {
+            qb.andWhere('document.status = :status', { status: filter.status });
+        }
+        if (filter.drafterId) {
+            qb.andWhere('document.drafterId = :drafterId', { drafterId: filter.drafterId });
+        }
+        if (filter.documentTemplateId) {
+            qb.andWhere('document.documentTemplateId = :documentTemplateId', {
+                documentTemplateId: filter.documentTemplateId,
+            });
+        }
+        if (filter.status === approval_enum_1.DocumentStatus.PENDING && filter.pendingStepType) {
+            qb.andWhere('approvalSteps.stepType = :stepType', { stepType: filter.pendingStepType });
+            qb.andWhere('approvalSteps.status = :stepStatus', { stepStatus: 'PENDING' });
+        }
+        if (filter.categoryId) {
+            qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
+            qb.andWhere('template.categoryId = :categoryId', { categoryId: filter.categoryId });
+        }
+        if (filter.searchKeyword) {
+            qb.andWhere('document.title LIKE :keyword', { keyword: `%${filter.searchKeyword}%` });
+        }
+        if (filter.startDate) {
+            qb.andWhere('document.createdAt >= :startDate', { startDate: filter.startDate });
+        }
+        if (filter.endDate) {
+            qb.andWhere('document.createdAt <= :endDate', { endDate: filter.endDate });
+        }
+        const page = filter.page || 1;
+        const limit = filter.limit || 20;
+        const skip = (page - 1) * limit;
+        const totalItems = await qb.getCount();
+        const documents = await qb.skip(skip).take(limit).getMany();
+        const totalPages = Math.ceil(totalItems / limit);
+        return {
+            data: documents,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
     }
     async createApprovalStepSnapshots(documentId, approvalSteps, queryRunner) {
         if (!approvalSteps || approvalSteps.length === 0)

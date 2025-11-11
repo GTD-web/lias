@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenEx
 import { DataSource, QueryRunner } from 'typeorm';
 import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
 import { DomainDocumentService } from '../../domain/document/document.service';
+import { Document } from '../../domain/document/document.entity';
+import { ApprovalStepSnapshot } from '../../domain/approval-step-snapshot/approval-step-snapshot.entity';
 import {
     ApproveStepDto,
     RejectStepDto,
@@ -324,47 +326,144 @@ export class ApprovalProcessContext {
     }
 
     /**
-     * 6. 내 결재 대기 목록 조회 (실제 처리 가능한 건만 반환)
+     * 6. 내 결재 대기 목록 조회 (페이징, 필터링)
      */
-    async getMyPendingApprovals(approverId: string, queryRunner?: QueryRunner) {
-        const allPendingSteps = await this.approvalStepSnapshotService.findAll({
-            where: {
-                approverId,
-                status: ApprovalStatus.PENDING,
-            },
-            relations: ['document', 'approver'],
-            order: { createdAt: 'DESC' },
-            queryRunner,
-        });
+    async getMyPendingApprovals(
+        userId: string,
+        type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL',
+        page: number = 1,
+        limit: number = 20,
+        queryRunner?: QueryRunner,
+    ) {
+        const repository = queryRunner
+            ? queryRunner.manager.getRepository(Document)
+            : this.dataSource.getRepository(Document);
 
-        if (allPendingSteps.length === 0) {
-            return [];
-        }
+        const stepRepository = queryRunner
+            ? queryRunner.manager.getRepository(ApprovalStepSnapshot)
+            : this.dataSource.getRepository(ApprovalStepSnapshot);
 
-        // 모든 문서 ID 수집
-        const documentIds = [...new Set(allPendingSteps.map((step) => step.documentId))];
+        let documents: Document[] = [];
+        const currentStepsMap = new Map<string, ApprovalStepSnapshot>(); // documentId -> currentStep
+        let totalItems = 0;
 
-        // 각 문서의 모든 단계를 한 번에 조회
-        const allStepsByDocument = new Map();
-        for (const documentId of documentIds) {
-            const steps = await this.approvalStepSnapshotService.findAll({
-                where: { documentId },
-                order: { stepOrder: 'ASC' },
-                queryRunner,
-            });
-            allStepsByDocument.set(documentId, steps);
-        }
+        if (type === 'SUBMITTED') {
+            // 상신: 내가 기안한 문서들 중 결재 대기 중인 문서
+            const qb = repository
+                .createQueryBuilder('document')
+                .leftJoinAndSelect('document.drafter', 'drafter')
+                .where('document.drafterId = :userId', { userId })
+                .andWhere('document.status = :status', { status: DocumentStatus.PENDING })
+                .orderBy('document.createdAt', 'DESC');
 
-        // 실제 처리 가능한 단계만 필터링
-        const processableSteps = [];
-        for (const step of allPendingSteps) {
-            const allSteps = allStepsByDocument.get(step.documentId) || [];
-            if (await this.canProcessStepOptimized(step, allSteps)) {
-                processableSteps.push(step);
+            // 전체 개수 조회
+            totalItems = await qb.getCount();
+
+            // 페이징 처리
+            const skip = (page - 1) * limit;
+            documents = await qb.skip(skip).take(limit).getMany();
+        } else {
+            // 합의/미결: 내가 처리해야 하는 문서들
+            const stepType = type === 'AGREEMENT' ? ApprovalStepType.AGREEMENT : ApprovalStepType.APPROVAL;
+
+            const qb = stepRepository
+                .createQueryBuilder('step')
+                .leftJoinAndSelect('step.document', 'document')
+                .leftJoinAndSelect('document.drafter', 'drafter')
+                .where('step.approverId = :userId', { userId })
+                .andWhere('step.stepType = :stepType', { stepType })
+                .andWhere('step.status = :status', { status: ApprovalStatus.PENDING })
+                .orderBy('step.createdAt', 'DESC');
+
+            // 전체 개수 조회
+            totalItems = await qb.getCount();
+
+            // 페이징 처리
+            const skip = (page - 1) * limit;
+            const steps = await qb.skip(skip).take(limit).getMany();
+
+            // 실제 처리 가능한 단계만 필터링하고 문서 추출
+            for (const step of steps) {
+                const allSteps = await this.approvalStepSnapshotService.findAll({
+                    where: { documentId: step.documentId },
+                    order: { stepOrder: 'ASC' },
+                    queryRunner,
+                });
+
+                if (await this.canProcessStepOptimized(step, allSteps)) {
+                    documents.push(step.document);
+                    currentStepsMap.set(step.documentId, step);
+                }
             }
         }
 
-        return processableSteps;
+        // 응답 데이터 변환 (문서 중심)
+        const data = await Promise.all(
+            documents.map(async (doc) => {
+                const currentStep = currentStepsMap.get(doc.id);
+
+                // 전체 결재 단계 조회
+                const allApprovalSteps = await this.approvalStepSnapshotService.findAll({
+                    where: { documentId: doc.id },
+                    relations: ['approver'],
+                    order: { stepOrder: 'ASC' },
+                    queryRunner,
+                });
+
+                // 결재 단계 요약 정보 생성
+                const approvalSteps = allApprovalSteps.map((step) => ({
+                    id: step.id,
+                    stepOrder: step.stepOrder,
+                    stepType: step.stepType,
+                    status: step.status,
+                    approverId: step.approverId,
+                    approverName: step.approverSnapshot?.employeeName || step.approver?.name || '',
+                    comment: step.comment,
+                    approvedAt: step.approvedAt,
+                }));
+
+                // 현재 단계 정보 생성 (합의/미결일 때만)
+                const currentStepInfo = currentStep
+                    ? {
+                          id: currentStep.id,
+                          stepOrder: currentStep.stepOrder,
+                          stepType: currentStep.stepType,
+                          status: currentStep.status,
+                          approverId: currentStep.approverId,
+                          approverSnapshot: currentStep.approverSnapshot,
+                      }
+                    : undefined;
+
+                return {
+                    documentId: doc.id,
+                    documentNumber: doc.documentNumber,
+                    title: doc.title,
+                    status: doc.status,
+                    drafterId: doc.drafterId,
+                    drafterName: doc.drafter?.name || '',
+                    drafterDepartmentName: undefined, // TODO: 기안자 부서 정보 추가 필요
+                    currentStep: currentStepInfo,
+                    approvalSteps,
+                    submittedAt: doc.submittedAt,
+                    createdAt: doc.createdAt,
+                };
+            }),
+        );
+
+        // 페이징 메타데이터 계산
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            data,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
     }
 
     /**

@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
+import { Document } from '../../domain/document/document.entity';
 import { DomainDocumentService } from '../../domain/document/document.service';
 import { DomainDocumentTemplateService } from '../../domain/document-template/document-template.service';
 import { DomainEmployeeService } from '../../domain/employee/employee.service';
@@ -319,19 +320,82 @@ export class DocumentContext {
      * 6. 문서 목록 조회 (필터링)
      */
     async getDocuments(filter: DocumentFilterDto, queryRunner?: QueryRunner) {
-        const where: any = {};
+        const repository = queryRunner
+            ? queryRunner.manager.getRepository(Document)
+            : this.dataSource.getRepository(Document);
 
-        if (filter.status) where.status = filter.status;
-        if (filter.drafterId) where.drafterId = filter.drafterId;
+        const qb = repository
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.drafter', 'drafter')
+            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
+            .orderBy('document.createdAt', 'DESC');
 
-        // TODO: 날짜 범위, 검색어 처리는 더 정교한 쿼리 빌더 필요
+        // 1. 기본 필터
+        if (filter.status) {
+            qb.andWhere('document.status = :status', { status: filter.status });
+        }
 
-        return await this.documentService.findAll({
-            where,
-            relations: ['drafter'],
-            order: { createdAt: 'DESC' },
-            queryRunner,
-        });
+        if (filter.drafterId) {
+            qb.andWhere('document.drafterId = :drafterId', { drafterId: filter.drafterId });
+        }
+
+        if (filter.documentTemplateId) {
+            qb.andWhere('document.documentTemplateId = :documentTemplateId', {
+                documentTemplateId: filter.documentTemplateId,
+            });
+        }
+
+        // 2. PENDING 상태 세분화 (대기 중인 단계 타입으로 필터링)
+        if (filter.status === DocumentStatus.PENDING && filter.pendingStepType) {
+            qb.andWhere('approvalSteps.stepType = :stepType', { stepType: filter.pendingStepType });
+            qb.andWhere('approvalSteps.status = :stepStatus', { stepStatus: 'PENDING' });
+        }
+
+        // 3. 카테고리 필터 (문서 템플릿을 통해 조인)
+        if (filter.categoryId) {
+            qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
+            qb.andWhere('template.categoryId = :categoryId', { categoryId: filter.categoryId });
+        }
+
+        // 4. 검색어 (제목)
+        if (filter.searchKeyword) {
+            qb.andWhere('document.title LIKE :keyword', { keyword: `%${filter.searchKeyword}%` });
+        }
+
+        // 5. 날짜 범위
+        if (filter.startDate) {
+            qb.andWhere('document.createdAt >= :startDate', { startDate: filter.startDate });
+        }
+
+        if (filter.endDate) {
+            qb.andWhere('document.createdAt <= :endDate', { endDate: filter.endDate });
+        }
+
+        // 6. 페이징 처리
+        const page = filter.page || 1;
+        const limit = filter.limit || 20;
+        const skip = (page - 1) * limit;
+
+        // 전체 개수 조회
+        const totalItems = await qb.getCount();
+
+        // 데이터 조회
+        const documents = await qb.skip(skip).take(limit).getMany();
+
+        // 페이징 메타데이터 계산
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            data: documents,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
     }
 
     /**

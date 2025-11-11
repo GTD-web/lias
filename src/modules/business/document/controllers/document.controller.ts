@@ -14,7 +14,17 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { DocumentService } from '../services/document.service';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
+import {
+    CreateDocumentDto,
+    UpdateDocumentDto,
+    SubmitDocumentDto,
+    SubmitDocumentDirectDto,
+    DocumentResponseDto,
+    SubmitDocumentResponseDto,
+    ApprovalStepSnapshotResponseDto,
+    QueryDocumentsDto,
+    PaginatedDocumentsResponseDto,
+} from '../dtos';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 
 /**
@@ -42,6 +52,7 @@ export class DocumentController {
     @ApiResponse({
         status: 201,
         description: '문서 생성 성공',
+        type: DocumentResponseDto,
     })
     @ApiResponse({
         status: 400,
@@ -57,35 +68,44 @@ export class DocumentController {
 
     @Get()
     @ApiOperation({
-        summary: '문서 목록 조회',
+        summary: '문서 목록 조회 (페이징, 필터링)',
         description:
-            '문서 목록을 조회합니다. 상태 또는 기안자로 필터링 가능합니다.\n\n' +
+            '문서 목록을 조회합니다. 상태, 기안자, 카테고리, 검색어 등으로 필터링 가능하며 페이징을 지원합니다.\n\n' +
+            '**주요 기능:**\n' +
+            '- 상태별 필터링 (PENDING 상태는 pendingStepType으로 세분화 가능)\n' +
+            '- 카테고리별 필터링\n' +
+            '- 제목 검색\n' +
+            '- 페이징 처리 (기본 20개)\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 전체 문서 목록 조회\n' +
             '- ✅ 정상: 상태별 필터링 조회\n' +
-            '- ✅ 정상: 기안자별 필터링 조회',
-    })
-    @ApiQuery({
-        name: 'status',
-        required: false,
-        enum: DocumentStatus,
-        description: '문서 상태',
-    })
-    @ApiQuery({
-        name: 'drafterId',
-        required: false,
-        description: '기안자 ID',
+            '- ✅ 정상: PENDING + 협의 단계 필터링\n' +
+            '- ✅ 정상: PENDING + 결재 단계 필터링\n' +
+            '- ✅ 정상: 카테고리별 필터링\n' +
+            '- ✅ 정상: 제목 검색\n' +
+            '- ✅ 정상: 페이징 처리',
     })
     @ApiResponse({
         status: 200,
         description: '문서 목록 조회 성공',
+        type: PaginatedDocumentsResponseDto,
     })
     @ApiResponse({
         status: 401,
         description: '인증 실패',
     })
-    async getDocuments(@Query('status') status?: DocumentStatus, @Query('drafterId') drafterId?: string) {
-        return await this.documentService.getDocuments({ status, drafterId });
+    async getDocuments(@Query() query: QueryDocumentsDto) {
+        return await this.documentService.getDocuments({
+            status: query.status,
+            pendingStepType: query.pendingStepType,
+            drafterId: query.drafterId,
+            categoryId: query.categoryId,
+            searchKeyword: query.searchKeyword,
+            startDate: query.startDate ? new Date(query.startDate) : undefined,
+            endDate: query.endDate ? new Date(query.endDate) : undefined,
+            page: query.page,
+            limit: query.limit,
+        });
     }
 
     @Get(':documentId')
@@ -104,6 +124,7 @@ export class DocumentController {
     @ApiResponse({
         status: 200,
         description: '문서 상세 조회 성공',
+        type: DocumentResponseDto,
     })
     @ApiResponse({
         status: 404,
@@ -133,6 +154,7 @@ export class DocumentController {
     @ApiResponse({
         status: 200,
         description: '문서 수정 성공',
+        type: DocumentResponseDto,
     })
     @ApiResponse({
         status: 404,
@@ -201,6 +223,7 @@ export class DocumentController {
     @ApiResponse({
         status: 200,
         description: '문서 기안 성공',
+        type: SubmitDocumentResponseDto,
     })
     @ApiResponse({
         status: 404,
@@ -234,6 +257,7 @@ export class DocumentController {
     @ApiResponse({
         status: 201,
         description: '문서 기안 성공',
+        type: SubmitDocumentResponseDto,
     })
     @ApiResponse({
         status: 400,

@@ -60,8 +60,8 @@ let DocumentService = DocumentService_1 = class DocumentService {
         return await this.documentContext.getDocument(documentId);
     }
     async getDocuments(filter) {
-        this.logger.debug('문서 목록 조회');
-        return await this.documentContext.getDocuments(filter || {});
+        this.logger.debug('문서 목록 조회', filter);
+        return await this.documentContext.getDocuments(filter);
     }
     async submitDocument(dto) {
         this.logger.log(`문서 기안 시작: ${dto.documentId}`);

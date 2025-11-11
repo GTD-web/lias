@@ -17,4 +17,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./create-template.dto"), exports);
 __exportStar(require("./update-template.dto"), exports);
 __exportStar(require("./category.dto"), exports);
+__exportStar(require("./template-response.dto"), exports);
 //# sourceMappingURL=index.js.map
