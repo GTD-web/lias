@@ -12,8 +12,6 @@ const core_1 = require("@nestjs/core");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const typeorm_config_1 = require("./configs/typeorm.config");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
 const env_config_1 = require("./configs/env.config");
 const auth_module_1 = require("./common/auth/auth.module");
 const business_1 = require("./modules_v2/business");
@@ -60,8 +58,8 @@ exports.AppModule = AppModule = __decorate([
             business_1.ApprovalProcessBusinessModule,
             business_1.TestDataBusinessModule,
         ],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        controllers: [],
+        providers: [],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

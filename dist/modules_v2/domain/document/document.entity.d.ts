@@ -5,7 +5,7 @@ import { Employee } from '../employee/employee.entity';
 export declare class Document {
     id: string;
     documentNumber: string;
-    formVersionId: string;
+    formVersionId?: string;
     approvalLineSnapshotId?: string;
     title: string;
     content: string;

@@ -21,7 +21,6 @@ import { Employee } from '../employee/employee.entity';
  * 특정 FormVersion을 기반으로 생성되며, 기안 시점의 결재선 스냅샷을 보유합니다.
  */
 @Entity('documents')
-@Index(['formVersionId'])
 @Index(['drafterId'])
 @Index(['status'])
 @Index(['documentNumber'], { unique: true })
@@ -33,8 +32,8 @@ export class Document {
     @Column({ type: 'varchar', length: 100, unique: true, comment: '문서(품의) 번호' })
     documentNumber: string;
 
-    @Column({ type: 'uuid', comment: '문서 양식 버전 ID' })
-    formVersionId: string;
+    @Column({ type: 'uuid', nullable: true, comment: '문서 양식 버전 ID (선택사항 - 외부 문서 지원)' })
+    formVersionId?: string;
 
     @Column({ type: 'uuid', nullable: true, comment: '결재선 스냅샷 ID' })
     approvalLineSnapshotId?: string;

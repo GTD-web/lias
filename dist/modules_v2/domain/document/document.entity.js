@@ -27,7 +27,7 @@ __decorate([
     __metadata("design:type", String)
 ], Document.prototype, "documentNumber", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid', comment: '문서 양식 버전 ID' }),
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true, comment: '문서 양식 버전 ID (선택사항 - 외부 문서 지원)' }),
     __metadata("design:type", String)
 ], Document.prototype, "formVersionId", void 0);
 __decorate([
@@ -145,7 +145,6 @@ __decorate([
 ], Document.prototype, "childDocuments", void 0);
 exports.Document = Document = __decorate([
     (0, typeorm_1.Entity)('documents'),
-    (0, typeorm_1.Index)(['formVersionId']),
     (0, typeorm_1.Index)(['drafterId']),
     (0, typeorm_1.Index)(['status']),
     (0, typeorm_1.Index)(['documentNumber'], { unique: true }),

@@ -1218,4 +1218,170 @@ export class ApprovalFlowContext {
 
         return stepsWithDetails;
     }
+
+    /**
+     * 양식 없는 외부 문서용 결재선 스냅샷 생성
+     * 커스텀 결재선 또는 자동 계층적 결재선을 생성
+     */
+    async createApprovalSnapshotWithoutForm(
+        dto: {
+            documentId: string;
+            drafterId: string;
+            drafterDepartmentId: string;
+            customApprovalSteps?: any[];
+        },
+        externalQueryRunner?: QueryRunner,
+    ) {
+        this.logger.log(`양식 없는 외부 문서용 결재선 스냅샷 생성: Document ${dto.documentId}`);
+
+        return await withTransaction(
+            this.dataSource,
+            async (queryRunner) => {
+                // 기존 스냅샷이 있으면 먼저 삭제
+                const existingSnapshot = await this.approvalLineSnapshotService.findOne({
+                    where: { documentId: dto.documentId },
+                    queryRunner,
+                });
+
+                if (existingSnapshot) {
+                    this.logger.log(`기존 스냅샷 발견, 삭제 중: ${existingSnapshot.id}`);
+                    await this.approvalStepSnapshotService.delete({ snapshotId: existingSnapshot.id } as any, {
+                        queryRunner,
+                    });
+                    await this.approvalLineSnapshotService.delete(existingSnapshot.id, { queryRunner });
+                }
+
+                let resolvedApprovers: ResolvedApproverDto[] = [];
+
+                if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
+                    // 커스텀 결재선 처리
+                    for (const customStep of dto.customApprovalSteps) {
+                        if (customStep.assigneeRule === 'DEPARTMENT_REFERENCE' && customStep.departmentId) {
+                            const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+                                where: { departmentId: customStep.departmentId },
+                                queryRunner,
+                            });
+
+                            for (const edp of departmentEdps) {
+                                const employee = await this.employeeService.findOne({
+                                    where: { id: edp.employeeId },
+                                    queryRunner,
+                                });
+                                if (employee) {
+                                    resolvedApprovers.push({
+                                        employeeId: employee.id,
+                                        employeeName: employee.name,
+                                        departmentId: customStep.departmentId,
+                                        positionId: undefined,
+                                        stepOrder: customStep.stepOrder,
+                                        stepType: customStep.stepType,
+                                        assigneeRule: customStep.assigneeRule,
+                                        isRequired: customStep.isRequired,
+                                    });
+                                }
+                            }
+                        } else if (customStep.employeeId) {
+                            const employee = await this.employeeService.findOne({
+                                where: { id: customStep.employeeId },
+                                queryRunner,
+                            });
+
+                            if (!employee) {
+                                throw new NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                            }
+
+                            const edp = await this.employeeDepartmentPositionService.findOne({
+                                where: { employeeId: customStep.employeeId },
+                                queryRunner,
+                            });
+
+                            resolvedApprovers.push({
+                                employeeId: customStep.employeeId,
+                                employeeName: employee.name,
+                                departmentId: edp?.departmentId,
+                                positionId: edp?.positionId,
+                                stepOrder: customStep.stepOrder,
+                                stepType: customStep.stepType,
+                                assigneeRule: customStep.assigneeRule,
+                                isRequired: customStep.isRequired,
+                            });
+                        }
+                    }
+                } else {
+                    // 자동 계층적 결재선 생성
+                    resolvedApprovers = await this.createHierarchicalApprovalLine(
+                        dto.drafterId,
+                        dto.drafterDepartmentId,
+                        queryRunner,
+                    );
+                }
+
+                if (resolvedApprovers.length === 0) {
+                    throw new BadRequestException('결재선을 구성할 수 없습니다.');
+                }
+
+                // ApprovalLineSnapshot 생성
+                const snapshotEntity = await this.approvalLineSnapshotService.create(
+                    {
+                        documentId: dto.documentId,
+                        sourceTemplateVersionId: null,
+                        snapshotName: '외부 문서 자동 결재선',
+                        snapshotDescription: '양식이 없는 외부 문서용 결재선',
+                        frozenAt: new Date(),
+                    },
+                    { queryRunner },
+                );
+                const snapshot = await this.approvalLineSnapshotService.save(snapshotEntity, { queryRunner });
+
+                // ApprovalStepSnapshot들 생성
+                for (const resolved of resolvedApprovers) {
+                    const stepSnapshotEntity = await this.approvalStepSnapshotService.create(
+                        {
+                            snapshotId: snapshot.id,
+                            stepOrder: resolved.stepOrder,
+                            stepType: resolved.stepType as ApprovalStepType,
+                            assigneeRule: resolved.assigneeRule,
+                            approverId: resolved.employeeId,
+                            approverDepartmentId: resolved.departmentId,
+                            approverPositionId: resolved.positionId,
+                            required: resolved.isRequired,
+                            status: ApprovalStatus.PENDING,
+                        },
+                        { queryRunner },
+                    );
+                    await this.approvalStepSnapshotService.save(stepSnapshotEntity, { queryRunner });
+                }
+
+                this.logger.log(`외부 문서 결재선 스냅샷 생성 완료: ${snapshot.id}`);
+                return snapshot;
+            },
+            externalQueryRunner,
+        );
+    }
+
+    /**
+     * 자동 계층적 결재선 생성 (public method)
+     * 외부 문서 제출 시 호출
+     */
+    async createHierarchicalApprovalLineForExternalDocument(
+        dto: {
+            documentId: string;
+            drafterId: string;
+            drafterDepartmentId: string;
+            documentAmount?: number;
+            documentType?: string;
+        },
+        externalQueryRunner?: QueryRunner,
+    ) {
+        this.logger.log(`외부 문서용 자동 계층적 결재선 생성: Document ${dto.documentId}`);
+
+        return await this.createApprovalSnapshotWithoutForm(
+            {
+                documentId: dto.documentId,
+                drafterId: dto.drafterId,
+                drafterDepartmentId: dto.drafterDepartmentId,
+            },
+            externalQueryRunner,
+        );
+    }
 }

@@ -807,6 +807,112 @@ let ApprovalFlowContext = ApprovalFlowContext_1 = class ApprovalFlowContext {
         }));
         return stepsWithDetails;
     }
+    async createApprovalSnapshotWithoutForm(dto, externalQueryRunner) {
+        this.logger.log(`양식 없는 외부 문서용 결재선 스냅샷 생성: Document ${dto.documentId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const existingSnapshot = await this.approvalLineSnapshotService.findOne({
+                where: { documentId: dto.documentId },
+                queryRunner,
+            });
+            if (existingSnapshot) {
+                this.logger.log(`기존 스냅샷 발견, 삭제 중: ${existingSnapshot.id}`);
+                await this.approvalStepSnapshotService.delete({ snapshotId: existingSnapshot.id }, {
+                    queryRunner,
+                });
+                await this.approvalLineSnapshotService.delete(existingSnapshot.id, { queryRunner });
+            }
+            let resolvedApprovers = [];
+            if (dto.customApprovalSteps && dto.customApprovalSteps.length > 0) {
+                for (const customStep of dto.customApprovalSteps) {
+                    if (customStep.assigneeRule === 'DEPARTMENT_REFERENCE' && customStep.departmentId) {
+                        const departmentEdps = await this.employeeDepartmentPositionService.findAll({
+                            where: { departmentId: customStep.departmentId },
+                            queryRunner,
+                        });
+                        for (const edp of departmentEdps) {
+                            const employee = await this.employeeService.findOne({
+                                where: { id: edp.employeeId },
+                                queryRunner,
+                            });
+                            if (employee) {
+                                resolvedApprovers.push({
+                                    employeeId: employee.id,
+                                    employeeName: employee.name,
+                                    departmentId: customStep.departmentId,
+                                    positionId: undefined,
+                                    stepOrder: customStep.stepOrder,
+                                    stepType: customStep.stepType,
+                                    assigneeRule: customStep.assigneeRule,
+                                    isRequired: customStep.isRequired,
+                                });
+                            }
+                        }
+                    }
+                    else if (customStep.employeeId) {
+                        const employee = await this.employeeService.findOne({
+                            where: { id: customStep.employeeId },
+                            queryRunner,
+                        });
+                        if (!employee) {
+                            throw new common_1.NotFoundException(`직원을 찾을 수 없습니다: ${customStep.employeeId}`);
+                        }
+                        const edp = await this.employeeDepartmentPositionService.findOne({
+                            where: { employeeId: customStep.employeeId },
+                            queryRunner,
+                        });
+                        resolvedApprovers.push({
+                            employeeId: customStep.employeeId,
+                            employeeName: employee.name,
+                            departmentId: edp?.departmentId,
+                            positionId: edp?.positionId,
+                            stepOrder: customStep.stepOrder,
+                            stepType: customStep.stepType,
+                            assigneeRule: customStep.assigneeRule,
+                            isRequired: customStep.isRequired,
+                        });
+                    }
+                }
+            }
+            else {
+                resolvedApprovers = await this.createHierarchicalApprovalLine(dto.drafterId, dto.drafterDepartmentId, queryRunner);
+            }
+            if (resolvedApprovers.length === 0) {
+                throw new common_1.BadRequestException('결재선을 구성할 수 없습니다.');
+            }
+            const snapshotEntity = await this.approvalLineSnapshotService.create({
+                documentId: dto.documentId,
+                sourceTemplateVersionId: null,
+                snapshotName: '외부 문서 자동 결재선',
+                snapshotDescription: '양식이 없는 외부 문서용 결재선',
+                frozenAt: new Date(),
+            }, { queryRunner });
+            const snapshot = await this.approvalLineSnapshotService.save(snapshotEntity, { queryRunner });
+            for (const resolved of resolvedApprovers) {
+                const stepSnapshotEntity = await this.approvalStepSnapshotService.create({
+                    snapshotId: snapshot.id,
+                    stepOrder: resolved.stepOrder,
+                    stepType: resolved.stepType,
+                    assigneeRule: resolved.assigneeRule,
+                    approverId: resolved.employeeId,
+                    approverDepartmentId: resolved.departmentId,
+                    approverPositionId: resolved.positionId,
+                    required: resolved.isRequired,
+                    status: approval_enum_1.ApprovalStatus.PENDING,
+                }, { queryRunner });
+                await this.approvalStepSnapshotService.save(stepSnapshotEntity, { queryRunner });
+            }
+            this.logger.log(`외부 문서 결재선 스냅샷 생성 완료: ${snapshot.id}`);
+            return snapshot;
+        }, externalQueryRunner);
+    }
+    async createHierarchicalApprovalLineForExternalDocument(dto, externalQueryRunner) {
+        this.logger.log(`외부 문서용 자동 계층적 결재선 생성: Document ${dto.documentId}`);
+        return await this.createApprovalSnapshotWithoutForm({
+            documentId: dto.documentId,
+            drafterId: dto.drafterId,
+            drafterDepartmentId: dto.drafterDepartmentId,
+        }, externalQueryRunner);
+    }
 };
 exports.ApprovalFlowContext = ApprovalFlowContext;
 exports.ApprovalFlowContext = ApprovalFlowContext = ApprovalFlowContext_1 = __decorate([

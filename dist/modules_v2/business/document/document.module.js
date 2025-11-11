@@ -13,6 +13,7 @@ const approval_flow_module_1 = require("../../context/approval-flow/approval-flo
 const form_module_1 = require("../../domain/form/form.module");
 const employee_department_position_module_1 = require("../../domain/employee-department-position/employee-department-position.module");
 const document_controller_1 = require("./controllers/document.controller");
+const external_document_controller_1 = require("./controllers/external-document.controller");
 const Usecases = require("./usecases");
 let DocumentBusinessModule = class DocumentBusinessModule {
 };
@@ -25,9 +26,10 @@ exports.DocumentBusinessModule = DocumentBusinessModule = __decorate([
             form_module_1.DomainFormModule,
             employee_department_position_module_1.DomainEmployeeDepartmentPositionModule,
         ],
-        controllers: [document_controller_1.DocumentController],
+        controllers: [document_controller_1.DocumentController, external_document_controller_1.ExternalDocumentController],
         providers: [
             Usecases.CreateDocumentUsecase,
+            Usecases.CreateExternalDocumentUsecase,
             Usecases.UpdateDocumentUsecase,
             Usecases.SubmitDocumentUsecase,
             Usecases.CancelDocumentUsecase,
@@ -35,6 +37,7 @@ exports.DocumentBusinessModule = DocumentBusinessModule = __decorate([
         ],
         exports: [
             Usecases.CreateDocumentUsecase,
+            Usecases.CreateExternalDocumentUsecase,
             Usecases.UpdateDocumentUsecase,
             Usecases.SubmitDocumentUsecase,
             Usecases.CancelDocumentUsecase,

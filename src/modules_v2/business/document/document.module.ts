@@ -4,6 +4,7 @@ import { ApprovalFlowModule as ApprovalFlowContextModule } from '../../context/a
 import { DomainFormModule } from '../../domain/form/form.module';
 import { DomainEmployeeDepartmentPositionModule } from '../../domain/employee-department-position/employee-department-position.module';
 import { DocumentController } from './controllers/document.controller';
+import { ExternalDocumentController } from './controllers/external-document.controller';
 import * as Usecases from './usecases';
 
 @Module({
@@ -13,9 +14,10 @@ import * as Usecases from './usecases';
         DomainFormModule,
         DomainEmployeeDepartmentPositionModule, // SubmitDocumentUsecase에서 사용
     ],
-    controllers: [DocumentController],
+    controllers: [DocumentController, ExternalDocumentController],
     providers: [
         Usecases.CreateDocumentUsecase,
+        Usecases.CreateExternalDocumentUsecase,
         Usecases.UpdateDocumentUsecase,
         Usecases.SubmitDocumentUsecase,
         Usecases.CancelDocumentUsecase,
@@ -23,6 +25,7 @@ import * as Usecases from './usecases';
     ],
     exports: [
         Usecases.CreateDocumentUsecase,
+        Usecases.CreateExternalDocumentUsecase,
         Usecases.UpdateDocumentUsecase,
         Usecases.SubmitDocumentUsecase,
         Usecases.CancelDocumentUsecase,

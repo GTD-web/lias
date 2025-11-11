@@ -49,17 +49,21 @@ export class DocumentController {
         summary: '문서 생성',
         description:
             '새로운 문서를 생성합니다 (임시저장 상태)\n\n' +
+            '**양식 선택적 지원:**\n' +
+            '- formVersionId를 입력하지 않으면 양식 없는 외부 문서로 생성됩니다\n' +
+            '- 양식이 없어도 문서 생성 및 제출이 가능합니다\n\n' +
             '**CustomApprovalSteps 지원:**\n' +
             '- 문서 생성 시 결재선을 커스터마이징할 수 있습니다\n' +
             '- 다양한 assigneeRule 지원: FIXED, DRAFTER, DRAFTER_SUPERIOR, DEPARTMENT_HEAD, POSITION_BASED, DEPARTMENT_REFERENCE\n' +
             '- 임시저장 시에도 결재선 스냅샷이 생성됩니다\n' +
             '- DEPARTMENT_REFERENCE: 부서 전체 참조 (REFERENCE 타입에서만 사용, departmentId 필수)\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 새로운 문서 생성 (임시저장)\n' +
+            '- ✅ 정상: 양식이 있는 문서 생성 (임시저장)\n' +
+            '- ✅ 정상: 양식이 없는 외부 문서 생성\n' +
             '- ✅ 정상: metadata 없이 문서 생성\n' +
             '- ✅ 정상: customApprovalSteps와 함께 문서 생성\n' +
             '- ✅ 정상: 다양한 assigneeRule로 결재선 커스터마이징\n' +
-            '- ❌ 실패: 필수 필드 누락 (formVersionId, title, content)\n' +
+            '- ❌ 실패: 필수 필드 누락 (title, content)\n' +
             '- ❌ 실패: 존재하지 않는 formVersionId (404 반환)\n' +
             '- ❌ 실패: 잘못된 assigneeRule (400 반환)\n' +
             '- ❌ 실패: 인증 토큰 없음 (401 반환)',

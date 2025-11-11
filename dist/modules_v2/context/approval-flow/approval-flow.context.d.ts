@@ -74,4 +74,17 @@ export declare class ApprovalFlowContext {
     getApprovalLineTemplateById(templateId: string): Promise<import("../../domain").ApprovalLineTemplate>;
     getFormById(formId: string): Promise<import("../../domain").Form>;
     getApprovalStepTemplatesWithDetails(versionId: string): Promise<any[]>;
+    createApprovalSnapshotWithoutForm(dto: {
+        documentId: string;
+        drafterId: string;
+        drafterDepartmentId: string;
+        customApprovalSteps?: any[];
+    }, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalLineSnapshot>;
+    createHierarchicalApprovalLineForExternalDocument(dto: {
+        documentId: string;
+        drafterId: string;
+        drafterDepartmentId: string;
+        documentAmount?: number;
+        documentType?: string;
+    }, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalLineSnapshot>;
 }

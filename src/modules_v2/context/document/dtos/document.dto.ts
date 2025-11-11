@@ -4,7 +4,7 @@ import { DocumentStatus } from '../../../../common/enums/approval.enum';
  * 문서 생성 DTO
  */
 export class CreateDocumentDto {
-    formVersionId: string;
+    formVersionId?: string; // 선택사항: 양식 없는 외부 문서 지원
     title: string;
     content: string; // HTML 형태
     drafterId: string;
@@ -18,6 +18,8 @@ export class UpdateDocumentDto {
     title?: string;
     content?: string;
     metadata?: Record<string, any>;
+    approvalLineSnapshotId?: string; // 결재선 스냅샷 ID 업데이트용
+    status?: DocumentStatus; // 상태 업데이트용
 }
 
 /**

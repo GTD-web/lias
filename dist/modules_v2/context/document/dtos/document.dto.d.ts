@@ -1,6 +1,6 @@
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 export declare class CreateDocumentDto {
-    formVersionId: string;
+    formVersionId?: string;
     title: string;
     content: string;
     drafterId: string;
@@ -10,6 +10,8 @@ export declare class UpdateDocumentDto {
     title?: string;
     content?: string;
     metadata?: Record<string, any>;
+    approvalLineSnapshotId?: string;
+    status?: DocumentStatus;
 }
 export declare class SubmitDocumentDto {
     documentId: string;
