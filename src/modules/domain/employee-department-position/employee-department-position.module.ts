@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DomainEmployeeDepartmentPositionService } from './employee-department-position.service';
 import { DomainEmployeeDepartmentPositionRepository } from './employee-department-position.repository';
-import { EmployeeDepartmentPosition } from '../../../database/entities';
+import { EmployeeDepartmentPosition } from './employee-department-position.entity';
 
 @Module({
     imports: [TypeOrmModule.forFeature([EmployeeDepartmentPosition])],

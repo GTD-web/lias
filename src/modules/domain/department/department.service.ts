@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DomainDepartmentRepository } from './department.repository';
 import { BaseService } from '../../../common/services/base.service';
-import { Department } from '../../../database/entities';
+import { Department } from './department.entity';
 
 @Injectable()
 export class DomainDepartmentService extends BaseService<Department> {

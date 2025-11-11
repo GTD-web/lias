@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Document } from '../../../database/entities';
 import { DomainDocumentService } from './document.service';
 import { DomainDocumentRepository } from './document.repository';
+import { Document } from './document.entity';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Document])],

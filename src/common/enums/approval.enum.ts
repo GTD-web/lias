@@ -47,7 +47,7 @@ export enum DocumentListType {
     ASSIGNED = 'assigned', // 내가 할당받은 문서
 }
 
-export enum FormStatus {
+export enum DocumentTemplateStatus {
     DRAFT = 'DRAFT', // 초안
     ACTIVE = 'ACTIVE', // 활성
     ARCHIVED = 'ARCHIVED', // 보관
@@ -60,9 +60,17 @@ export enum ApprovalLineTemplateStatus {
 }
 
 export enum AssigneeRule {
+    // 모든 ApprovalStepType에 가능
     FIXED = 'FIXED', // 고정 결재자
+
+    // 결재 단계 타입이 APPROVAL, IMPLEMENTATION 인 경우만 가능
     DRAFTER = 'DRAFTER', // 기안자
-    DRAFTER_SUPERIOR = 'DRAFTER_SUPERIOR', // 기안자 상급자
+
+    // 결재 단계 타입이 APPROVAL 인 경우만 가능
+    HIERARCHY_TO_SUPERIOR = 'HIERARCHY_TO_SUPERIOR', // 기안자부터 기안자의 바로 위 상급자까지
+    HIERARCHY_TO_POSITION = 'HIERARCHY_TO_POSITION', // 기안자부터 특정 직책까지
+
+    // 결재 단계 타입이 REFERENCE 인 경우만 가능
     DEPARTMENT_REFERENCE = 'DEPARTMENT_REFERENCE', // 부서 전체 참조
 }
 

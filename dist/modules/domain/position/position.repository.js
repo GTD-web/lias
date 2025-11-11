@@ -16,7 +16,7 @@ exports.DomainPositionRepository = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const entities_1 = require("../../../database/entities");
+const position_entity_1 = require("./position.entity");
 const base_repository_1 = require("../../../common/repositories/base.repository");
 let DomainPositionRepository = class DomainPositionRepository extends base_repository_1.BaseRepository {
     constructor(repository) {
@@ -26,7 +26,7 @@ let DomainPositionRepository = class DomainPositionRepository extends base_repos
 exports.DomainPositionRepository = DomainPositionRepository;
 exports.DomainPositionRepository = DomainPositionRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(entities_1.Position)),
+    __param(0, (0, typeorm_1.InjectRepository)(position_entity_1.Position)),
     __metadata("design:paramtypes", [typeorm_2.Repository])
 ], DomainPositionRepository);
 //# sourceMappingURL=position.repository.js.map

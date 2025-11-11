@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { DomainEmployeeService } from '../../modules_v2/domain/employee/employee.service';
+import { DomainEmployeeService } from '../../modules/domain/employee/employee.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: any) {
-        const employee = await this.employeeService.findByEmployeeNumber(payload.employeeNumber);
+        const employee = await this.employeeService.findOne({ where: { employeeNumber: payload.employeeNumber } });
 
         if (!employee || employee.employeeNumber !== payload.employeeNumber) {
             throw new UnauthorizedException();

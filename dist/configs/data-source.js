@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppDataSource = void 0;
 const typeorm_1 = require("typeorm");
-const list_1 = require("../modules_v2/domain/list");
+const list_1 = require("../modules/domain/list");
 const dotenv = require("dotenv");
 dotenv.config();
 exports.AppDataSource = new typeorm_1.DataSource({

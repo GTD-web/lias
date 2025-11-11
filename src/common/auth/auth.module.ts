@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from '../strategies/jwt.strategy';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { DomainEmployeeModule } from '../../modules_v2/domain/employee/employee.module';
+import { DomainEmployeeModule } from '../../modules/domain/employee/employee.module';
 
 /**
  * 인증 모듈 (V2)

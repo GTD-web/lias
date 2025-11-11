@@ -16,7 +16,7 @@ exports.DomainEmployeeRepository = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const entities_1 = require("../../../database/entities");
+const employee_entity_1 = require("./employee.entity");
 const base_repository_1 = require("../../../common/repositories/base.repository");
 let DomainEmployeeRepository = class DomainEmployeeRepository extends base_repository_1.BaseRepository {
     constructor(repository) {
@@ -26,7 +26,7 @@ let DomainEmployeeRepository = class DomainEmployeeRepository extends base_repos
 exports.DomainEmployeeRepository = DomainEmployeeRepository;
 exports.DomainEmployeeRepository = DomainEmployeeRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(entities_1.Employee)),
+    __param(0, (0, typeorm_1.InjectRepository)(employee_entity_1.Employee)),
     __metadata("design:paramtypes", [typeorm_2.Repository])
 ], DomainEmployeeRepository);
 //# sourceMappingURL=employee.repository.js.map

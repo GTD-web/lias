@@ -11,13 +11,13 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const employee_department_position_service_1 = require("./employee-department-position.service");
 const employee_department_position_repository_1 = require("./employee-department-position.repository");
-const entities_1 = require("../../../database/entities");
+const employee_department_position_entity_1 = require("./employee-department-position.entity");
 let DomainEmployeeDepartmentPositionModule = class DomainEmployeeDepartmentPositionModule {
 };
 exports.DomainEmployeeDepartmentPositionModule = DomainEmployeeDepartmentPositionModule;
 exports.DomainEmployeeDepartmentPositionModule = DomainEmployeeDepartmentPositionModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.EmployeeDepartmentPosition])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([employee_department_position_entity_1.EmployeeDepartmentPosition])],
         providers: [employee_department_position_service_1.DomainEmployeeDepartmentPositionService, employee_department_position_repository_1.DomainEmployeeDepartmentPositionRepository],
         exports: [employee_department_position_service_1.DomainEmployeeDepartmentPositionService],
     })

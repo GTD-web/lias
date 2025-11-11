@@ -12,11 +12,13 @@ const core_1 = require("@nestjs/core");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const typeorm_config_1 = require("./configs/typeorm.config");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
 const env_config_1 = require("./configs/env.config");
 const auth_module_1 = require("./common/auth/auth.module");
-const business_1 = require("./modules_v2/business");
+const domain_module_1 = require("./modules/domain/domain.module");
+const template_module_1 = require("./modules/business/template/template.module");
+const metadata_module_1 = require("./modules/business/metadata/metadata.module");
+const document_module_1 = require("./modules/business/document/document.module");
+const approval_process_module_1 = require("./modules/business/approval-process/approval-process.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,37 +33,16 @@ exports.AppModule = AppModule = __decorate([
                 inject: [config_1.ConfigService],
                 useFactory: typeorm_config_1.typeOrmConfig,
             }),
-            core_1.RouterModule.register([
-                {
-                    path: 'metadata',
-                    module: business_1.MetadataModule,
-                },
-                {
-                    path: 'approval-flow',
-                    module: business_1.ApprovalFlowBusinessModule,
-                },
-                {
-                    path: 'document',
-                    module: business_1.DocumentBusinessModule,
-                },
-                {
-                    path: 'approval-process',
-                    module: business_1.ApprovalProcessBusinessModule,
-                },
-                {
-                    path: 'test-data',
-                    module: business_1.TestDataBusinessModule,
-                },
-            ]),
+            core_1.RouterModule.register([]),
             auth_module_1.AuthModule,
-            business_1.MetadataModule,
-            business_1.ApprovalFlowBusinessModule,
-            business_1.DocumentBusinessModule,
-            business_1.ApprovalProcessBusinessModule,
-            business_1.TestDataBusinessModule,
+            domain_module_1.DomainModule,
+            template_module_1.TemplateBusinessModule,
+            metadata_module_1.MetadataModule,
+            document_module_1.DocumentBusinessModule,
+            approval_process_module_1.ApprovalProcessBusinessModule,
         ],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        controllers: [],
+        providers: [],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

@@ -1,0 +1,35 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsUUID, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApprovalStepSnapshotItemDto } from './approval-step-snapshot.dto';
+
+/**
+ * 문서 기안 DTO (임시저장된 문서 기반)
+ */
+export class SubmitDocumentDto {
+    @ApiProperty({
+        description: '기안할 문서 ID (임시저장된 문서)',
+        example: 'uuid',
+    })
+    @IsUUID()
+    documentId: string;
+
+    @ApiPropertyOptional({
+        description: '문서 템플릿 ID (기안 시점에 지정 가능)',
+        example: 'uuid',
+    })
+    @IsOptional()
+    @IsUUID()
+    documentTemplateId?: string;
+
+    @ApiPropertyOptional({
+        description: '결재단계 스냅샷 목록 (기안 시 결재선 설정, 없으면 기존 스냅샷 사용)',
+        type: [ApprovalStepSnapshotItemDto],
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ApprovalStepSnapshotItemDto)
+    approvalSteps?: ApprovalStepSnapshotItemDto[];
+}
+
