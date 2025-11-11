@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { EntityListV2 } from 'src/modules_v2/domain/list';
+import { EntityListV2 } from 'src/modules/domain/list';
 import { join } from 'path';
 import * as dotenv from 'dotenv';
 

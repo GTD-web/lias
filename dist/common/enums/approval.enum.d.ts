@@ -38,7 +38,7 @@ export declare enum DocumentListType {
     IMPLEMENTATION = "implementation",
     ASSIGNED = "assigned"
 }
-export declare enum FormStatus {
+export declare enum DocumentTemplateStatus {
     DRAFT = "DRAFT",
     ACTIVE = "ACTIVE",
     ARCHIVED = "ARCHIVED"
@@ -51,7 +51,8 @@ export declare enum ApprovalLineTemplateStatus {
 export declare enum AssigneeRule {
     FIXED = "FIXED",
     DRAFTER = "DRAFTER",
-    DRAFTER_SUPERIOR = "DRAFTER_SUPERIOR",
+    HIERARCHY_TO_SUPERIOR = "HIERARCHY_TO_SUPERIOR",
+    HIERARCHY_TO_POSITION = "HIERARCHY_TO_POSITION",
     DEPARTMENT_REFERENCE = "DEPARTMENT_REFERENCE"
 }
 export declare enum DocumentStatus {

@@ -1,6 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { EntityListV2 } from 'src/modules_v2/domain/list';
+import { EntityListV2 } from 'src/modules/domain/list';
 import { join } from 'path';
 
 export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {

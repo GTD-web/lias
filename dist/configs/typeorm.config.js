@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.typeOrmConfig = void 0;
-const list_1 = require("../modules_v2/domain/list");
+const list_1 = require("../modules/domain/list");
 const typeOrmConfig = (configService) => {
     return {
         type: 'postgres',

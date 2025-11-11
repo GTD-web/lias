@@ -14,7 +14,7 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
-const employee_service_1 = require("../../modules_v2/domain/employee/employee.service");
+const employee_service_1 = require("../../modules/domain/employee/employee.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     constructor(employeeService, configService) {
         super({
@@ -25,7 +25,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.employeeService = employeeService;
     }
     async validate(payload) {
-        const employee = await this.employeeService.findByEmployeeNumber(payload.employeeNumber);
+        const employee = await this.employeeService.findOne({ where: { employeeNumber: payload.employeeNumber } });
         if (!employee || employee.employeeNumber !== payload.employeeNumber) {
             throw new common_1.UnauthorizedException();
         }

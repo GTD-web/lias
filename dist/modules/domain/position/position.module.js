@@ -11,15 +11,15 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const position_service_1 = require("./position.service");
 const position_repository_1 = require("./position.repository");
-const entities_1 = require("../../../database/entities");
+const position_entity_1 = require("./position.entity");
 let DomainPositionModule = class DomainPositionModule {
 };
 exports.DomainPositionModule = DomainPositionModule;
 exports.DomainPositionModule = DomainPositionModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.Position])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([position_entity_1.Position])],
         providers: [position_service_1.DomainPositionService, position_repository_1.DomainPositionRepository],
-        exports: [position_service_1.DomainPositionService],
+        exports: [position_service_1.DomainPositionService, position_repository_1.DomainPositionRepository],
     })
 ], DomainPositionModule);
 //# sourceMappingURL=position.module.js.map

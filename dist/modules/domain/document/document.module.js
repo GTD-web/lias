@@ -9,15 +9,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DomainDocumentModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const entities_1 = require("../../../database/entities");
 const document_service_1 = require("./document.service");
 const document_repository_1 = require("./document.repository");
+const document_entity_1 = require("./document.entity");
 let DomainDocumentModule = class DomainDocumentModule {
 };
 exports.DomainDocumentModule = DomainDocumentModule;
 exports.DomainDocumentModule = DomainDocumentModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.Document])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([document_entity_1.Document])],
         providers: [document_service_1.DomainDocumentService, document_repository_1.DomainDocumentRepository],
         exports: [document_service_1.DomainDocumentService],
     })

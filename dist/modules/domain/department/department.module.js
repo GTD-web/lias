@@ -11,13 +11,13 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const department_service_1 = require("./department.service");
 const department_repository_1 = require("./department.repository");
-const entities_1 = require("../../../database/entities");
+const department_entity_1 = require("./department.entity");
 let DomainDepartmentModule = class DomainDepartmentModule {
 };
 exports.DomainDepartmentModule = DomainDepartmentModule;
 exports.DomainDepartmentModule = DomainDepartmentModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.Department])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([department_entity_1.Department])],
         providers: [department_service_1.DomainDepartmentService, department_repository_1.DomainDepartmentRepository],
         exports: [department_service_1.DomainDepartmentService],
     })

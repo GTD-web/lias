@@ -16,7 +16,7 @@ exports.DomainRankRepository = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const entities_1 = require("../../../database/entities");
+const rank_entity_1 = require("./rank.entity");
 const base_repository_1 = require("../../../common/repositories/base.repository");
 let DomainRankRepository = class DomainRankRepository extends base_repository_1.BaseRepository {
     constructor(repository) {
@@ -26,7 +26,7 @@ let DomainRankRepository = class DomainRankRepository extends base_repository_1.
 exports.DomainRankRepository = DomainRankRepository;
 exports.DomainRankRepository = DomainRankRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(entities_1.Rank)),
+    __param(0, (0, typeorm_1.InjectRepository)(rank_entity_1.Rank)),
     __metadata("design:paramtypes", [typeorm_2.Repository])
 ], DomainRankRepository);
 //# sourceMappingURL=rank.repository.js.map

@@ -18,34 +18,6 @@ let DomainPositionService = class DomainPositionService extends base_service_1.B
         super(positionRepository);
         this.positionRepository = positionRepository;
     }
-    async findByPositionId(id) {
-        const position = await this.positionRepository.findOne({ where: { id } });
-        if (!position) {
-            throw new common_1.NotFoundException('직책을 찾을 수 없습니다.');
-        }
-        return position;
-    }
-    async findByPositionCode(positionCode) {
-        const position = await this.positionRepository.findOne({ where: { positionCode } });
-        if (!position) {
-            throw new common_1.NotFoundException('직책을 찾을 수 없습니다.');
-        }
-        return position;
-    }
-    async findOrNullByPositionCode(positionCode) {
-        return await this.positionRepository.findOne({ where: { positionCode } });
-    }
-    async findManagementPositions() {
-        return await this.positionRepository.findAll({
-            where: { hasManagementAuthority: true },
-            order: { level: 'ASC' },
-        });
-    }
-    async findAllOrderedByLevel() {
-        return await this.positionRepository.findAll({
-            order: { level: 'ASC' },
-        });
-    }
 };
 exports.DomainPositionService = DomainPositionService;
 exports.DomainPositionService = DomainPositionService = __decorate([

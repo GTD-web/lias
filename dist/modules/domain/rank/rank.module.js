@@ -11,13 +11,13 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const rank_service_1 = require("./rank.service");
 const rank_repository_1 = require("./rank.repository");
-const entities_1 = require("../../../database/entities");
+const rank_entity_1 = require("./rank.entity");
 let DomainRankModule = class DomainRankModule {
 };
 exports.DomainRankModule = DomainRankModule;
 exports.DomainRankModule = DomainRankModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.Rank])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([rank_entity_1.Rank])],
         providers: [rank_service_1.DomainRankService, rank_repository_1.DomainRankRepository],
         exports: [rank_service_1.DomainRankService],
     })

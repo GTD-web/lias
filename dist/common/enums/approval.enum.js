@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentStatus = exports.AssigneeRule = exports.ApprovalLineTemplateStatus = exports.FormStatus = exports.DocumentListType = exports.AutoFillType = exports.ApprovalLineType = exports.ApprovalStatus = exports.ApprovalStepType = exports.DepartmentScopeType = exports.ApproverType = void 0;
+exports.DocumentStatus = exports.AssigneeRule = exports.ApprovalLineTemplateStatus = exports.DocumentTemplateStatus = exports.DocumentListType = exports.AutoFillType = exports.ApprovalLineType = exports.ApprovalStatus = exports.ApprovalStepType = exports.DepartmentScopeType = exports.ApproverType = void 0;
 var ApproverType;
 (function (ApproverType) {
     ApproverType["USER"] = "USER";
@@ -48,12 +48,12 @@ var DocumentListType;
     DocumentListType["IMPLEMENTATION"] = "implementation";
     DocumentListType["ASSIGNED"] = "assigned";
 })(DocumentListType || (exports.DocumentListType = DocumentListType = {}));
-var FormStatus;
-(function (FormStatus) {
-    FormStatus["DRAFT"] = "DRAFT";
-    FormStatus["ACTIVE"] = "ACTIVE";
-    FormStatus["ARCHIVED"] = "ARCHIVED";
-})(FormStatus || (exports.FormStatus = FormStatus = {}));
+var DocumentTemplateStatus;
+(function (DocumentTemplateStatus) {
+    DocumentTemplateStatus["DRAFT"] = "DRAFT";
+    DocumentTemplateStatus["ACTIVE"] = "ACTIVE";
+    DocumentTemplateStatus["ARCHIVED"] = "ARCHIVED";
+})(DocumentTemplateStatus || (exports.DocumentTemplateStatus = DocumentTemplateStatus = {}));
 var ApprovalLineTemplateStatus;
 (function (ApprovalLineTemplateStatus) {
     ApprovalLineTemplateStatus["DRAFT"] = "DRAFT";
@@ -64,7 +64,8 @@ var AssigneeRule;
 (function (AssigneeRule) {
     AssigneeRule["FIXED"] = "FIXED";
     AssigneeRule["DRAFTER"] = "DRAFTER";
-    AssigneeRule["DRAFTER_SUPERIOR"] = "DRAFTER_SUPERIOR";
+    AssigneeRule["HIERARCHY_TO_SUPERIOR"] = "HIERARCHY_TO_SUPERIOR";
+    AssigneeRule["HIERARCHY_TO_POSITION"] = "HIERARCHY_TO_POSITION";
     AssigneeRule["DEPARTMENT_REFERENCE"] = "DEPARTMENT_REFERENCE";
 })(AssigneeRule || (exports.AssigneeRule = AssigneeRule = {}));
 var DocumentStatus;

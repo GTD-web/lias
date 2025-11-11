@@ -18,33 +18,6 @@ let DomainRankService = class DomainRankService extends base_service_1.BaseServi
         super(rankRepository);
         this.rankRepository = rankRepository;
     }
-    async findByRankId(id) {
-        const rank = await this.rankRepository.findOne({ where: { id } });
-        if (!rank) {
-            throw new common_1.NotFoundException('직급을 찾을 수 없습니다.');
-        }
-        return rank;
-    }
-    async findByRankCode(rankCode) {
-        const rank = await this.rankRepository.findOne({ where: { rankCode } });
-        if (!rank) {
-            throw new common_1.NotFoundException('직급을 찾을 수 없습니다.');
-        }
-        return rank;
-    }
-    async findOrNullByRankCode(rankCode) {
-        return await this.rankRepository.findOne({ where: { rankCode } });
-    }
-    async findAllOrderedByLevel() {
-        return await this.rankRepository.findAll({
-            order: { level: 'ASC' },
-        });
-    }
-    async findByLevel(level) {
-        return await this.rankRepository.findAll({
-            where: { level },
-        });
-    }
 };
 exports.DomainRankService = DomainRankService;
 exports.DomainRankService = DomainRankService = __decorate([

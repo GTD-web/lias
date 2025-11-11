@@ -13,7 +13,7 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const jwt_strategy_1 = require("../strategies/jwt.strategy");
 const jwt_auth_guard_1 = require("../guards/jwt-auth.guard");
-const employee_module_1 = require("../../modules_v2/domain/employee/employee.module");
+const employee_module_1 = require("../../modules/domain/employee/employee.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;

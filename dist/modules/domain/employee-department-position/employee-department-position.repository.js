@@ -16,7 +16,7 @@ exports.DomainEmployeeDepartmentPositionRepository = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const entities_1 = require("../../../database/entities");
+const employee_department_position_entity_1 = require("./employee-department-position.entity");
 const base_repository_1 = require("../../../common/repositories/base.repository");
 let DomainEmployeeDepartmentPositionRepository = class DomainEmployeeDepartmentPositionRepository extends base_repository_1.BaseRepository {
     constructor(repository) {
@@ -26,7 +26,7 @@ let DomainEmployeeDepartmentPositionRepository = class DomainEmployeeDepartmentP
 exports.DomainEmployeeDepartmentPositionRepository = DomainEmployeeDepartmentPositionRepository;
 exports.DomainEmployeeDepartmentPositionRepository = DomainEmployeeDepartmentPositionRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(entities_1.EmployeeDepartmentPosition)),
+    __param(0, (0, typeorm_1.InjectRepository)(employee_department_position_entity_1.EmployeeDepartmentPosition)),
     __metadata("design:paramtypes", [typeorm_2.Repository])
 ], DomainEmployeeDepartmentPositionRepository);
 //# sourceMappingURL=employee-department-position.repository.js.map
