@@ -6,7 +6,7 @@ import { DomainDocumentTemplateService } from '../../domain/document-template/do
 import { DomainEmployeeService } from '../../domain/employee/employee.service';
 import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, DocumentFilterDto } from './dtos/document.dto';
-import { DocumentStatus, ApprovalStatus } from '../../../common/enums/approval.enum';
+import { DocumentStatus, ApprovalStatus, ApprovalStepType } from '../../../common/enums/approval.enum';
 import { withTransaction } from '../../../common/utils/transaction.util';
 import {
     ApprovalStepSnapshot,
@@ -214,6 +214,13 @@ export class DocumentContext {
                         submittedAt: new Date(),
                     },
                     { queryRunner },
+                );
+
+                // 7) 기안자 자동 승인 처리 (조건부)
+                await this.autoApproveIfDrafterIsFirstApprover(
+                    dto.documentId,
+                    submittedDocument.drafterId,
+                    queryRunner,
                 );
 
                 this.logger.log(`문서 기안 완료: ${dto.documentId}, 문서번호: ${documentNumber}`);
@@ -493,6 +500,99 @@ export class DocumentContext {
         this.logger.debug(
             `결재단계 스냅샷 업데이트 완료: 문서 ${documentId}, ${approvalSteps.length}개 처리, ${snapshotsToDelete.length}개 삭제`,
         );
+    }
+
+    /**
+     * 기안자 자동 승인 처리
+     * 조건:
+     * - 합의 단계가 없음
+     * - 첫 번째 결재 단계가 APPROVAL 타입
+     * - 첫 번째 결재자가 기안자 본인
+     */
+    private async autoApproveIfDrafterIsFirstApprover(
+        documentId: string,
+        drafterId: string,
+        queryRunner: QueryRunner,
+    ): Promise<void> {
+        // 1) 모든 결재 단계 조회
+        const allSteps = await this.approvalStepSnapshotService.findAll({
+            where: { documentId },
+            order: { stepOrder: 'ASC' },
+            queryRunner,
+        });
+
+        if (allSteps.length === 0) {
+            return; // 결재 단계가 없으면 처리하지 않음
+        }
+
+        // 2) 합의 단계가 있는지 확인
+        const hasAgreementStep = allSteps.some((step) => step.stepType === ApprovalStepType.AGREEMENT);
+        if (hasAgreementStep) {
+            this.logger.debug('합의 단계가 있어 기안자 자동 승인을 건너뜁니다.');
+            return; // 합의가 있으면 자동 승인하지 않음
+        }
+
+        // 3) 첫 번째 단계 확인
+        const firstStep = allSteps[0];
+
+        // 4) 조건 확인: APPROVAL 타입이고, 결재자가 기안자 본인인지
+        if (
+            firstStep.stepType === ApprovalStepType.APPROVAL &&
+            firstStep.approverId === drafterId &&
+            firstStep.status === ApprovalStatus.PENDING
+        ) {
+            this.logger.log(`기안자가 첫 번째 결재자입니다. 자동 승인 처리: ${firstStep.id}`);
+
+            // 5) 자동 승인 처리
+            await this.approvalStepSnapshotService.update(
+                firstStep.id,
+                {
+                    status: ApprovalStatus.APPROVED,
+                    comment: '기안자 자동 승인',
+                    approvedAt: new Date(),
+                },
+                { queryRunner },
+            );
+
+            // 6) 다음 단계 확인 및 문서 상태 업데이트
+            // 다음 결재자가 있는지 확인
+            const nextApprovalStep = allSteps.find(
+                (step) =>
+                    step.stepOrder > firstStep.stepOrder &&
+                    step.stepType === ApprovalStepType.APPROVAL &&
+                    step.status === ApprovalStatus.PENDING,
+            );
+
+            // 다음 결재자가 없으면 문서 상태를 APPROVED로 변경
+            if (!nextApprovalStep) {
+                // 시행 단계 확인
+                const implementationStep = allSteps.find((step) => step.stepType === ApprovalStepType.IMPLEMENTATION);
+
+                if (implementationStep) {
+                    // 시행 단계가 있으면 APPROVED로 변경 (시행 대기)
+                    await this.documentService.update(
+                        documentId,
+                        {
+                            status: DocumentStatus.APPROVED,
+                            approvedAt: new Date(),
+                        },
+                        { queryRunner },
+                    );
+                } else {
+                    // 시행 단계가 없으면 최종 승인 완료
+                    await this.documentService.update(
+                        documentId,
+                        {
+                            status: DocumentStatus.APPROVED,
+                            approvedAt: new Date(),
+                        },
+                        { queryRunner },
+                    );
+                }
+            }
+
+            this.logger.log(`기안자 자동 승인 완료: ${firstStep.id}`);
+        }
     }
 
     /**
