@@ -59,6 +59,7 @@ export declare class ApprovalProcessContext {
     private checkAndUpdateDocumentStatus;
     private validateApprovalOrder;
     private validateImplementationPrecondition;
+    autoApproveIfDrafterIsFirstApprover(documentId: string, drafterId: string, queryRunner?: QueryRunner): Promise<void>;
     private canProcessStepOptimized;
     private canProcessStep;
 }

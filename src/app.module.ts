@@ -23,6 +23,10 @@ import { TemplateBusinessModule } from './modules/business/template/template.mod
 import { MetadataModule } from './modules/business/metadata/metadata.module';
 import { DocumentBusinessModule } from './modules/business/document/document.module';
 import { ApprovalProcessBusinessModule } from './modules/business/approval-process/approval-process.module';
+import { SSOModule } from './modules/integrations/sso';
+import { NotificationModule } from './modules/integrations/notification';
+import { NotificationContextModule } from './modules/context/notification';
+
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -65,6 +69,9 @@ import { ApprovalProcessBusinessModule } from './modules/business/approval-proce
         ]),
         AuthModule,
         DomainModule, // 글로벌 도메인 모듈 (모든 도메인 서비스를 전역으로 제공)
+        SSOModule, // SSO 통합 모듈
+        NotificationModule, // 알림 서비스 통합 모듈
+        NotificationContextModule, // 알림 컨텍스트 모듈 (FCM 토큰 조회 + 알림 전송)
         TemplateBusinessModule,
         MetadataModule,
         DocumentBusinessModule,

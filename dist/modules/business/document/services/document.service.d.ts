@@ -1,12 +1,14 @@
 import { DocumentContext } from '../../../context/document/document.context';
 import { TemplateContext } from '../../../context/template/template.context';
+import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
 import { DocumentFilterDto } from '../../../context/document/dtos/document.dto';
 export declare class DocumentService {
     private readonly documentContext;
     private readonly templateContext;
+    private readonly approvalProcessContext;
     private readonly logger;
-    constructor(documentContext: DocumentContext, templateContext: TemplateContext);
+    constructor(documentContext: DocumentContext, templateContext: TemplateContext, approvalProcessContext: ApprovalProcessContext);
     createDocument(dto: CreateDocumentDto): Promise<import("../../../domain").Document>;
     updateDocument(documentId: string, dto: UpdateDocumentDto): Promise<import("../../../domain").Document>;
     deleteDocument(documentId: string): Promise<{

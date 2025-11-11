@@ -35,6 +35,5 @@ export declare class DocumentContext {
     }>;
     private createApprovalStepSnapshots;
     private updateApprovalStepSnapshots;
-    private autoApproveIfDrafterIsFirstApprover;
     private buildApproverSnapshot;
 }

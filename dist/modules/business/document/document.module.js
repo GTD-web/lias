@@ -12,12 +12,13 @@ const document_controller_1 = require("./controllers/document.controller");
 const document_service_1 = require("./services/document.service");
 const document_module_1 = require("../../context/document/document.module");
 const template_module_1 = require("../../context/template/template.module");
+const approval_process_module_1 = require("../../context/approval-process/approval-process.module");
 let DocumentBusinessModule = class DocumentBusinessModule {
 };
 exports.DocumentBusinessModule = DocumentBusinessModule;
 exports.DocumentBusinessModule = DocumentBusinessModule = __decorate([
     (0, common_1.Module)({
-        imports: [document_module_1.DocumentModule, template_module_1.TemplateModule],
+        imports: [document_module_1.DocumentModule, template_module_1.TemplateModule, approval_process_module_1.ApprovalProcessModule],
         controllers: [document_controller_1.DocumentController],
         providers: [document_service_1.DocumentService],
     })
