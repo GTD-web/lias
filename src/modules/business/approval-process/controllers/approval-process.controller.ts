@@ -9,6 +9,12 @@ import {
     CompleteImplementationDto,
     CancelApprovalDto,
     ProcessApprovalActionDto,
+    ApprovalActionResponseDto,
+    PendingApprovalItemDto,
+    DocumentApprovalStepsResponseDto,
+    CancelApprovalResponseDto,
+    QueryMyPendingDto,
+    PaginatedPendingApprovalsResponseDto,
 } from '../dtos';
 
 @ApiTags('결재 프로세스')
@@ -32,7 +38,7 @@ export class ApprovalProcessController {
             '- ❌ 실패: 필수 필드 누락 (stepSnapshotId)\n' +
             '- ❌ 실패: 존재하지 않는 stepSnapshotId',
     })
-    @ApiResponse({ status: 200, description: '결재 승인 성공' })
+    @ApiResponse({ status: 200, description: '결재 승인 성공', type: ApprovalActionResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 결재만 승인 가능, 순서 검증 실패 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '결재 단계를 찾을 수 없음' })
@@ -53,7 +59,7 @@ export class ApprovalProcessController {
             '- ✅ 정상: 결재 반려 (사유 포함)\n' +
             '- ❌ 실패: 필수 필드 누락 (comment)',
     })
-    @ApiResponse({ status: 200, description: '결재 반려 성공' })
+    @ApiResponse({ status: 200, description: '결재 반려 성공', type: ApprovalActionResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '결재 단계를 찾을 수 없음' })
@@ -68,12 +74,9 @@ export class ApprovalProcessController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: '협의 완료',
-        description:
-            '협의 단계를 완료 처리합니다.\n\n' +
-            '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 협의 완료',
+        description: '협의 단계를 완료 처리합니다.\n\n' + '**테스트 시나리오:**\n' + '- ✅ 정상: 협의 완료',
     })
-    @ApiResponse({ status: 200, description: '협의 완료 성공' })
+    @ApiResponse({ status: 200, description: '협의 완료 성공', type: ApprovalActionResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 협의만 완료 가능)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '협의 단계를 찾을 수 없음' })
@@ -93,7 +96,7 @@ export class ApprovalProcessController {
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 시행 완료',
     })
-    @ApiResponse({ status: 200, description: '시행 완료 성공' })
+    @ApiResponse({ status: 200, description: '시행 완료 성공', type: ApprovalActionResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 시행만 완료 가능, 모든 결재 미완료 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '시행 단계를 찾을 수 없음' })
@@ -114,7 +117,7 @@ export class ApprovalProcessController {
             '- ✅ 정상: 결재 취소\n' +
             '- ❌ 실패: 필수 필드 누락 (reason)',
     })
-    @ApiResponse({ status: 200, description: '결재 취소 성공' })
+    @ApiResponse({ status: 200, description: '결재 취소 성공', type: CancelApprovalResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능)' })
     @ApiResponse({ status: 403, description: '권한 없음 (기안자만 취소 가능)' })
     @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
@@ -123,26 +126,31 @@ export class ApprovalProcessController {
     }
 
     /**
-     * 내 결재 대기 목록 조회
+     * 내 결재 대기 목록 조회 (페이징, 필터링)
      */
     @Get('my-pending')
     @ApiOperation({
-        summary: '내 결재 대기 목록 조회',
+        summary: '내 결재 대기 목록 조회 (탭별 필터링, 페이징)',
         description:
-            '현재 사용자가 처리할 수 있는 결재 대기 목록을 조회합니다. 실제 처리 가능한 건만 반환됩니다.\n\n' +
+            '현재 사용자의 결재 대기 목록을 조회합니다. 탭별로 필터링 가능합니다.\n\n' +
+            '**조회 타입:**\n' +
+            '- **SUBMITTED** (상신): 내가 기안한 문서들 중 결재 대기 중인 문서\n' +
+            '- **AGREEMENT** (합의): 내가 합의해야 하는 문서들\n' +
+            '- **APPROVAL** (미결): 내가 결재해야 하는 문서들\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 내 결재 대기 목록 조회\n' +
-            '- ✅ 정상: approverId 없이 조회 시 빈 배열 반환',
+            '- ✅ 정상: 상신 문서 목록 조회 (type=SUBMITTED)\n' +
+            '- ✅ 정상: 합의 대기 목록 조회 (type=AGREEMENT)\n' +
+            '- ✅ 정상: 결재 대기 목록 조회 (type=APPROVAL)\n' +
+            '- ✅ 정상: 페이징 처리',
     })
-    @ApiQuery({
-        name: 'approverId',
-        required: true,
-        description: '결재자 ID',
-        example: 'uuid',
-    })
-    @ApiResponse({ status: 200, description: '조회 성공' })
-    async getMyPendingApprovals(@Query('approverId') approverId: string) {
-        return await this.approvalProcessService.getMyPendingApprovals(approverId);
+    @ApiResponse({ status: 200, description: '조회 성공', type: PaginatedPendingApprovalsResponseDto })
+    async getMyPendingApprovals(@Query() query: QueryMyPendingDto) {
+        return await this.approvalProcessService.getMyPendingApprovals(
+            query.userId,
+            query.type,
+            query.page || 1,
+            query.limit || 20,
+        );
     }
 
     /**
@@ -162,7 +170,7 @@ export class ApprovalProcessController {
         description: '문서 ID',
         example: 'uuid',
     })
-    @ApiResponse({ status: 200, description: '조회 성공' })
+    @ApiResponse({ status: 200, description: '조회 성공', type: DocumentApprovalStepsResponseDto })
     @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
     async getApprovalSteps(@Param('documentId') documentId: string) {
         return await this.approvalProcessService.getApprovalSteps(documentId);
@@ -185,7 +193,7 @@ export class ApprovalProcessController {
             '- ❌ 실패: 필수 필드 누락 (stepSnapshotId for approve)\n' +
             '- ❌ 실패: 필수 필드 누락 (comment for reject)',
     })
-    @ApiResponse({ status: 200, description: '액션 처리 성공' })
+    @ApiResponse({ status: 200, description: '액션 처리 성공', type: ApprovalActionResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (필수 필드 누락, 잘못된 타입 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '결재 단계 또는 문서를 찾을 수 없음' })

@@ -61,11 +61,16 @@ export class ApprovalProcessService {
     }
 
     /**
-     * 내 결재 대기 목록 조회
+     * 내 결재 대기 목록 조회 (페이징, 필터링)
      */
-    async getMyPendingApprovals(approverId: string) {
-        this.logger.debug(`내 결재 대기 목록 조회: ${approverId}`);
-        return await this.approvalProcessContext.getMyPendingApprovals(approverId);
+    async getMyPendingApprovals(
+        userId: string,
+        type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL',
+        page: number,
+        limit: number,
+    ) {
+        this.logger.debug(`내 결재 대기 목록 조회: userId=${userId}, type=${type}, page=${page}, limit=${limit}`);
+        return await this.approvalProcessContext.getMyPendingApprovals(userId, type, page, limit);
     }
 
     /**

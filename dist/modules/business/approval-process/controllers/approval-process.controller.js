@@ -36,8 +36,8 @@ let ApprovalProcessController = class ApprovalProcessController {
     async cancelApproval(dto) {
         return await this.approvalProcessService.cancelApproval(dto);
     }
-    async getMyPendingApprovals(approverId) {
-        return await this.approvalProcessService.getMyPendingApprovals(approverId);
+    async getMyPendingApprovals(query) {
+        return await this.approvalProcessService.getMyPendingApprovals(query.userId, query.type, query.page || 1, query.limit || 20);
     }
     async getApprovalSteps(documentId) {
         return await this.approvalProcessService.getApprovalSteps(documentId);
@@ -58,7 +58,7 @@ __decorate([
             '- ❌ 실패: 필수 필드 누락 (stepSnapshotId)\n' +
             '- ❌ 실패: 존재하지 않는 stepSnapshotId',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 승인 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 승인 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 승인 가능, 순서 검증 실패 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
@@ -77,7 +77,7 @@ __decorate([
             '- ✅ 정상: 결재 반려 (사유 포함)\n' +
             '- ❌ 실패: 필수 필드 누락 (comment)',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 반려 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 반려 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
@@ -91,11 +91,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
         summary: '협의 완료',
-        description: '협의 단계를 완료 처리합니다.\n\n' +
-            '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 협의 완료',
+        description: '협의 단계를 완료 처리합니다.\n\n' + '**테스트 시나리오:**\n' + '- ✅ 정상: 협의 완료',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '협의 완료 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '협의 완료 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 협의만 완료 가능)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '협의 단계를 찾을 수 없음' }),
@@ -113,7 +111,7 @@ __decorate([
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 시행 완료',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '시행 완료 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '시행 완료 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 시행만 완료 가능, 모든 결재 미완료 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '시행 단계를 찾을 수 없음' }),
@@ -132,7 +130,7 @@ __decorate([
             '- ✅ 정상: 결재 취소\n' +
             '- ❌ 실패: 필수 필드 누락 (reason)',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 취소 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 취소 성공', type: dtos_1.CancelApprovalResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음 (기안자만 취소 가능)' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '문서를 찾을 수 없음' }),
@@ -144,22 +142,22 @@ __decorate([
 __decorate([
     (0, common_1.Get)('my-pending'),
     (0, swagger_1.ApiOperation)({
-        summary: '내 결재 대기 목록 조회',
-        description: '현재 사용자가 처리할 수 있는 결재 대기 목록을 조회합니다. 실제 처리 가능한 건만 반환됩니다.\n\n' +
+        summary: '내 결재 대기 목록 조회 (탭별 필터링, 페이징)',
+        description: '현재 사용자의 결재 대기 목록을 조회합니다. 탭별로 필터링 가능합니다.\n\n' +
+            '**조회 타입:**\n' +
+            '- **SUBMITTED** (상신): 내가 기안한 문서들 중 결재 대기 중인 문서\n' +
+            '- **AGREEMENT** (합의): 내가 합의해야 하는 문서들\n' +
+            '- **APPROVAL** (미결): 내가 결재해야 하는 문서들\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 내 결재 대기 목록 조회\n' +
-            '- ✅ 정상: approverId 없이 조회 시 빈 배열 반환',
+            '- ✅ 정상: 상신 문서 목록 조회 (type=SUBMITTED)\n' +
+            '- ✅ 정상: 합의 대기 목록 조회 (type=AGREEMENT)\n' +
+            '- ✅ 정상: 결재 대기 목록 조회 (type=APPROVAL)\n' +
+            '- ✅ 정상: 페이징 처리',
     }),
-    (0, swagger_1.ApiQuery)({
-        name: 'approverId',
-        required: true,
-        description: '결재자 ID',
-        example: 'uuid',
-    }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '조회 성공' }),
-    __param(0, (0, common_1.Query)('approverId')),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '조회 성공', type: dtos_1.PaginatedPendingApprovalsResponseDto }),
+    __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [dtos_1.QueryMyPendingDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "getMyPendingApprovals", null);
 __decorate([
@@ -176,7 +174,7 @@ __decorate([
         description: '문서 ID',
         example: 'uuid',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '조회 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '조회 성공', type: dtos_1.DocumentApprovalStepsResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '문서를 찾을 수 없음' }),
     __param(0, (0, common_1.Param)('documentId')),
     __metadata("design:type", Function),
@@ -197,7 +195,7 @@ __decorate([
             '- ❌ 실패: 필수 필드 누락 (stepSnapshotId for approve)\n' +
             '- ❌ 실패: 필수 필드 누락 (comment for reject)',
     }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '액션 처리 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '액션 처리 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (필수 필드 누락, 잘못된 타입 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계 또는 문서를 찾을 수 없음' }),

@@ -20,4 +20,6 @@ __exportStar(require("./complete-agreement.dto"), exports);
 __exportStar(require("./complete-implementation.dto"), exports);
 __exportStar(require("./cancel-approval.dto"), exports);
 __exportStar(require("./process-approval-action.dto"), exports);
+__exportStar(require("./approval-process-response.dto"), exports);
+__exportStar(require("./query-my-pending.dto"), exports);
 //# sourceMappingURL=index.js.map

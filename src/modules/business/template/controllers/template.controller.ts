@@ -17,6 +17,7 @@ import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto } from '../dtos/create-template.dto';
 import { UpdateTemplateDto } from '../dtos/update-template.dto';
 import { DocumentTemplateStatus } from '../../../../common/enums/approval.enum';
+import { CreateTemplateResponseDto, DocumentTemplateResponseDto } from '../dtos/template-response.dto';
 
 /**
  * 템플릿 관리 컨트롤러
@@ -46,6 +47,7 @@ export class TemplateController {
     @ApiResponse({
         status: 201,
         description: '템플릿 생성 성공',
+        type: CreateTemplateResponseDto,
     })
     @ApiResponse({
         status: 400,
@@ -83,6 +85,7 @@ export class TemplateController {
     @ApiResponse({
         status: 200,
         description: '문서 템플릿 목록 조회 성공',
+        type: [DocumentTemplateResponseDto],
     })
     @ApiResponse({
         status: 401,
@@ -109,6 +112,7 @@ export class TemplateController {
     @ApiResponse({
         status: 200,
         description: '문서 템플릿 상세 조회 성공',
+        type: DocumentTemplateResponseDto,
     })
     @ApiResponse({
         status: 404,
@@ -140,6 +144,7 @@ export class TemplateController {
     @ApiResponse({
         status: 200,
         description: '문서 템플릿 수정 성공',
+        type: DocumentTemplateResponseDto,
     })
     @ApiResponse({
         status: 404,

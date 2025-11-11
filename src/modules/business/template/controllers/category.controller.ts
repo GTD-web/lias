@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { TemplateService } from '../services/template.service';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
+import { CategoryResponseDto } from '../dtos/template-response.dto';
 
 /**
  * 카테고리 관리 컨트롤러
@@ -30,6 +31,7 @@ export class CategoryController {
     @ApiResponse({
         status: 201,
         description: '카테고리 생성 성공',
+        type: CategoryResponseDto,
     })
     @ApiResponse({
         status: 400,
@@ -54,6 +56,7 @@ export class CategoryController {
     @ApiResponse({
         status: 200,
         description: '카테고리 목록 조회 성공',
+        type: [CategoryResponseDto],
     })
     @ApiResponse({
         status: 401,
@@ -80,6 +83,7 @@ export class CategoryController {
     @ApiResponse({
         status: 200,
         description: '카테고리 상세 조회 성공',
+        type: CategoryResponseDto,
     })
     @ApiResponse({
         status: 404,
@@ -110,6 +114,7 @@ export class CategoryController {
     @ApiResponse({
         status: 200,
         description: '카테고리 수정 성공',
+        type: CategoryResponseDto,
     })
     @ApiResponse({
         status: 404,

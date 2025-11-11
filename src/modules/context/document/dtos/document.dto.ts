@@ -12,6 +12,14 @@ export class ApprovalStepSnapshotItemDto {
 }
 
 /**
+ * 페이징 옵션 DTO
+ */
+export class PaginationOptionsDto {
+    page: number;
+    limit: number;
+}
+
+/**
  * 문서 생성 DTO
  */
 export class CreateDocumentDto {
@@ -49,9 +57,13 @@ export class SubmitDocumentDto {
  */
 export class DocumentFilterDto {
     status?: DocumentStatus;
+    pendingStepType?: ApprovalStepType; // PENDING 상태일 때, 대기 중인 단계 타입
     drafterId?: string;
+    categoryId?: string;
     documentTemplateId?: string;
     startDate?: Date;
     endDate?: Date;
     searchKeyword?: string;
+    page?: number;
+    limit?: number;
 }

@@ -80,11 +80,11 @@ export class DocumentService {
     }
 
     /**
-     * 문서 목록 조회
+     * 문서 목록 조회 (페이징, 필터링)
      */
-    async getDocuments(filter?: { status?: string; drafterId?: string }) {
-        this.logger.debug('문서 목록 조회');
-        return await this.documentContext.getDocuments((filter as DocumentFilterDto) || {});
+    async getDocuments(filter: DocumentFilterDto) {
+        this.logger.debug('문서 목록 조회', filter);
+        return await this.documentContext.getDocuments(filter);
     }
 
     /**

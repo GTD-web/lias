@@ -15,6 +15,8 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("typeorm");
 const approval_step_snapshot_service_1 = require("../../domain/approval-step-snapshot/approval-step-snapshot.service");
 const document_service_1 = require("../../domain/document/document.service");
+const document_entity_1 = require("../../domain/document/document.entity");
+const approval_step_snapshot_entity_1 = require("../../domain/approval-step-snapshot/approval-step-snapshot.entity");
 const approval_enum_1 = require("../../../common/enums/approval.enum");
 const transaction_util_1 = require("../../../common/utils/transaction.util");
 let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessContext {
@@ -173,37 +175,106 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             return cancelledDocument;
         }, externalQueryRunner);
     }
-    async getMyPendingApprovals(approverId, queryRunner) {
-        const allPendingSteps = await this.approvalStepSnapshotService.findAll({
-            where: {
-                approverId,
-                status: approval_enum_1.ApprovalStatus.PENDING,
-            },
-            relations: ['document', 'approver'],
-            order: { createdAt: 'DESC' },
-            queryRunner,
-        });
-        if (allPendingSteps.length === 0) {
-            return [];
+    async getMyPendingApprovals(userId, type, page = 1, limit = 20, queryRunner) {
+        const repository = queryRunner
+            ? queryRunner.manager.getRepository(document_entity_1.Document)
+            : this.dataSource.getRepository(document_entity_1.Document);
+        const stepRepository = queryRunner
+            ? queryRunner.manager.getRepository(approval_step_snapshot_entity_1.ApprovalStepSnapshot)
+            : this.dataSource.getRepository(approval_step_snapshot_entity_1.ApprovalStepSnapshot);
+        let documents = [];
+        const currentStepsMap = new Map();
+        let totalItems = 0;
+        if (type === 'SUBMITTED') {
+            const qb = repository
+                .createQueryBuilder('document')
+                .leftJoinAndSelect('document.drafter', 'drafter')
+                .where('document.drafterId = :userId', { userId })
+                .andWhere('document.status = :status', { status: approval_enum_1.DocumentStatus.PENDING })
+                .orderBy('document.createdAt', 'DESC');
+            totalItems = await qb.getCount();
+            const skip = (page - 1) * limit;
+            documents = await qb.skip(skip).take(limit).getMany();
         }
-        const documentIds = [...new Set(allPendingSteps.map((step) => step.documentId))];
-        const allStepsByDocument = new Map();
-        for (const documentId of documentIds) {
-            const steps = await this.approvalStepSnapshotService.findAll({
-                where: { documentId },
+        else {
+            const stepType = type === 'AGREEMENT' ? approval_enum_1.ApprovalStepType.AGREEMENT : approval_enum_1.ApprovalStepType.APPROVAL;
+            const qb = stepRepository
+                .createQueryBuilder('step')
+                .leftJoinAndSelect('step.document', 'document')
+                .leftJoinAndSelect('document.drafter', 'drafter')
+                .where('step.approverId = :userId', { userId })
+                .andWhere('step.stepType = :stepType', { stepType })
+                .andWhere('step.status = :status', { status: approval_enum_1.ApprovalStatus.PENDING })
+                .orderBy('step.createdAt', 'DESC');
+            totalItems = await qb.getCount();
+            const skip = (page - 1) * limit;
+            const steps = await qb.skip(skip).take(limit).getMany();
+            for (const step of steps) {
+                const allSteps = await this.approvalStepSnapshotService.findAll({
+                    where: { documentId: step.documentId },
+                    order: { stepOrder: 'ASC' },
+                    queryRunner,
+                });
+                if (await this.canProcessStepOptimized(step, allSteps)) {
+                    documents.push(step.document);
+                    currentStepsMap.set(step.documentId, step);
+                }
+            }
+        }
+        const data = await Promise.all(documents.map(async (doc) => {
+            const currentStep = currentStepsMap.get(doc.id);
+            const allApprovalSteps = await this.approvalStepSnapshotService.findAll({
+                where: { documentId: doc.id },
+                relations: ['approver'],
                 order: { stepOrder: 'ASC' },
                 queryRunner,
             });
-            allStepsByDocument.set(documentId, steps);
-        }
-        const processableSteps = [];
-        for (const step of allPendingSteps) {
-            const allSteps = allStepsByDocument.get(step.documentId) || [];
-            if (await this.canProcessStepOptimized(step, allSteps)) {
-                processableSteps.push(step);
-            }
-        }
-        return processableSteps;
+            const approvalSteps = allApprovalSteps.map((step) => ({
+                id: step.id,
+                stepOrder: step.stepOrder,
+                stepType: step.stepType,
+                status: step.status,
+                approverId: step.approverId,
+                approverName: step.approverSnapshot?.employeeName || step.approver?.name || '',
+                comment: step.comment,
+                approvedAt: step.approvedAt,
+            }));
+            const currentStepInfo = currentStep
+                ? {
+                    id: currentStep.id,
+                    stepOrder: currentStep.stepOrder,
+                    stepType: currentStep.stepType,
+                    status: currentStep.status,
+                    approverId: currentStep.approverId,
+                    approverSnapshot: currentStep.approverSnapshot,
+                }
+                : undefined;
+            return {
+                documentId: doc.id,
+                documentNumber: doc.documentNumber,
+                title: doc.title,
+                status: doc.status,
+                drafterId: doc.drafterId,
+                drafterName: doc.drafter?.name || '',
+                drafterDepartmentName: undefined,
+                currentStep: currentStepInfo,
+                approvalSteps,
+                submittedAt: doc.submittedAt,
+                createdAt: doc.createdAt,
+            };
+        }));
+        const totalPages = Math.ceil(totalItems / limit);
+        return {
+            data,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
     }
     async getApprovalSteps(documentId, queryRunner) {
         const document = await this.documentService.findOne({
