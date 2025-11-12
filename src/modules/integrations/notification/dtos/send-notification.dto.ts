@@ -1,21 +1,56 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsArray, IsOptional, IsObject, ArrayMaxSize, ArrayMinSize } from 'class-validator';
+import {
+    IsString,
+    IsArray,
+    IsOptional,
+    IsObject,
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsNotEmpty,
+    ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+/**
+ * 수신자 DTO
+ */
+export class RecipientDto {
+    @ApiProperty({
+        description: '수신자 사용자 ID (사번)',
+        example: 'E2023001',
+    })
+    @IsNotEmpty()
+    @IsString()
+    employeeNumber: string;
+
+    @ApiProperty({
+        description: '수신자 FCM 토큰 목록 (한 사용자가 여러 기기를 가질 수 있음)',
+        example: ['fcm_token_1', 'fcm_token_2'],
+        type: [String],
+    })
+    @IsNotEmpty()
+    @IsArray()
+    @IsString({ each: true })
+    tokens: string[];
+}
 
 /**
  * 알림 전송 요청 DTO
  */
 export class SendNotificationDto {
-    @ApiProperty({
-        description: '발신자 ID (사번)',
+    @ApiPropertyOptional({
+        description: '발신자 ID (사번) - 시스템에서 보내는 경우 생략 가능',
         example: 'E2023001',
     })
+    @IsOptional()
     @IsString()
-    sender: string;
+    sender?: string;
 
     @ApiProperty({
         description: '알림 제목',
         example: '새로운 공지사항이 등록되었습니다',
     })
+    @IsNotEmpty()
     @IsString()
     title: string;
 
@@ -23,30 +58,26 @@ export class SendNotificationDto {
         description: '알림 내용',
         example: '인사팀에서 새로운 공지사항을 등록했습니다.',
     })
+    @IsNotEmpty()
     @IsString()
     content: string;
 
     @ApiProperty({
-        description: '수신자 사용자 ID 목록 (사번), 최대 500개',
-        example: ['E2023002', 'E2023003', 'E2023004'],
-        type: [String],
+        description: '수신자 목록, 최대 500명',
+        example: [
+            { employeeNumber: 'E2023002', tokens: ['token1', 'token2'] },
+            { employeeNumber: 'E2023003', tokens: ['token3'] },
+            { employeeNumber: 'E2023004', tokens: ['token4', 'token5'] },
+        ],
+        type: [RecipientDto],
     })
+    @IsNotEmpty()
     @IsArray()
-    @IsString({ each: true })
     @ArrayMinSize(1)
     @ArrayMaxSize(500)
-    recipientIds: string[];
-
-    @ApiProperty({
-        description: '수신자 FCM 토큰 목록, recipientIds와 순서 일치해야 함',
-        example: ['fcm_token_1', 'fcm_token_2', 'fcm_token_3'],
-        type: [String],
-    })
-    @IsArray()
-    @IsString({ each: true })
-    @ArrayMinSize(1)
-    @ArrayMaxSize(500)
-    tokens: string[];
+    @ValidateNested({ each: true })
+    @Type(() => RecipientDto)
+    recipients: RecipientDto[];
 
     @ApiPropertyOptional({
         description: '소스 시스템',
@@ -109,4 +140,3 @@ export class SendNotificationResponseDto {
     })
     failureCount: number;
 }
-

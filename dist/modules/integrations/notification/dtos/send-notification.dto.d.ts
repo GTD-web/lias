@@ -1,9 +1,12 @@
+export declare class RecipientDto {
+    employeeNumber: string;
+    tokens: string[];
+}
 export declare class SendNotificationDto {
-    sender: string;
+    sender?: string;
     title: string;
     content: string;
-    recipientIds: string[];
-    tokens: string[];
+    recipients: RecipientDto[];
     sourceSystem?: string;
     linkUrl?: string;
     metadata?: Record<string, any>;

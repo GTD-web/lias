@@ -23,50 +23,31 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
         this.documentContext = documentContext;
         this.logger = new common_1.Logger(ApprovalNotificationService_1.name);
     }
-    async sendNotificationAfterApprove(documentId, currentStepId, approverEmployeeNumber) {
-        this.logger.log(`결재 승인 후 알림 전송: ${documentId}`);
+    async sendNotificationAfterSubmit(documentId, drafterEmployeeNumber) {
+        this.logger.log(`문서 기안 후 알림 전송: ${documentId}`);
         try {
             const document = await this.documentContext.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
-            const currentStep = allSteps.find((step) => step.id === currentStepId);
-            if (!currentStep) {
-                this.logger.warn(`현재 단계를 찾을 수 없습니다: ${currentStepId}`);
-                return;
-            }
-            const nextPendingStep = this.findNextPendingStep(allSteps, currentStep.stepOrder);
-            if (nextPendingStep) {
-                await this.sendNotificationToApprover(nextPendingStep, document, approverEmployeeNumber);
+            const agreementSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.AGREEMENT);
+            if (agreementSteps.length > 0) {
+                await this.sendAgreementNotifications(agreementSteps, document, drafterEmployeeNumber);
             }
             else {
-                await this.sendNotificationToReferences(document, approverEmployeeNumber);
-                await this.sendCompletionNotificationToDrafter(document, approverEmployeeNumber);
+                const approvalSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
+                const firstApprovalStep = approvalSteps.find((s) => s.status === approval_enum_1.ApprovalStatus.PENDING);
+                if (firstApprovalStep && firstApprovalStep.approverId !== document.drafterId) {
+                    await this.sendApprovalNotification(firstApprovalStep, document, drafterEmployeeNumber);
+                }
+                else if (!firstApprovalStep) {
+                    const implementationSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION && s.status === approval_enum_1.ApprovalStatus.PENDING);
+                    if (implementationSteps.length > 0) {
+                        await this.sendImplementationNotifications(implementationSteps, document, drafterEmployeeNumber);
+                    }
+                }
             }
         }
         catch (error) {
-            this.logger.error(`결재 승인 후 알림 전송 실패: ${documentId}`, error);
-            throw error;
-        }
-    }
-    async sendNotificationAfterReject(documentId, rejectReason, rejecterEmployeeNumber) {
-        this.logger.log(`결재 반려 후 알림 전송: ${documentId}`);
-        try {
-            const document = await this.documentContext.getDocument(documentId);
-            await this.notificationContext.sendNotificationToEmployee({
-                sender: rejecterEmployeeNumber,
-                title: `[반려] ${document.title}`,
-                content: `작성하신 문서가 반려되었습니다.\n사유: ${rejectReason}`,
-                recipientEmployeeId: document.drafterId,
-                linkUrl: `/approval/document/${document.id}`,
-                metadata: {
-                    documentId: document.id,
-                    status: approval_enum_1.DocumentStatus.REJECTED,
-                    reason: rejectReason,
-                },
-            });
-            this.logger.log(`기안자 반려 알림 전송 완료: ${document.drafterId}`);
-        }
-        catch (error) {
-            this.logger.error(`결재 반려 후 알림 전송 실패: ${documentId}`, error);
+            this.logger.error(`문서 기안 후 알림 전송 실패: ${documentId}`, error);
             throw error;
         }
     }
@@ -84,7 +65,7 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
             const approvalSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
             const firstApprovalStep = approvalSteps.find((s) => s.status === approval_enum_1.ApprovalStatus.PENDING);
             if (firstApprovalStep) {
-                await this.sendNotificationToApprover(firstApprovalStep, document, agreerEmployeeNumber);
+                await this.sendApprovalNotification(firstApprovalStep, document, agreerEmployeeNumber);
             }
         }
         catch (error) {
@@ -92,22 +73,53 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
             throw error;
         }
     }
+    async sendNotificationAfterApprove(documentId, currentStepId, approverEmployeeNumber) {
+        this.logger.log(`결재 승인 후 알림 전송: ${documentId}`);
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
+            const currentStep = allSteps.find((step) => step.id === currentStepId);
+            if (!currentStep) {
+                this.logger.warn(`현재 단계를 찾을 수 없습니다: ${currentStepId}`);
+                return;
+            }
+            const nextPendingStep = this.findNextPendingStep(allSteps, currentStep.stepOrder);
+            if (nextPendingStep) {
+                if (nextPendingStep.stepType === approval_enum_1.ApprovalStepType.APPROVAL) {
+                    await this.sendApprovalNotification(nextPendingStep, document, approverEmployeeNumber);
+                }
+                else if (nextPendingStep.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION) {
+                    const implementationSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION && s.status === approval_enum_1.ApprovalStatus.PENDING);
+                    await this.sendImplementationNotifications(implementationSteps, document, approverEmployeeNumber);
+                }
+            }
+            else {
+                await this.sendReferenceNotifications(document, approverEmployeeNumber);
+                await this.sendApprovalCompletionToDrafter(document, approverEmployeeNumber);
+            }
+        }
+        catch (error) {
+            this.logger.error(`결재 승인 후 알림 전송 실패: ${documentId}`, error);
+            throw error;
+        }
+    }
+    async sendNotificationAfterReject(documentId, rejectReason, rejecterEmployeeNumber) {
+        this.logger.log(`결재 반려 후 알림 전송: ${documentId}`);
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+            await this.sendRejectionToDrafter(document, rejectReason, rejecterEmployeeNumber);
+        }
+        catch (error) {
+            this.logger.error(`결재 반려 후 알림 전송 실패: ${documentId}`, error);
+            throw error;
+        }
+    }
     async sendNotificationAfterCompleteImplementation(documentId, implementerEmployeeNumber) {
         this.logger.log(`시행 완료 후 알림 전송: ${documentId}`);
         try {
             const document = await this.documentContext.getDocument(documentId);
-            await this.sendNotificationToReferences(document, implementerEmployeeNumber);
-            await this.notificationContext.sendNotificationToEmployee({
-                sender: implementerEmployeeNumber,
-                title: `[시행완료] ${document.title}`,
-                content: `작성하신 문서의 시행이 완료되었습니다.`,
-                recipientEmployeeId: document.drafterId,
-                linkUrl: `/approval/document/${document.id}`,
-                metadata: {
-                    documentId: document.id,
-                    status: approval_enum_1.DocumentStatus.IMPLEMENTED,
-                },
-            });
+            await this.sendReferenceNotifications(document, implementerEmployeeNumber);
+            await this.sendImplementationCompletionToDrafter(document, implementerEmployeeNumber);
             this.logger.log(`시행 완료 알림 전송 완료`);
         }
         catch (error) {
@@ -115,45 +127,33 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
             throw error;
         }
     }
-    async sendNotificationAfterSubmit(documentId, drafterEmployeeNumber) {
-        this.logger.log(`문서 기안 후 알림 전송: ${documentId}`);
-        try {
-            const document = await this.documentContext.getDocument(documentId);
-            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
-            const agreementSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.AGREEMENT);
-            if (agreementSteps.length > 0) {
-                const agreementIds = agreementSteps.map((step) => step.approverId);
-                await this.notificationContext.sendNotification({
-                    sender: drafterEmployeeNumber,
-                    title: `[협의요청] ${document.title}`,
-                    content: `${document.drafter?.name || '기안자'}님이 작성한 문서의 협의가 요청되었습니다.`,
-                    recipientEmployeeIds: agreementIds,
-                    linkUrl: `/approval/document/${document.id}`,
-                    metadata: {
-                        documentId: document.id,
-                        stepType: approval_enum_1.ApprovalStepType.AGREEMENT,
-                    },
-                });
-                this.logger.log(`협의자 알림 전송 완료: ${agreementIds.length}명`);
-            }
-            else {
-                const approvalSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
-                const firstApprovalStep = approvalSteps.find((s) => s.status === approval_enum_1.ApprovalStatus.PENDING);
-                if (firstApprovalStep && firstApprovalStep.approverId !== document.drafterId) {
-                    await this.sendNotificationToApprover(firstApprovalStep, document, drafterEmployeeNumber);
-                }
-                else if (!firstApprovalStep) {
-                    const implementationStep = allSteps.find((s) => s.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION && s.status === approval_enum_1.ApprovalStatus.PENDING);
-                    if (implementationStep) {
-                        await this.sendNotificationToApprover(implementationStep, document, drafterEmployeeNumber);
-                    }
-                }
-            }
+    async sendAgreementNotifications(agreementSteps, document, senderEmployeeNumber) {
+        await this.sendNotificationToApprovers(agreementSteps, document, senderEmployeeNumber);
+    }
+    async sendApprovalNotification(approvalStep, document, senderEmployeeNumber) {
+        await this.sendNotificationToApprover(approvalStep, document, senderEmployeeNumber);
+    }
+    async sendApprovalCompletionToDrafter(document, senderEmployeeNumber) {
+        await this.sendNotificationToDrafter(document, approval_enum_1.DocumentStatus.APPROVED, senderEmployeeNumber);
+    }
+    async sendRejectionToDrafter(document, rejectReason, senderEmployeeNumber) {
+        await this.sendNotificationToDrafter(document, approval_enum_1.DocumentStatus.REJECTED, senderEmployeeNumber, {
+            reason: rejectReason,
+        });
+    }
+    async sendImplementationNotifications(implementationSteps, document, senderEmployeeNumber) {
+        if (implementationSteps.length === 1) {
+            await this.sendNotificationToApprover(implementationSteps[0], document, senderEmployeeNumber);
         }
-        catch (error) {
-            this.logger.error(`문서 기안 후 알림 전송 실패: ${documentId}`, error);
-            throw error;
+        else if (implementationSteps.length > 1) {
+            await this.sendNotificationToApprovers(implementationSteps, document, senderEmployeeNumber);
         }
+    }
+    async sendImplementationCompletionToDrafter(document, senderEmployeeNumber) {
+        await this.sendNotificationToDrafter(document, approval_enum_1.DocumentStatus.IMPLEMENTED, senderEmployeeNumber);
+    }
+    async sendReferenceNotifications(document, senderEmployeeNumber) {
+        await this.sendNotificationToReferences(document, senderEmployeeNumber);
     }
     findNextPendingStep(allSteps, currentStepOrder) {
         const agreementSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.AGREEMENT);
@@ -177,7 +177,7 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
         await this.notificationContext.sendNotificationToEmployee({
             sender: senderEmployeeNumber,
             title: `[${stepTypeText}] ${document.title}`,
-            content: `${document.drafter?.name || '기안자'}님이 작성한 문서가 ${stepTypeText} 대기 중입니다.`,
+            content: `${document.drafter.name}님이 작성한 문서가 ${stepTypeText} 대기 중입니다.`,
             recipientEmployeeId: step.approverId,
             linkUrl: `/approval/document/${document.id}`,
             metadata: {
@@ -187,6 +187,28 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
             },
         });
         this.logger.log(`${stepTypeText} 알림 전송 완료: ${step.approverId}`);
+    }
+    async sendNotificationToApprovers(steps, document, senderEmployeeNumber) {
+        if (steps.length === 0) {
+            this.logger.debug('알림을 보낼 승인자가 없습니다.');
+            return;
+        }
+        const stepType = steps[0].stepType;
+        const stepTypeText = this.getStepTypeText(stepType);
+        const approverIds = steps.map((step) => step.approverId);
+        await this.notificationContext.sendNotification({
+            sender: senderEmployeeNumber,
+            title: `[${stepTypeText}] ${document.title}`,
+            content: `${document.drafter.name}님이 작성한 문서가 ${stepTypeText} 대기 중입니다.`,
+            recipientEmployeeIds: approverIds,
+            linkUrl: `/approval/document/${document.id}`,
+            metadata: {
+                documentId: document.id,
+                stepType: stepType,
+                stepIds: steps.map((step) => step.id),
+            },
+        });
+        this.logger.log(`${stepTypeText} 알림 전송 완료: ${approverIds.length}명`);
     }
     async sendNotificationToReferences(document, senderEmployeeNumber) {
         const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(document.id);
@@ -199,7 +221,7 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
         await this.notificationContext.sendNotification({
             sender: senderEmployeeNumber,
             title: `[참조] ${document.title}`,
-            content: `${document.drafter?.name || '기안자'}님의 문서가 최종 승인 완료되었습니다.`,
+            content: `${document.drafter.name}님의 문서가 최종 승인 완료되었습니다.`,
             recipientEmployeeIds: referenceIds,
             linkUrl: `/approval/document/${document.id}`,
             metadata: {
@@ -209,19 +231,50 @@ let ApprovalNotificationService = ApprovalNotificationService_1 = class Approval
         });
         this.logger.log(`참조자 알림 전송 완료: ${referenceIds.length}명`);
     }
-    async sendCompletionNotificationToDrafter(document, senderEmployeeNumber) {
+    async sendNotificationToDrafter(document, documentStatus, senderEmployeeNumber, additionalInfo) {
+        const { title, content } = this.getDrafterNotificationMessage(documentStatus, document.title, additionalInfo);
         await this.notificationContext.sendNotificationToEmployee({
             sender: senderEmployeeNumber,
-            title: `[완료] ${document.title}`,
-            content: `작성하신 문서의 결재가 완료되었습니다.`,
+            title,
+            content,
             recipientEmployeeId: document.drafterId,
             linkUrl: `/approval/document/${document.id}`,
             metadata: {
                 documentId: document.id,
-                status: document.status,
+                status: documentStatus,
+                ...additionalInfo,
             },
         });
-        this.logger.log(`기안자 완료 알림 전송: ${document.drafterId}`);
+        this.logger.log(`기안자 알림 전송 완료 (${documentStatus}): ${document.drafterId}`);
+    }
+    getDrafterNotificationMessage(status, documentTitle, additionalInfo) {
+        switch (status) {
+            case approval_enum_1.DocumentStatus.REJECTED:
+                return {
+                    title: `[반려] ${documentTitle}`,
+                    content: `작성하신 문서가 반려되었습니다.\n사유: ${additionalInfo?.reason || '사유 없음'}`,
+                };
+            case approval_enum_1.DocumentStatus.APPROVED:
+                return {
+                    title: `[완료] ${documentTitle}`,
+                    content: `작성하신 문서의 결재가 완료되었습니다.`,
+                };
+            case approval_enum_1.DocumentStatus.IMPLEMENTED:
+                return {
+                    title: `[시행완료] ${documentTitle}`,
+                    content: `작성하신 문서의 시행이 완료되었습니다.`,
+                };
+            case approval_enum_1.DocumentStatus.CANCELLED:
+                return {
+                    title: `[취소] ${documentTitle}`,
+                    content: `문서가 취소되었습니다.`,
+                };
+            default:
+                return {
+                    title: `[알림] ${documentTitle}`,
+                    content: `문서 상태가 변경되었습니다.`,
+                };
+        }
     }
     getStepTypeText(stepType) {
         switch (stepType) {

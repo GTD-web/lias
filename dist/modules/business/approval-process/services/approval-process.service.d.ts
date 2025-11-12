@@ -1,9 +1,13 @@
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
+import { DocumentContext } from '../../../context/document/document.context';
+import { NotificationContext } from '../../../context/notification/notification.context';
 import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, ProcessApprovalActionDto } from '../dtos';
 export declare class ApprovalProcessService {
     private readonly approvalProcessContext;
+    private readonly documentContext;
+    private readonly notificationContext;
     private readonly logger;
-    constructor(approvalProcessContext: ApprovalProcessContext);
+    constructor(approvalProcessContext: ApprovalProcessContext, documentContext: DocumentContext, notificationContext: NotificationContext);
     approveStep(dto: ApproveStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     rejectStep(dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     completeAgreement(dto: CompleteAgreementDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
@@ -50,4 +54,8 @@ export declare class ApprovalProcessService {
     }>;
     getApprovalSteps(documentId: string): Promise<import("../../../domain").ApprovalStepSnapshot[]>;
     processApprovalAction(dto: ProcessApprovalActionDto): Promise<import("../../../domain").ApprovalStepSnapshot | import("../../../domain").Document>;
+    private sendApproveNotification;
+    private sendRejectNotification;
+    private sendCompleteAgreementNotification;
+    private sendCompleteImplementationNotification;
 }

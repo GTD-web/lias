@@ -48,8 +48,8 @@ export class NotificationService {
         this.validateRequest(dto);
 
         const url = `${this.baseUrl}${NOTIFICATION_ENDPOINTS.SEND}`;
-
-        this.logger.debug(`알림 전송 요청: ${dto.recipientIds.length}명, 제목: ${dto.title}`);
+        console.log(url);
+        this.logger.debug(`알림 전송 요청: ${dto.recipients.length}명, 제목: ${dto.title}`);
 
         try {
             const response = await firstValueFrom(
@@ -57,7 +57,11 @@ export class NotificationService {
                     headers: this.getHeaders(authorization),
                     timeout: 30000, // 30초 타임아웃
                 }),
-            );
+            ).catch((error) => {
+                console.log(error);
+                throw error;
+            });
+            console.log(response.data);
 
             this.logger.log(
                 `알림 전송 완료: 성공 ${response.data.successCount}건, 실패 ${response.data.failureCount}건`,
@@ -65,7 +69,7 @@ export class NotificationService {
 
             return response.data;
         } catch (error) {
-            this.logger.error('알림 전송 실패', error);
+            this.logger.error('알림 전송 실패', error.response);
 
             // HTTP 에러 처리
             if (error.response) {
@@ -84,34 +88,31 @@ export class NotificationService {
      * 요청 데이터 유효성 검증
      */
     private validateRequest(dto: SendNotificationDto): void {
-        // recipientIds와 tokens 길이 일치 검증
-        if (dto.recipientIds.length !== dto.tokens.length) {
-            throw new HttpException(
-                '수신자 ID 목록과 FCM 토큰 목록의 길이가 일치하지 않습니다.',
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-
-        // 최대 500개 제한 확인
-        if (dto.recipientIds.length > 500) {
-            throw new HttpException('한 번에 최대 500개의 알림까지 전송할 수 있습니다.', HttpStatus.BAD_REQUEST);
+        // 최대 500명 제한 확인
+        if (dto.recipients.length > 500) {
+            throw new HttpException('한 번에 최대 500명에게 알림을 전송할 수 있습니다.', HttpStatus.BAD_REQUEST);
         }
 
         // 최소 1명 이상
-        if (dto.recipientIds.length === 0) {
+        if (dto.recipients.length === 0) {
             throw new HttpException('최소 1명 이상의 수신자가 필요합니다.', HttpStatus.BAD_REQUEST);
         }
+
+        // 각 수신자마다 최소 1개 이상의 토큰이 있는지 확인
+        dto.recipients.forEach((recipient, index) => {
+            if (!recipient.tokens || recipient.tokens.length === 0) {
+                throw new HttpException(
+                    `수신자 #${index + 1} (${recipient.employeeNumber})의 FCM 토큰이 없습니다.`,
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+        });
     }
 
     /**
-     * FCM 토큰과 함께 여러 명에게 알림 전송 (간편 메서드)
+     * 여러 명에게 알림 전송 (간편 메서드)
      *
-     * @param sender 발신자 ID
-     * @param title 알림 제목
-     * @param content 알림 내용
-     * @param recipientIds 수신자 ID 목록
-     * @param tokens FCM 토큰 목록
-     * @param options 추가 옵션 (sourceSystem, linkUrl, metadata, authorization)
+     * @deprecated 새로운 recipients 구조를 사용하는 sendNotification을 직접 사용하세요.
      */
     async sendToMultiple(
         sender: string,
@@ -126,13 +127,19 @@ export class NotificationService {
             authorization?: string;
         },
     ): Promise<SendNotificationResponseDto> {
+        // 이전 방식에서 새로운 방식으로 변환
+        // recipientIds와 tokens를 1:1로 매핑하여 recipients 배열 생성
+        const recipients = recipientIds.map((employeeNumber, index) => ({
+            employeeNumber,
+            tokens: tokens[index] ? [tokens[index]] : [],
+        }));
+
         return this.sendNotification(
             {
                 sender,
                 title,
                 content,
-                recipientIds,
-                tokens,
+                recipients,
                 sourceSystem: options?.sourceSystem || 'portal',
                 linkUrl: options?.linkUrl,
                 metadata: options?.metadata,

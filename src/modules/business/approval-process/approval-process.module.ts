@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ApprovalProcessController } from './controllers/approval-process.controller';
 import { ApprovalProcessService } from './services/approval-process.service';
-import { ApprovalNotificationService } from './services/approval-notification.service';
 import { ApprovalProcessModule as ApprovalProcessContextModule } from '../../context/approval-process/approval-process.module';
 import { NotificationContextModule } from '../../context/notification/notification.module';
 import { DocumentModule } from '../../context/document/document.module';
@@ -13,6 +12,6 @@ import { DocumentModule } from '../../context/document/document.module';
 @Module({
     imports: [ApprovalProcessContextModule, NotificationContextModule, DocumentModule],
     controllers: [ApprovalProcessController],
-    providers: [ApprovalProcessService, ApprovalNotificationService],
+    providers: [ApprovalProcessService],
 })
 export class ApprovalProcessBusinessModule {}

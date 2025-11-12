@@ -2,6 +2,42 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DocumentTemplateStatus, ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
 
 /**
+ * 카테고리에 포함된 문서 템플릿 간단 정보 DTO
+ */
+export class CategoryDocumentTemplateDto {
+    @ApiProperty({
+        description: '문서 템플릿 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '문서 템플릿 이름',
+        example: '휴가 신청서',
+    })
+    name: string;
+
+    @ApiProperty({
+        description: '문서 템플릿 코드',
+        example: 'VAC',
+    })
+    code: string;
+
+    @ApiPropertyOptional({
+        description: '문서 템플릿 설명',
+        example: '연차/반차 신청을 위한 문서 템플릿',
+    })
+    description?: string;
+
+    @ApiProperty({
+        description: '문서 템플릿 상태',
+        enum: DocumentTemplateStatus,
+        example: DocumentTemplateStatus.ACTIVE,
+    })
+    status: DocumentTemplateStatus;
+}
+
+/**
  * 카테고리 응답 DTO
  */
 export class CategoryResponseDto {
@@ -46,6 +82,12 @@ export class CategoryResponseDto {
         example: '2025-11-11T00:00:00.000Z',
     })
     updatedAt: Date;
+
+    @ApiPropertyOptional({
+        description: '카테고리에 속한 문서 템플릿 목록',
+        type: [CategoryDocumentTemplateDto],
+    })
+    documentTemplates?: CategoryDocumentTemplateDto[];
 }
 
 /**
@@ -191,4 +233,3 @@ export class CreateTemplateResponseDto {
     })
     approvalSteps: ApprovalStepTemplateResponseDto[];
 }
-

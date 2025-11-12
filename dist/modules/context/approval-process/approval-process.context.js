@@ -50,7 +50,7 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
                 status: approval_enum_1.ApprovalStatus.APPROVED,
                 comment: dto.comment,
                 approvedAt: new Date(),
-            }, { queryRunner });
+            }, { queryRunner, relations: ['approver'] });
             await this.checkAndUpdateDocumentStatus(step.documentId, queryRunner);
             this.logger.log(`결재 승인 완료: ${dto.stepSnapshotId}`);
             return approvedStep;
@@ -83,7 +83,7 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
                 status: approval_enum_1.ApprovalStatus.REJECTED,
                 comment: dto.comment,
                 approvedAt: new Date(),
-            }, { queryRunner });
+            }, { queryRunner, relations: ['approver'] });
             await this.documentService.update(step.documentId, { status: approval_enum_1.DocumentStatus.REJECTED, rejectedAt: new Date() }, { queryRunner });
             this.logger.log(`결재 반려 완료: ${dto.stepSnapshotId}`);
             return rejectedStep;
@@ -112,7 +112,7 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
                 status: approval_enum_1.ApprovalStatus.APPROVED,
                 comment: dto.comment,
                 approvedAt: new Date(),
-            }, { queryRunner });
+            }, { queryRunner, relations: ['approver'] });
             this.logger.log(`협의 완료: ${dto.stepSnapshotId}`);
             return completedStep;
         }, externalQueryRunner);
@@ -141,7 +141,7 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
                 status: approval_enum_1.ApprovalStatus.APPROVED,
                 comment: dto.comment,
                 approvedAt: new Date(),
-            }, { queryRunner });
+            }, { queryRunner, relations: ['approver'] });
             await this.documentService.update(step.documentId, {
                 status: approval_enum_1.DocumentStatus.IMPLEMENTED,
                 metadata: dto.resultData,
