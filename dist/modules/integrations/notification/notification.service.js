@@ -34,17 +34,22 @@ let NotificationService = NotificationService_1 = class NotificationService {
     async sendNotification(dto, authorization) {
         this.validateRequest(dto);
         const url = `${this.baseUrl}${notification_constants_1.NOTIFICATION_ENDPOINTS.SEND}`;
-        this.logger.debug(`알림 전송 요청: ${dto.recipientIds.length}명, 제목: ${dto.title}`);
+        console.log(url);
+        this.logger.debug(`알림 전송 요청: ${dto.recipients.length}명, 제목: ${dto.title}`);
         try {
             const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(url, dto, {
                 headers: this.getHeaders(authorization),
                 timeout: 30000,
-            }));
+            })).catch((error) => {
+                console.log(error);
+                throw error;
+            });
+            console.log(response.data);
             this.logger.log(`알림 전송 완료: 성공 ${response.data.successCount}건, 실패 ${response.data.failureCount}건`);
             return response.data;
         }
         catch (error) {
-            this.logger.error('알림 전송 실패', error);
+            this.logger.error('알림 전송 실패', error.response);
             if (error.response) {
                 throw new common_1.HttpException(error.response.data?.message || '알림 전송 중 오류가 발생했습니다.', error.response.status || common_1.HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -52,23 +57,28 @@ let NotificationService = NotificationService_1 = class NotificationService {
         }
     }
     validateRequest(dto) {
-        if (dto.recipientIds.length !== dto.tokens.length) {
-            throw new common_1.HttpException('수신자 ID 목록과 FCM 토큰 목록의 길이가 일치하지 않습니다.', common_1.HttpStatus.BAD_REQUEST);
+        if (dto.recipients.length > 500) {
+            throw new common_1.HttpException('한 번에 최대 500명에게 알림을 전송할 수 있습니다.', common_1.HttpStatus.BAD_REQUEST);
         }
-        if (dto.recipientIds.length > 500) {
-            throw new common_1.HttpException('한 번에 최대 500개의 알림까지 전송할 수 있습니다.', common_1.HttpStatus.BAD_REQUEST);
-        }
-        if (dto.recipientIds.length === 0) {
+        if (dto.recipients.length === 0) {
             throw new common_1.HttpException('최소 1명 이상의 수신자가 필요합니다.', common_1.HttpStatus.BAD_REQUEST);
         }
+        dto.recipients.forEach((recipient, index) => {
+            if (!recipient.tokens || recipient.tokens.length === 0) {
+                throw new common_1.HttpException(`수신자 #${index + 1} (${recipient.employeeNumber})의 FCM 토큰이 없습니다.`, common_1.HttpStatus.BAD_REQUEST);
+            }
+        });
     }
     async sendToMultiple(sender, title, content, recipientIds, tokens, options) {
+        const recipients = recipientIds.map((employeeNumber, index) => ({
+            employeeNumber,
+            tokens: tokens[index] ? [tokens[index]] : [],
+        }));
         return this.sendNotification({
             sender,
             title,
             content,
-            recipientIds,
-            tokens,
+            recipients,
             sourceSystem: options?.sourceSystem || 'portal',
             linkUrl: options?.linkUrl,
             metadata: options?.metadata,

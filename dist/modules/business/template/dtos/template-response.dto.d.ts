@@ -1,4 +1,11 @@
 import { DocumentTemplateStatus, ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
+export declare class CategoryDocumentTemplateDto {
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    status: DocumentTemplateStatus;
+}
 export declare class CategoryResponseDto {
     id: string;
     name: string;
@@ -7,6 +14,7 @@ export declare class CategoryResponseDto {
     order: number;
     createdAt: Date;
     updatedAt: Date;
+    documentTemplates?: CategoryDocumentTemplateDto[];
 }
 export declare class ApprovalStepTemplateResponseDto {
     id: string;

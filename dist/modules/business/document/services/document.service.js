@@ -15,11 +15,14 @@ const common_1 = require("@nestjs/common");
 const document_context_1 = require("../../../context/document/document.context");
 const template_context_1 = require("../../../context/template/template.context");
 const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
+const notification_context_1 = require("../../../context/notification/notification.context");
+const approval_enum_1 = require("../../../../common/enums/approval.enum");
 let DocumentService = DocumentService_1 = class DocumentService {
-    constructor(documentContext, templateContext, approvalProcessContext) {
+    constructor(documentContext, templateContext, approvalProcessContext, notificationContext) {
         this.documentContext = documentContext;
         this.templateContext = templateContext;
         this.approvalProcessContext = approvalProcessContext;
+        this.notificationContext = notificationContext;
         this.logger = new common_1.Logger(DocumentService_1.name);
     }
     async createDocument(dto) {
@@ -76,10 +79,38 @@ let DocumentService = DocumentService_1 = class DocumentService {
                 approverId: step.approverId,
             })),
         };
+        const approvalSteps = contextDto.approvalSteps.filter((step) => step.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
+        const implementationSteps = contextDto.approvalSteps.filter((step) => step.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION);
+        if (approvalSteps.length < 1 || implementationSteps.length < 1) {
+            throw new common_1.BadRequestException('결재 하나와 시행 하나는 필수로 필요합니다.');
+        }
         const submittedDocument = await this.documentContext.submitDocument(contextDto);
         await this.approvalProcessContext.autoApproveIfDrafterIsFirstApprover(submittedDocument.id, submittedDocument.drafterId);
+        this.sendSubmitNotification(submittedDocument.id, submittedDocument.drafterId).catch((error) => {
+            this.logger.error('문서 기안 알림 전송 실패', error);
+        });
         this.logger.log(`문서 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
         return submittedDocument;
+    }
+    async sendSubmitNotification(documentId, drafterId) {
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
+            const drafter = document.drafter;
+            if (!drafter || !drafter.employeeNumber) {
+                this.logger.warn(`기안자 정보를 찾을 수 없습니다: ${drafterId}`);
+                return;
+            }
+            await this.notificationContext.sendNotificationAfterSubmit({
+                document,
+                allSteps,
+                drafterEmployeeNumber: drafter.employeeNumber,
+            });
+        }
+        catch (error) {
+            this.logger.error(`문서 기안 알림 전송 중 오류 발생: ${documentId}`, error);
+            throw error;
+        }
     }
     async submitDocumentDirect(dto) {
         this.logger.log(`바로 기안 시작: ${dto.title}`);
@@ -108,6 +139,7 @@ exports.DocumentService = DocumentService = DocumentService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [document_context_1.DocumentContext,
         template_context_1.TemplateContext,
-        approval_process_context_1.ApprovalProcessContext])
+        approval_process_context_1.ApprovalProcessContext,
+        notification_context_1.NotificationContext])
 ], DocumentService);
 //# sourceMappingURL=document.service.js.map

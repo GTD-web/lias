@@ -81,7 +81,7 @@ export class ApprovalProcessContext {
                         comment: dto.comment,
                         approvedAt: new Date(),
                     },
-                    { queryRunner },
+                    { queryRunner, relations: ['approver'] },
                 );
 
                 // 7) 다음 단계 확인 및 문서 상태 업데이트
@@ -144,7 +144,7 @@ export class ApprovalProcessContext {
                         comment: dto.comment,
                         approvedAt: new Date(),
                     },
-                    { queryRunner },
+                    { queryRunner, relations: ['approver'] },
                 );
 
                 // 8) Document 상태를 REJECTED로 변경
@@ -203,7 +203,7 @@ export class ApprovalProcessContext {
                         comment: dto.comment,
                         approvedAt: new Date(),
                     },
-                    { queryRunner },
+                    { queryRunner, relations: ['approver'] },
                 );
 
                 this.logger.log(`협의 완료: ${dto.stepSnapshotId}`);
@@ -258,7 +258,7 @@ export class ApprovalProcessContext {
                         comment: dto.comment,
                         approvedAt: new Date(),
                     },
-                    { queryRunner },
+                    { queryRunner, relations: ['approver'] },
                 );
 
                 // 7) Document 상태를 IMPLEMENTED로 변경

@@ -1,12 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DocumentContext } from '../../../context/document/document.context';
 import { TemplateContext } from '../../../context/template/template.context';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
+import { NotificationContext } from '../../../context/notification/notification.context';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
 import {
     CreateDocumentDto as ContextCreateDocumentDto,
     DocumentFilterDto,
 } from '../../../context/document/dtos/document.dto';
+import { ApprovalStepType } from 'src/common/enums/approval.enum';
 
 /**
  * 문서 비즈니스 서비스
@@ -20,6 +22,7 @@ export class DocumentService {
         private readonly documentContext: DocumentContext,
         private readonly templateContext: TemplateContext,
         private readonly approvalProcessContext: ApprovalProcessContext,
+        private readonly notificationContext: NotificationContext,
     ) {}
 
     /**
@@ -104,6 +107,15 @@ export class DocumentService {
                 approverId: step.approverId,
             })),
         };
+        // 기본적으로 결재 하나와 시행 하나는 필수로 필요하다.
+        // stepType 이 결재인 경우와 시행인 경우를 카운트 해서 2개 이상이어야 한다.
+        const approvalSteps = contextDto.approvalSteps.filter((step) => step.stepType === ApprovalStepType.APPROVAL);
+        const implementationSteps = contextDto.approvalSteps.filter(
+            (step) => step.stepType === ApprovalStepType.IMPLEMENTATION,
+        );
+        if (approvalSteps.length < 1 || implementationSteps.length < 1) {
+            throw new BadRequestException('결재 하나와 시행 하나는 필수로 필요합니다.');
+        }
 
         // 1) 문서 기안 처리
         const submittedDocument = await this.documentContext.submitDocument(contextDto);
@@ -114,8 +126,43 @@ export class DocumentService {
             submittedDocument.drafterId,
         );
 
+        // 3) 알림 전송 (비동기, 실패해도 전체 프로세스에 영향 없음)
+        this.sendSubmitNotification(submittedDocument.id, submittedDocument.drafterId).catch((error) => {
+            this.logger.error('문서 기안 알림 전송 실패', error);
+        });
+
         this.logger.log(`문서 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
         return submittedDocument;
+    }
+
+    /**
+     * 문서 기안 알림 전송 (private)
+     */
+    private async sendSubmitNotification(documentId: string, drafterId: string): Promise<void> {
+        try {
+            // 1) 문서 정보 조회 (drafter 포함)
+            const document = await this.documentContext.getDocument(documentId);
+
+            // 2) 결재 단계 조회
+            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
+
+            // 3) 기안자의 employeeNumber 조회
+            const drafter = document.drafter;
+            if (!drafter || !drafter.employeeNumber) {
+                this.logger.warn(`기안자 정보를 찾을 수 없습니다: ${drafterId}`);
+                return;
+            }
+
+            // 4) 알림 전송
+            await this.notificationContext.sendNotificationAfterSubmit({
+                document,
+                allSteps,
+                drafterEmployeeNumber: drafter.employeeNumber,
+            });
+        } catch (error) {
+            this.logger.error(`문서 기안 알림 전송 중 오류 발생: ${documentId}`, error);
+            throw error;
+        }
     }
 
     /**

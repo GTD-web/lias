@@ -9,17 +9,42 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SendNotificationResponseDto = exports.SendNotificationDto = void 0;
+exports.SendNotificationResponseDto = exports.SendNotificationDto = exports.RecipientDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
+class RecipientDto {
+}
+exports.RecipientDto = RecipientDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '수신자 사용자 ID (사번)',
+        example: 'E2023001',
+    }),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], RecipientDto.prototype, "employeeNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '수신자 FCM 토큰 목록 (한 사용자가 여러 기기를 가질 수 있음)',
+        example: ['fcm_token_1', 'fcm_token_2'],
+        type: [String],
+    }),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], RecipientDto.prototype, "tokens", void 0);
 class SendNotificationDto {
 }
 exports.SendNotificationDto = SendNotificationDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '발신자 ID (사번)',
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '발신자 ID (사번) - 시스템에서 보내는 경우 생략 가능',
         example: 'E2023001',
     }),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SendNotificationDto.prototype, "sender", void 0);
@@ -28,6 +53,7 @@ __decorate([
         description: '알림 제목',
         example: '새로운 공지사항이 등록되었습니다',
     }),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SendNotificationDto.prototype, "title", void 0);
@@ -36,33 +62,28 @@ __decorate([
         description: '알림 내용',
         example: '인사팀에서 새로운 공지사항을 등록했습니다.',
     }),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SendNotificationDto.prototype, "content", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '수신자 사용자 ID 목록 (사번), 최대 500개',
-        example: ['E2023002', 'E2023003', 'E2023004'],
-        type: [String],
+        description: '수신자 목록, 최대 500명',
+        example: [
+            { employeeNumber: 'E2023002', tokens: ['token1', 'token2'] },
+            { employeeNumber: 'E2023003', tokens: ['token3'] },
+            { employeeNumber: 'E2023004', tokens: ['token4', 'token5'] },
+        ],
+        type: [RecipientDto],
     }),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsString)({ each: true }),
     (0, class_validator_1.ArrayMinSize)(1),
     (0, class_validator_1.ArrayMaxSize)(500),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => RecipientDto),
     __metadata("design:type", Array)
-], SendNotificationDto.prototype, "recipientIds", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '수신자 FCM 토큰 목록, recipientIds와 순서 일치해야 함',
-        example: ['fcm_token_1', 'fcm_token_2', 'fcm_token_3'],
-        type: [String],
-    }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsString)({ each: true }),
-    (0, class_validator_1.ArrayMinSize)(1),
-    (0, class_validator_1.ArrayMaxSize)(500),
-    __metadata("design:type", Array)
-], SendNotificationDto.prototype, "tokens", void 0);
+], SendNotificationDto.prototype, "recipients", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '소스 시스템',

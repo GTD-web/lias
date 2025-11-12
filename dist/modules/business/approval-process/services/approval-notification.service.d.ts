@@ -7,14 +7,23 @@ export declare class ApprovalNotificationService {
     private readonly documentContext;
     private readonly logger;
     constructor(notificationContext: NotificationContext, approvalProcessContext: ApprovalProcessContext, documentContext: DocumentContext);
+    sendNotificationAfterSubmit(documentId: string, drafterEmployeeNumber: string): Promise<void>;
+    sendNotificationAfterCompleteAgreement(documentId: string, agreerEmployeeNumber: string): Promise<void>;
     sendNotificationAfterApprove(documentId: string, currentStepId: string, approverEmployeeNumber: string): Promise<void>;
     sendNotificationAfterReject(documentId: string, rejectReason: string, rejecterEmployeeNumber: string): Promise<void>;
-    sendNotificationAfterCompleteAgreement(documentId: string, agreerEmployeeNumber: string): Promise<void>;
     sendNotificationAfterCompleteImplementation(documentId: string, implementerEmployeeNumber: string): Promise<void>;
-    sendNotificationAfterSubmit(documentId: string, drafterEmployeeNumber: string): Promise<void>;
+    private sendAgreementNotifications;
+    private sendApprovalNotification;
+    private sendApprovalCompletionToDrafter;
+    private sendRejectionToDrafter;
+    private sendImplementationNotifications;
+    private sendImplementationCompletionToDrafter;
+    private sendReferenceNotifications;
     private findNextPendingStep;
     private sendNotificationToApprover;
+    private sendNotificationToApprovers;
     private sendNotificationToReferences;
-    private sendCompletionNotificationToDrafter;
+    private sendNotificationToDrafter;
+    private getDrafterNotificationMessage;
     private getStepTypeText;
 }

@@ -40,13 +40,18 @@ describe('CategoryController (e2e)', () => {
 
         // 실제 DB에 존재하는 직원 조회
         const employeeRepo = dataSource.getRepository('Employee');
-        const employees = await employeeRepo.find({
-            take: 1,
-            order: { createdAt: 'ASC' },
-        });
+        
+        // 지정된 직원 이름으로 조회
+        const allowedNames = ['김규현', '김종식', '민정호', '박헌남', '우창욱', '유승훈', '이화영', '조민경'];
+        const employees = await employeeRepo
+            .createQueryBuilder('employee')
+            .where('employee.name IN (:...names)', { names: allowedNames })
+            .orderBy('employee.createdAt', 'ASC')
+            .take(1)
+            .getMany();
 
         if (!employees || employees.length === 0) {
-            throw new Error('데이터베이스에 직원 정보가 없습니다. 메타데이터를 먼저 생성해주세요.');
+            throw new Error(`데이터베이스에 직원 정보가 없습니다. (사용 가능한 이름: ${allowedNames.join(', ')})`);
         }
 
         const testEmployee = employees[0];

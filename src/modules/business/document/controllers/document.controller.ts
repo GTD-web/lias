@@ -18,6 +18,7 @@ import {
     CreateDocumentDto,
     UpdateDocumentDto,
     SubmitDocumentDto,
+    SubmitDocumentBodyDto,
     SubmitDocumentDirectDto,
     DocumentResponseDto,
     SubmitDocumentResponseDto,
@@ -237,7 +238,7 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async submitDocument(@Param('documentId') documentId: string, @Body() dto: Omit<SubmitDocumentDto, 'documentId'>) {
+    async submitDocument(@Param('documentId') documentId: string, @Body() dto: SubmitDocumentBodyDto) {
         return await this.documentService.submitDocument({
             documentId,
             ...dto,

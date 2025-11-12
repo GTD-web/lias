@@ -1,5 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
+import { DocumentContext } from '../../../context/document/document.context';
+import { NotificationContext } from '../../../context/notification/notification.context';
 import {
     ApproveStepDto,
     RejectStepDto,
@@ -18,14 +20,25 @@ import {
 export class ApprovalProcessService {
     private readonly logger = new Logger(ApprovalProcessService.name);
 
-    constructor(private readonly approvalProcessContext: ApprovalProcessContext) {}
+    constructor(
+        private readonly approvalProcessContext: ApprovalProcessContext,
+        private readonly documentContext: DocumentContext,
+        private readonly notificationContext: NotificationContext,
+    ) {}
 
     /**
      * 결재 승인
      */
     async approveStep(dto: ApproveStepDto) {
         this.logger.log(`결재 승인 요청: ${dto.stepSnapshotId}`);
-        return await this.approvalProcessContext.approveStep(dto);
+        const result = await this.approvalProcessContext.approveStep(dto);
+
+        // 알림 전송 (비동기)
+        this.sendApproveNotification(result.documentId, result.id, result.approver.employeeNumber).catch((error) => {
+            this.logger.error('결재 승인 알림 전송 실패', error);
+        });
+
+        return result;
     }
 
     /**
@@ -33,7 +46,14 @@ export class ApprovalProcessService {
      */
     async rejectStep(dto: RejectStepDto) {
         this.logger.log(`결재 반려 요청: ${dto.stepSnapshotId}`);
-        return await this.approvalProcessContext.rejectStep(dto);
+        const result = await this.approvalProcessContext.rejectStep(dto);
+
+        // 알림 전송 (비동기)
+        this.sendRejectNotification(result.documentId, dto.comment, result.approver.employeeNumber).catch((error) => {
+            this.logger.error('결재 반려 알림 전송 실패', error);
+        });
+
+        return result;
     }
 
     /**
@@ -41,7 +61,14 @@ export class ApprovalProcessService {
      */
     async completeAgreement(dto: CompleteAgreementDto) {
         this.logger.log(`협의 완료 요청: ${dto.stepSnapshotId}`);
-        return await this.approvalProcessContext.completeAgreement(dto);
+        const result = await this.approvalProcessContext.completeAgreement(dto);
+
+        // 알림 전송 (비동기)
+        this.sendCompleteAgreementNotification(result.documentId, result.approver.employeeNumber).catch((error) => {
+            this.logger.error('협의 완료 알림 전송 실패', error);
+        });
+
+        return result;
     }
 
     /**
@@ -49,7 +76,16 @@ export class ApprovalProcessService {
      */
     async completeImplementation(dto: CompleteImplementationDto) {
         this.logger.log(`시행 완료 요청: ${dto.stepSnapshotId}`);
-        return await this.approvalProcessContext.completeImplementation(dto);
+        const result = await this.approvalProcessContext.completeImplementation(dto);
+
+        // 알림 전송 (비동기)
+        this.sendCompleteImplementationNotification(result.documentId, result.approver.employeeNumber).catch(
+            (error) => {
+                this.logger.error('시행 완료 알림 전송 실패', error);
+            },
+        );
+
+        return result;
     }
 
     /**
@@ -148,6 +184,99 @@ export class ApprovalProcessService {
 
             default:
                 throw new BadRequestException(`지원하지 않는 액션 타입입니다: ${dto.type}`);
+        }
+    }
+
+    /**
+     * ============================================
+     * Private 알림 전송 메서드
+     * ============================================
+     */
+
+    /**
+     * 결재 승인 알림 전송
+     */
+    private async sendApproveNotification(
+        documentId: string,
+        currentStepId: string,
+        approverEmployeeNumber: string,
+    ): Promise<void> {
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
+
+            await this.notificationContext.sendNotificationAfterApprove({
+                document,
+                allSteps,
+                currentStepId,
+                approverEmployeeNumber,
+            });
+        } catch (error) {
+            this.logger.error(`결재 승인 알림 전송 중 오류 발생: ${documentId}`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * 결재 반려 알림 전송
+     */
+    private async sendRejectNotification(
+        documentId: string,
+        rejectReason: string,
+        rejecterEmployeeNumber: string,
+    ): Promise<void> {
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+
+            await this.notificationContext.sendNotificationAfterReject({
+                document,
+                rejectReason,
+                rejecterEmployeeNumber,
+            });
+        } catch (error) {
+            this.logger.error(`결재 반려 알림 전송 중 오류 발생: ${documentId}`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * 협의 완료 알림 전송
+     */
+    private async sendCompleteAgreementNotification(documentId: string, agreerEmployeeNumber: string): Promise<void> {
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
+
+            await this.notificationContext.sendNotificationAfterCompleteAgreement({
+                document,
+                allSteps,
+                agreerEmployeeNumber,
+            });
+        } catch (error) {
+            this.logger.error(`협의 완료 알림 전송 중 오류 발생: ${documentId}`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * 시행 완료 알림 전송
+     */
+    private async sendCompleteImplementationNotification(
+        documentId: string,
+        implementerEmployeeNumber: string,
+    ): Promise<void> {
+        try {
+            const document = await this.documentContext.getDocument(documentId);
+            const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
+
+            await this.notificationContext.sendNotificationAfterCompleteImplementation({
+                document,
+                allSteps,
+                implementerEmployeeNumber,
+            });
+        } catch (error) {
+            this.logger.error(`시행 완료 알림 전송 중 오류 발생: ${documentId}`, error);
+            throw error;
         }
     }
 }
