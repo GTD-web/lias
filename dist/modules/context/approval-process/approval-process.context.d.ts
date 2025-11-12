@@ -56,9 +56,11 @@ export declare class ApprovalProcessContext {
         };
     }>;
     getApprovalSteps(documentId: string, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot[]>;
+    getApprovalStepsByDocumentId(documentId: string, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot[]>;
     private checkAndUpdateDocumentStatus;
     private validateApprovalOrder;
     private validateImplementationPrecondition;
+    autoApproveIfDrafterIsFirstApprover(documentId: string, drafterId: string, queryRunner?: QueryRunner): Promise<void>;
     private canProcessStepOptimized;
     private canProcessStep;
 }

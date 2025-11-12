@@ -16,8 +16,8 @@ import { validate as isUUID } from 'uuid';
  * 5. 직원 상세 조회
  */
 @ApiTags('메타데이터 조회')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+// @ApiBearerAuth()
+// @UseGuards(JwtAuthGuard)
 @Controller('metadata')
 export class MetadataQueryController {
     constructor(private readonly metadataContext: MetadataContext) {}

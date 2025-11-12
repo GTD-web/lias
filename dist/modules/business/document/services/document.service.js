@@ -14,10 +14,12 @@ exports.DocumentService = void 0;
 const common_1 = require("@nestjs/common");
 const document_context_1 = require("../../../context/document/document.context");
 const template_context_1 = require("../../../context/template/template.context");
+const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
 let DocumentService = DocumentService_1 = class DocumentService {
-    constructor(documentContext, templateContext) {
+    constructor(documentContext, templateContext, approvalProcessContext) {
         this.documentContext = documentContext;
         this.templateContext = templateContext;
+        this.approvalProcessContext = approvalProcessContext;
         this.logger = new common_1.Logger(DocumentService_1.name);
     }
     async createDocument(dto) {
@@ -74,7 +76,10 @@ let DocumentService = DocumentService_1 = class DocumentService {
                 approverId: step.approverId,
             })),
         };
-        return await this.documentContext.submitDocument(contextDto);
+        const submittedDocument = await this.documentContext.submitDocument(contextDto);
+        await this.approvalProcessContext.autoApproveIfDrafterIsFirstApprover(submittedDocument.id, submittedDocument.drafterId);
+        this.logger.log(`문서 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
+        return submittedDocument;
     }
     async submitDocumentDirect(dto) {
         this.logger.log(`바로 기안 시작: ${dto.title}`);
@@ -102,6 +107,7 @@ exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = DocumentService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [document_context_1.DocumentContext,
-        template_context_1.TemplateContext])
+        template_context_1.TemplateContext,
+        approval_process_context_1.ApprovalProcessContext])
 ], DocumentService);
 //# sourceMappingURL=document.service.js.map

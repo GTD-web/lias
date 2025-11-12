@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DocumentContext } from '../../../context/document/document.context';
 import { TemplateContext } from '../../../context/template/template.context';
+import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
 import {
     CreateDocumentDto as ContextCreateDocumentDto,
@@ -18,6 +19,7 @@ export class DocumentService {
     constructor(
         private readonly documentContext: DocumentContext,
         private readonly templateContext: TemplateContext,
+        private readonly approvalProcessContext: ApprovalProcessContext,
     ) {}
 
     /**
@@ -103,7 +105,17 @@ export class DocumentService {
             })),
         };
 
-        return await this.documentContext.submitDocument(contextDto);
+        // 1) 문서 기안 처리
+        const submittedDocument = await this.documentContext.submitDocument(contextDto);
+
+        // 2) 기안자 자동 승인 처리 (조건부, 별도 트랜잭션)
+        await this.approvalProcessContext.autoApproveIfDrafterIsFirstApprover(
+            submittedDocument.id,
+            submittedDocument.drafterId,
+        );
+
+        this.logger.log(`문서 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
+        return submittedDocument;
     }
 
     /**

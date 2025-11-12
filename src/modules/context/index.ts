@@ -1,3 +1,8 @@
+// Notification Context
+export { NotificationContext } from './notification/notification.context';
+export { NotificationContextModule } from './notification/notification.module';
+export * from './notification/dtos/notification.dto';
+
 // // Metadata Sync Context
 // export { MetadataSyncContext } from './metadata-sync/metadata-sync.context';
 // export { MetadataSyncModule } from './metadata-sync/metadata-sync.module';

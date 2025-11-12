@@ -9,8 +9,8 @@ import { SyncMetadataResponseDto } from '../dtos';
  * 외부 SSO API에서 메타데이터를 가져와 동기화합니다.
  */
 @ApiTags('메타데이터 동기화')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+// @ApiBearerAuth()
+// @UseGuards(JwtAuthGuard)
 @Controller('metadata')
 export class MetadataController {
     constructor(private readonly syncAllMetadataUsecase: SyncAllMetadataUsecase) {}

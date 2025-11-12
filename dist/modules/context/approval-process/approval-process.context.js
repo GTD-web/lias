@@ -291,6 +291,13 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             queryRunner,
         });
     }
+    async getApprovalStepsByDocumentId(documentId, queryRunner) {
+        return await this.approvalStepSnapshotService.findAll({
+            where: { documentId },
+            order: { stepOrder: 'ASC' },
+            queryRunner,
+        });
+    }
     async checkAndUpdateDocumentStatus(documentId, queryRunner) {
         const allSteps = await this.approvalStepSnapshotService.findAll({
             where: { documentId },
@@ -363,6 +370,51 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             throw new common_1.BadRequestException('모든 결재가 완료되어야 시행할 수 있습니다.');
         }
         this.logger.debug(`시행 가능 여부 검증 통과: ${currentStep.id}`);
+    }
+    async autoApproveIfDrafterIsFirstApprover(documentId, drafterId, queryRunner) {
+        const allSteps = await this.approvalStepSnapshotService.findAll({
+            where: { documentId },
+            order: { stepOrder: 'ASC' },
+            queryRunner,
+        });
+        if (allSteps.length === 0) {
+            return;
+        }
+        const hasAgreementStep = allSteps.some((step) => step.stepType === approval_enum_1.ApprovalStepType.AGREEMENT);
+        if (hasAgreementStep) {
+            this.logger.debug('합의 단계가 있어 기안자 자동 승인을 건너뜁니다.');
+            return;
+        }
+        const firstStep = allSteps[0];
+        if (firstStep.stepType === approval_enum_1.ApprovalStepType.APPROVAL &&
+            firstStep.approverId === drafterId &&
+            firstStep.status === approval_enum_1.ApprovalStatus.PENDING) {
+            this.logger.log(`기안자가 첫 번째 결재자입니다. 자동 승인 처리: ${firstStep.id}`);
+            await this.approvalStepSnapshotService.update(firstStep.id, {
+                status: approval_enum_1.ApprovalStatus.APPROVED,
+                comment: '기안자 자동 승인',
+                approvedAt: new Date(),
+            }, { queryRunner });
+            const nextApprovalStep = allSteps.find((step) => step.stepOrder > firstStep.stepOrder &&
+                step.stepType === approval_enum_1.ApprovalStepType.APPROVAL &&
+                step.status === approval_enum_1.ApprovalStatus.PENDING);
+            if (!nextApprovalStep) {
+                const implementationStep = allSteps.find((step) => step.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION);
+                if (implementationStep) {
+                    await this.documentService.update(documentId, {
+                        status: approval_enum_1.DocumentStatus.APPROVED,
+                        approvedAt: new Date(),
+                    }, { queryRunner });
+                }
+                else {
+                    await this.documentService.update(documentId, {
+                        status: approval_enum_1.DocumentStatus.APPROVED,
+                        approvedAt: new Date(),
+                    }, { queryRunner });
+                }
+            }
+            this.logger.log(`기안자 자동 승인 완료: ${firstStep.id}`);
+        }
     }
     async canProcessStepOptimized(step, allSteps) {
         try {

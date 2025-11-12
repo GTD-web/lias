@@ -19,6 +19,9 @@ const template_module_1 = require("./modules/business/template/template.module")
 const metadata_module_1 = require("./modules/business/metadata/metadata.module");
 const document_module_1 = require("./modules/business/document/document.module");
 const approval_process_module_1 = require("./modules/business/approval-process/approval-process.module");
+const sso_1 = require("./modules/integrations/sso");
+const notification_1 = require("./modules/integrations/notification");
+const notification_2 = require("./modules/context/notification");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -36,6 +39,9 @@ exports.AppModule = AppModule = __decorate([
             core_1.RouterModule.register([]),
             auth_module_1.AuthModule,
             domain_module_1.DomainModule,
+            sso_1.SSOModule,
+            notification_1.NotificationModule,
+            notification_2.NotificationContextModule,
             template_module_1.TemplateBusinessModule,
             metadata_module_1.MetadataModule,
             document_module_1.DocumentBusinessModule,
