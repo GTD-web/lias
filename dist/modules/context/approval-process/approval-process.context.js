@@ -291,6 +291,13 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             queryRunner,
         });
     }
+    async getApprovalStepsByDocumentId(documentId, queryRunner) {
+        return await this.approvalStepSnapshotService.findAll({
+            where: { documentId },
+            order: { stepOrder: 'ASC' },
+            queryRunner,
+        });
+    }
     async checkAndUpdateDocumentStatus(documentId, queryRunner) {
         const allSteps = await this.approvalStepSnapshotService.findAll({
             where: { documentId },

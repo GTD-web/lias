@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MetadataController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
-const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const sync_all_metadata_usecase_1 = require("../usecases/sync-all-metadata.usecase");
 const dtos_1 = require("../dtos");
 let MetadataController = class MetadataController {
@@ -49,8 +48,6 @@ __decorate([
 ], MetadataController.prototype, "syncMetadata", null);
 exports.MetadataController = MetadataController = __decorate([
     (0, swagger_1.ApiTags)('메타데이터 동기화'),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('metadata'),
     __metadata("design:paramtypes", [sync_all_metadata_usecase_1.SyncAllMetadataUsecase])
 ], MetadataController);

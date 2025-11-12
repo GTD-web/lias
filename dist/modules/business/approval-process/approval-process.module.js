@@ -10,15 +10,18 @@ exports.ApprovalProcessBusinessModule = void 0;
 const common_1 = require("@nestjs/common");
 const approval_process_controller_1 = require("./controllers/approval-process.controller");
 const approval_process_service_1 = require("./services/approval-process.service");
+const approval_notification_service_1 = require("./services/approval-notification.service");
 const approval_process_module_1 = require("../../context/approval-process/approval-process.module");
+const notification_module_1 = require("../../context/notification/notification.module");
+const document_module_1 = require("../../context/document/document.module");
 let ApprovalProcessBusinessModule = class ApprovalProcessBusinessModule {
 };
 exports.ApprovalProcessBusinessModule = ApprovalProcessBusinessModule;
 exports.ApprovalProcessBusinessModule = ApprovalProcessBusinessModule = __decorate([
     (0, common_1.Module)({
-        imports: [approval_process_module_1.ApprovalProcessModule],
+        imports: [approval_process_module_1.ApprovalProcessModule, notification_module_1.NotificationContextModule, document_module_1.DocumentModule],
         controllers: [approval_process_controller_1.ApprovalProcessController],
-        providers: [approval_process_service_1.ApprovalProcessService],
+        providers: [approval_process_service_1.ApprovalProcessService, approval_notification_service_1.ApprovalNotificationService],
     })
 ], ApprovalProcessBusinessModule);
 //# sourceMappingURL=approval-process.module.js.map

@@ -490,6 +490,17 @@ export class ApprovalProcessContext {
     }
 
     /**
+     * 8. 문서의 모든 결재 단계 조회 (순서대로)
+     */
+    async getApprovalStepsByDocumentId(documentId: string, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot[]> {
+        return await this.approvalStepSnapshotService.findAll({
+            where: { documentId },
+            order: { stepOrder: 'ASC' },
+            queryRunner,
+        });
+    }
+
+    /**
      * 헬퍼: 다음 단계 확인 및 문서 상태 업데이트
      */
     private async checkAndUpdateDocumentStatus(documentId: string, queryRunner: QueryRunner) {
