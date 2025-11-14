@@ -58,6 +58,9 @@ let DocumentController = class DocumentController {
     async getTemplateForNewDocument(templateId, drafterId) {
         return await this.documentService.getTemplateForNewDocument(templateId, drafterId);
     }
+    async getDocumentStatistics(userId) {
+        return await this.documentService.getDocumentStatistics(userId);
+    }
 };
 exports.DocumentController = DocumentController;
 __decorate([
@@ -331,6 +334,43 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getTemplateForNewDocument", null);
+__decorate([
+    (0, common_1.Get)('statistics/:userId'),
+    (0, swagger_1.ApiOperation)({
+        summary: '문서 통계 조회',
+        description: '사용자의 문서 통계를 조회합니다.\n\n' +
+            '**내가 기안한 문서 통계:**\n' +
+            '- 상신: 제출된 전체 문서\n' +
+            '- 협의: PENDING 상태 + 현재 AGREEMENT 단계\n' +
+            '- 미결: PENDING 상태 + 현재 APPROVAL 단계\n' +
+            '- 기결: APPROVED 상태\n' +
+            '- 반려: REJECTED 상태\n' +
+            '- 시행: IMPLEMENTED 상태\n' +
+            '- 임시저장: DRAFT 상태\n\n' +
+            '**다른 사람이 기안한 문서:**\n' +
+            '- 참조: 내가 참조자(REFERENCE)로 있는 문서\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 문서 통계 조회\n' +
+            '- ❌ 실패: 존재하지 않는 사용자 ID',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'userId',
+        description: '사용자 ID',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '문서 통계 조회 성공',
+        type: dtos_1.DocumentStatisticsResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: '인증 실패',
+    }),
+    __param(0, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "getDocumentStatistics", null);
 exports.DocumentController = DocumentController = __decorate([
     (0, swagger_1.ApiTags)('문서 관리'),
     (0, common_1.Controller)('documents'),

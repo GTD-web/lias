@@ -36,4 +36,18 @@ export declare class DocumentContext {
     private createApprovalStepSnapshots;
     private updateApprovalStepSnapshots;
     private buildApproverSnapshot;
+    getDocumentStatistics(userId: string): Promise<{
+        myDocuments: {
+            draft: number;
+            submitted: number;
+            agreement: number;
+            approval: number;
+            approved: number;
+            rejected: number;
+            implemented: number;
+        };
+        othersDocuments: {
+            reference: number;
+        };
+    }>;
 }

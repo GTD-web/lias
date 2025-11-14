@@ -33,4 +33,18 @@ export declare class DocumentController {
         updatedAt: Date;
         category?: import("../../../domain").Category;
     }>;
+    getDocumentStatistics(userId: string): Promise<{
+        myDocuments: {
+            draft: number;
+            submitted: number;
+            agreement: number;
+            approval: number;
+            approved: number;
+            rejected: number;
+            implemented: number;
+        };
+        othersDocuments: {
+            reference: number;
+        };
+    }>;
 }

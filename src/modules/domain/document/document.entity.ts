@@ -6,10 +6,8 @@ import {
     UpdateDateColumn,
     ManyToOne,
     OneToMany,
-    OneToOne,
     JoinColumn,
     Index,
-    DeleteDateColumn,
 } from 'typeorm';
 import { DocumentStatus } from '../../../common/enums/approval.enum';
 import { Employee } from '../employee/employee.entity';

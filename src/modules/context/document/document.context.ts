@@ -306,6 +306,11 @@ export class DocumentContext {
         const document = await this.documentService.findOne({
             where: { id: documentId },
             relations: ['drafter', 'approvalSteps'],
+            order: {
+                approvalSteps: {
+                    stepOrder: 'ASC',
+                },
+            },
             queryRunner,
         });
 
@@ -328,7 +333,8 @@ export class DocumentContext {
             .createQueryBuilder('document')
             .leftJoinAndSelect('document.drafter', 'drafter')
             .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
-            .orderBy('document.createdAt', 'DESC');
+            .orderBy('document.createdAt', 'DESC')
+            .addOrderBy('approvalSteps.stepOrder', 'ASC');
 
         // 1. 기본 필터
         if (filter.status) {
@@ -345,10 +351,30 @@ export class DocumentContext {
             });
         }
 
-        // 2. PENDING 상태 세분화 (대기 중인 단계 타입으로 필터링)
+        // 2. PENDING 상태의 문서 중 현재 단계 타입별 필터링
+        // 현재 진행 중인 단계(가장 작은 stepOrder의 PENDING 단계)의 타입으로 필터링
         if (filter.status === DocumentStatus.PENDING && filter.pendingStepType) {
-            qb.andWhere('approvalSteps.stepType = :stepType', { stepType: filter.pendingStepType });
-            qb.andWhere('approvalSteps.status = :stepStatus', { stepStatus: 'PENDING' });
+            qb.andWhere(
+                `document.id IN (
+                    SELECT document_id
+                    FROM (
+                        SELECT DISTINCT ON (d.id)
+                            d.id as document_id,
+                            ass."stepType"
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE d.status = :pendingStatus
+                        AND ass.status = :pendingStepStatus
+                        ORDER BY d.id, ass."stepOrder" ASC
+                    ) current_steps
+                    WHERE "stepType" = :stepType
+                )`,
+                {
+                    pendingStatus: DocumentStatus.PENDING,
+                    pendingStepStatus: ApprovalStatus.PENDING,
+                    stepType: filter.pendingStepType,
+                },
+            );
         }
 
         // 3. 카테고리 필터 (문서 템플릿을 통해 조인)
@@ -547,5 +573,97 @@ export class DocumentContext {
         }
 
         return snapshot;
+    }
+
+    /**
+     * 9. 문서 통계 조회
+     * 내가 기안한 문서와 참조 문서의 상태별 통계를 반환합니다.
+     */
+    async getDocumentStatistics(userId: string) {
+        this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
+
+        // 1. 내가 기안한 문서 통계
+        const myDocumentsStats = await this.dataSource.query(
+            `
+            SELECT
+                COUNT(*) FILTER (WHERE status = $1) as draft,
+                COUNT(*) FILTER (WHERE "submittedAt" IS NOT NULL) as submitted,
+                COUNT(*) FILTER (WHERE status = $2) as "pending",
+                COUNT(*) FILTER (WHERE status = $3) as approved,
+                COUNT(*) FILTER (WHERE status = $4) as rejected,
+                COUNT(*) FILTER (WHERE status = $5) as implemented
+            FROM documents
+            WHERE "drafterId" = $6
+            `,
+            [
+                DocumentStatus.DRAFT,
+                DocumentStatus.PENDING,
+                DocumentStatus.APPROVED,
+                DocumentStatus.REJECTED,
+                DocumentStatus.IMPLEMENTED,
+                userId,
+            ],
+        );
+
+        // 2. PENDING 상태의 문서 중 현재 단계 타입별 통계
+        // 현재 진행 중인 단계(가장 작은 stepOrder의 PENDING 단계)의 타입으로 분류
+        const pendingStepStats = await this.dataSource.query(
+            `
+            WITH current_steps AS (
+                SELECT DISTINCT ON (d.id)
+                    d.id as document_id,
+                    ass."stepType"
+                FROM documents d
+                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                WHERE d."drafterId" = $1
+                AND d.status = $2
+                AND ass.status = $3
+                ORDER BY d.id, ass."stepOrder" ASC
+            )
+            SELECT
+                COUNT(*) FILTER (WHERE "stepType" = $4) as agreement,
+                COUNT(*) FILTER (WHERE "stepType" = $5) as approval
+            FROM current_steps
+            `,
+            [
+                userId,
+                DocumentStatus.PENDING,
+                ApprovalStatus.PENDING,
+                ApprovalStepType.AGREEMENT,
+                ApprovalStepType.APPROVAL,
+            ],
+        );
+
+        // 3. 내가 참조자로 있는 문서 통계
+        const referenceStats = await this.dataSource.query(
+            `
+            SELECT COUNT(DISTINCT d.id) as reference
+            FROM documents d
+            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+            WHERE ass."approverId" = $1
+            AND ass."stepType" = $2
+            AND d."drafterId" != $1
+            `,
+            [userId, ApprovalStepType.REFERENCE],
+        );
+
+        const myStats = myDocumentsStats[0];
+        const pendingStats = pendingStepStats[0];
+        const refStats = referenceStats[0];
+
+        return {
+            myDocuments: {
+                draft: parseInt(myStats.draft || '0'),
+                submitted: parseInt(myStats.submitted || '0'),
+                agreement: parseInt(pendingStats.agreement || '0'),
+                approval: parseInt(pendingStats.approval || '0'),
+                approved: parseInt(myStats.approved || '0'),
+                rejected: parseInt(myStats.rejected || '0'),
+                implemented: parseInt(myStats.implemented || '0'),
+            },
+            othersDocuments: {
+                reference: parseInt(refStats.reference || '0'),
+            },
+        };
     }
 }

@@ -200,4 +200,12 @@ export class DocumentService {
         this.logger.debug(`템플릿 상세 조회 (결재자 맵핑): ${templateId}, 기안자: ${drafterId}`);
         return await this.templateContext.getDocumentTemplateWithMappedApprovers(templateId, drafterId);
     }
+
+    /**
+     * 문서 통계 조회
+     */
+    async getDocumentStatistics(userId: string) {
+        this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
+        return await this.documentContext.getDocumentStatistics(userId);
+    }
 }
