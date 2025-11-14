@@ -331,7 +331,7 @@ export class TemplateContext {
 
         return {
             ...template,
-            approvalStepTemplates: mappedSteps,
+            approvalStepTemplates: mappedSteps.sort((a, b) => a.stepOrder - b.stepOrder),
         };
     }
 
