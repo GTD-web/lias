@@ -162,6 +162,7 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
                                 type: 'FIXED',
                             },
                         ];
+                        delete mappedStep.targetEmployee;
                     }
                     break;
                 case approval_enum_1.AssigneeRule.DRAFTER:
@@ -199,6 +200,7 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
                 case approval_enum_1.AssigneeRule.HIERARCHY_TO_POSITION:
                     const hierarchyApprovers = await this.findHierarchyApprovers(drafter, drafterDepartment, drafterPosition, step.targetPositionId);
                     mappedStep.mappedApprovers = hierarchyApprovers;
+                    delete mappedStep.targetPosition;
                     break;
                 case approval_enum_1.AssigneeRule.DEPARTMENT_REFERENCE:
                     if (step.targetDepartmentId) {
@@ -210,6 +212,7 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
                             email: emp.email,
                             type: 'DEPARTMENT_REFERENCE',
                         }));
+                        delete mappedStep.targetDepartment;
                     }
                     break;
             }

@@ -25,6 +25,7 @@ import {
     ApprovalStepSnapshotResponseDto,
     QueryDocumentsDto,
     PaginatedDocumentsResponseDto,
+    DocumentTemplateWithApproversResponseDto,
 } from '../dtos';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 
@@ -294,6 +295,7 @@ export class DocumentController {
     @ApiResponse({
         status: 200,
         description: '템플릿 상세 조회 성공 (결재자 정보 맵핑 포함)',
+        type: DocumentTemplateWithApproversResponseDto,
     })
     @ApiResponse({
         status: 404,

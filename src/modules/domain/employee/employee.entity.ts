@@ -33,7 +33,7 @@ export class Employee {
     @Column({ unique: true, comment: '이메일', nullable: true })
     email?: string;
 
-    @Column({ comment: '비밀번호', nullable: true })
+    @Column({ comment: '비밀번호', nullable: true, select: false })
     password?: string;
 
     @Column({ comment: '전화번호', nullable: true })
