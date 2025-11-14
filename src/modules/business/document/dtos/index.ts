@@ -7,4 +7,5 @@ export * from './approval-step-snapshot.dto';
 export * from './update-approval-step-snapshot.dto';
 export * from './document-response.dto';
 export * from './query-document.dto';
+export * from './template-with-approvers-response.dto';
 

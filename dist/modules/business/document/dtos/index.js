@@ -23,4 +23,5 @@ __exportStar(require("./approval-step-snapshot.dto"), exports);
 __exportStar(require("./update-approval-step-snapshot.dto"), exports);
 __exportStar(require("./document-response.dto"), exports);
 __exportStar(require("./query-document.dto"), exports);
+__exportStar(require("./template-with-approvers-response.dto"), exports);
 //# sourceMappingURL=index.js.map

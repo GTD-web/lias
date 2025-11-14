@@ -254,6 +254,7 @@ export class TemplateContext {
                                     type: 'FIXED',
                                 },
                             ];
+                            delete mappedStep.targetEmployee;
                         }
                         break;
 
@@ -304,6 +305,7 @@ export class TemplateContext {
                             step.targetPositionId,
                         );
                         mappedStep.mappedApprovers = hierarchyApprovers;
+                        delete mappedStep.targetPosition;
                         break;
 
                     case AssigneeRule.DEPARTMENT_REFERENCE:
@@ -317,6 +319,8 @@ export class TemplateContext {
                                 email: emp.email,
                                 type: 'DEPARTMENT_REFERENCE',
                             }));
+
+                            delete mappedStep.targetDepartment;
                         }
                         break;
                 }

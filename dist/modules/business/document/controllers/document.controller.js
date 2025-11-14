@@ -311,6 +311,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '템플릿 상세 조회 성공 (결재자 정보 맵핑 포함)',
+        type: dtos_1.DocumentTemplateWithApproversResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: 404,

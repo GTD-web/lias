@@ -39,7 +39,7 @@ __decorate([
     __metadata("design:type", String)
 ], Employee.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ comment: '비밀번호', nullable: true }),
+    (0, typeorm_1.Column)({ comment: '비밀번호', nullable: true, select: false }),
     __metadata("design:type", String)
 ], Employee.prototype, "password", void 0);
 __decorate([
