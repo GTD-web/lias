@@ -220,7 +220,7 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
         }));
         return {
             ...template,
-            approvalStepTemplates: mappedSteps,
+            approvalStepTemplates: mappedSteps.sort((a, b) => a.stepOrder - b.stepOrder),
         };
     }
     async findDirectSuperior(employee, department, position) {
