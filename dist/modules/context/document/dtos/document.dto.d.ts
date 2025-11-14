@@ -33,6 +33,7 @@ export declare class DocumentFilterDto {
     status?: DocumentStatus;
     pendingStepType?: ApprovalStepType;
     drafterId?: string;
+    referenceUserId?: string;
     categoryId?: string;
     documentTemplateId?: string;
     startDate?: Date;

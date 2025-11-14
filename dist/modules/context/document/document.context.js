@@ -206,35 +206,50 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
             .orderBy('document.createdAt', 'DESC')
             .addOrderBy('approvalSteps.stepOrder', 'ASC');
-        if (filter.status) {
-            qb.andWhere('document.status = :status', { status: filter.status });
+        if (filter.referenceUserId) {
+            qb.andWhere(`document.id IN (
+                    SELECT DISTINCT d.id
+                    FROM documents d
+                    INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                    WHERE ass."stepType" = :referenceStepType
+                    AND ass."approverId" = :referenceUserId
+                    AND d.status != :draftStatus
+                )`, {
+                referenceStepType: approval_enum_1.ApprovalStepType.REFERENCE,
+                referenceUserId: filter.referenceUserId,
+                draftStatus: approval_enum_1.DocumentStatus.DRAFT,
+            });
         }
-        if (filter.drafterId) {
+        else if (filter.drafterId) {
             qb.andWhere('document.drafterId = :drafterId', { drafterId: filter.drafterId });
+            if (filter.status) {
+                qb.andWhere('document.status = :status', { status: filter.status });
+            }
+            if (filter.status === approval_enum_1.DocumentStatus.PENDING && filter.pendingStepType) {
+                qb.andWhere(`document.id IN (
+                        SELECT document_id
+                        FROM (
+                            SELECT DISTINCT ON (d.id)
+                                d.id as document_id,
+                                ass."stepType"
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE d.status = :pendingStatus
+                            AND ass.status = :pendingStepStatus
+                            AND d."drafterId" = :drafterId
+                            ORDER BY d.id, ass."stepOrder" ASC
+                        ) current_steps
+                        WHERE "stepType" = :stepType
+                    )`, {
+                    pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                    pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                    stepType: filter.pendingStepType,
+                });
+            }
         }
         if (filter.documentTemplateId) {
             qb.andWhere('document.documentTemplateId = :documentTemplateId', {
                 documentTemplateId: filter.documentTemplateId,
-            });
-        }
-        if (filter.status === approval_enum_1.DocumentStatus.PENDING && filter.pendingStepType) {
-            qb.andWhere(`document.id IN (
-                    SELECT document_id
-                    FROM (
-                        SELECT DISTINCT ON (d.id)
-                            d.id as document_id,
-                            ass."stepType"
-                        FROM documents d
-                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                        WHERE d.status = :pendingStatus
-                        AND ass.status = :pendingStepStatus
-                        ORDER BY d.id, ass."stepOrder" ASC
-                    ) current_steps
-                    WHERE "stepType" = :stepType
-                )`, {
-                pendingStatus: approval_enum_1.DocumentStatus.PENDING,
-                pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
-                stepType: filter.pendingStepType,
             });
         }
         if (filter.categoryId) {
@@ -402,10 +417,10 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             SELECT COUNT(DISTINCT d.id) as reference
             FROM documents d
             INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-            WHERE ass."approverId" = $1
-            AND ass."stepType" = $2
-            AND d."drafterId" != $1
-            `, [userId, approval_enum_1.ApprovalStepType.REFERENCE]);
+            WHERE ass."stepType" = $1
+            AND ass."approverId" = $2
+            AND d.status != $3
+            `, [approval_enum_1.ApprovalStepType.REFERENCE, userId, approval_enum_1.DocumentStatus.DRAFT]);
         const myStats = myDocumentsStats[0];
         const pendingStats = pendingStepStats[0];
         const refStats = referenceStats[0];

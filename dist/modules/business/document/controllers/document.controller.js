@@ -29,6 +29,7 @@ let DocumentController = class DocumentController {
             status: query.status,
             pendingStepType: query.pendingStepType,
             drafterId: query.drafterId,
+            referenceUserId: query.referenceUserId,
             categoryId: query.categoryId,
             searchKeyword: query.searchKeyword,
             startDate: query.startDate ? new Date(query.startDate) : undefined,

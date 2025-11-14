@@ -58,7 +58,8 @@ export class SubmitDocumentDto {
 export class DocumentFilterDto {
     status?: DocumentStatus;
     pendingStepType?: ApprovalStepType; // PENDING 상태일 때, 대기 중인 단계 타입
-    drafterId?: string;
+    drafterId?: string; // 기안자로 필터링
+    referenceUserId?: string; // 참조자로 필터링 (내가 참조자로 있는 문서)
     categoryId?: string;
     documentTemplateId?: string;
     startDate?: Date;

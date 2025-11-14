@@ -52,6 +52,15 @@ __decorate([
 ], QueryDocumentsDto.prototype, "drafterId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
+        description: '참조자 ID (내가 참조자로 있는 문서)',
+        example: 'uuid',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], QueryDocumentsDto.prototype, "referenceUserId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
         description: '카테고리 ID',
         example: 'uuid',
     }),

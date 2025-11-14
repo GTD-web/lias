@@ -34,6 +34,14 @@ export class QueryDocumentsDto {
     drafterId?: string;
 
     @ApiPropertyOptional({
+        description: '참조자 ID (내가 참조자로 있는 문서)',
+        example: 'uuid',
+    })
+    @IsOptional()
+    @IsUUID()
+    referenceUserId?: string;
+
+    @ApiPropertyOptional({
         description: '카테고리 ID',
         example: 'uuid',
     })
@@ -90,4 +98,3 @@ export class QueryDocumentsDto {
     @IsString()
     endDate?: string;
 }
-
