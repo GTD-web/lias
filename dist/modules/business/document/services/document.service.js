@@ -133,6 +133,10 @@ let DocumentService = DocumentService_1 = class DocumentService {
         this.logger.debug(`템플릿 상세 조회 (결재자 맵핑): ${templateId}, 기안자: ${drafterId}`);
         return await this.templateContext.getDocumentTemplateWithMappedApprovers(templateId, drafterId);
     }
+    async getDocumentStatistics(userId) {
+        this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
+        return await this.documentContext.getDocumentStatistics(userId);
+    }
 };
 exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = DocumentService_1 = __decorate([

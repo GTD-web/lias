@@ -184,6 +184,11 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         const document = await this.documentService.findOne({
             where: { id: documentId },
             relations: ['drafter', 'approvalSteps'],
+            order: {
+                approvalSteps: {
+                    stepOrder: 'ASC',
+                },
+            },
             queryRunner,
         });
         if (!document) {
@@ -199,7 +204,8 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             .createQueryBuilder('document')
             .leftJoinAndSelect('document.drafter', 'drafter')
             .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
-            .orderBy('document.createdAt', 'DESC');
+            .orderBy('document.createdAt', 'DESC')
+            .addOrderBy('approvalSteps.stepOrder', 'ASC');
         if (filter.status) {
             qb.andWhere('document.status = :status', { status: filter.status });
         }
@@ -212,8 +218,24 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             });
         }
         if (filter.status === approval_enum_1.DocumentStatus.PENDING && filter.pendingStepType) {
-            qb.andWhere('approvalSteps.stepType = :stepType', { stepType: filter.pendingStepType });
-            qb.andWhere('approvalSteps.status = :stepStatus', { stepStatus: 'PENDING' });
+            qb.andWhere(`document.id IN (
+                    SELECT document_id
+                    FROM (
+                        SELECT DISTINCT ON (d.id)
+                            d.id as document_id,
+                            ass."stepType"
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE d.status = :pendingStatus
+                        AND ass.status = :pendingStepStatus
+                        ORDER BY d.id, ass."stepOrder" ASC
+                    ) current_steps
+                    WHERE "stepType" = :stepType
+                )`, {
+                pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                stepType: filter.pendingStepType,
+            });
         }
         if (filter.categoryId) {
             qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
@@ -332,6 +354,75 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             snapshot.rankTitle = employee.currentRank.rankTitle;
         }
         return snapshot;
+    }
+    async getDocumentStatistics(userId) {
+        this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
+        const myDocumentsStats = await this.dataSource.query(`
+            SELECT
+                COUNT(*) FILTER (WHERE status = $1) as draft,
+                COUNT(*) FILTER (WHERE "submittedAt" IS NOT NULL) as submitted,
+                COUNT(*) FILTER (WHERE status = $2) as "pending",
+                COUNT(*) FILTER (WHERE status = $3) as approved,
+                COUNT(*) FILTER (WHERE status = $4) as rejected,
+                COUNT(*) FILTER (WHERE status = $5) as implemented
+            FROM documents
+            WHERE "drafterId" = $6
+            `, [
+            approval_enum_1.DocumentStatus.DRAFT,
+            approval_enum_1.DocumentStatus.PENDING,
+            approval_enum_1.DocumentStatus.APPROVED,
+            approval_enum_1.DocumentStatus.REJECTED,
+            approval_enum_1.DocumentStatus.IMPLEMENTED,
+            userId,
+        ]);
+        const pendingStepStats = await this.dataSource.query(`
+            WITH current_steps AS (
+                SELECT DISTINCT ON (d.id)
+                    d.id as document_id,
+                    ass."stepType"
+                FROM documents d
+                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                WHERE d."drafterId" = $1
+                AND d.status = $2
+                AND ass.status = $3
+                ORDER BY d.id, ass."stepOrder" ASC
+            )
+            SELECT
+                COUNT(*) FILTER (WHERE "stepType" = $4) as agreement,
+                COUNT(*) FILTER (WHERE "stepType" = $5) as approval
+            FROM current_steps
+            `, [
+            userId,
+            approval_enum_1.DocumentStatus.PENDING,
+            approval_enum_1.ApprovalStatus.PENDING,
+            approval_enum_1.ApprovalStepType.AGREEMENT,
+            approval_enum_1.ApprovalStepType.APPROVAL,
+        ]);
+        const referenceStats = await this.dataSource.query(`
+            SELECT COUNT(DISTINCT d.id) as reference
+            FROM documents d
+            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+            WHERE ass."approverId" = $1
+            AND ass."stepType" = $2
+            AND d."drafterId" != $1
+            `, [userId, approval_enum_1.ApprovalStepType.REFERENCE]);
+        const myStats = myDocumentsStats[0];
+        const pendingStats = pendingStepStats[0];
+        const refStats = referenceStats[0];
+        return {
+            myDocuments: {
+                draft: parseInt(myStats.draft || '0'),
+                submitted: parseInt(myStats.submitted || '0'),
+                agreement: parseInt(pendingStats.agreement || '0'),
+                approval: parseInt(pendingStats.approval || '0'),
+                approved: parseInt(myStats.approved || '0'),
+                rejected: parseInt(myStats.rejected || '0'),
+                implemented: parseInt(myStats.implemented || '0'),
+            },
+            othersDocuments: {
+                reference: parseInt(refStats.reference || '0'),
+            },
+        };
     }
 };
 exports.DocumentContext = DocumentContext;
