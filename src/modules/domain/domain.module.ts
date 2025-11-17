@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DomainCategoryModule } from './category/category.module';
 import { DomainDocumentTemplateModule } from './document-template/document-template.module';
 import { DomainDocumentModule } from './document/document.module';
+import { DomainDocumentRevisionModule } from './document-revision/document-revision.module';
 import { DomainEmployeeModule } from './employee/employee.module';
 import { DomainDepartmentModule } from './department/department.module';
 import { DomainPositionModule } from './position/position.module';
@@ -15,6 +16,7 @@ import { DomainApprovalStepSnapshotModule } from './approval-step-snapshot/appro
 import { Category } from './category/category.entity';
 import { DocumentTemplate } from './document-template/document-template.entity';
 import { Document } from './document/document.entity';
+import { DocumentRevision } from './document-revision/document-revision.entity';
 import { Employee } from './employee/employee.entity';
 import { Department } from './department/department.entity';
 import { Position } from './position/position.entity';
@@ -36,6 +38,7 @@ import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-sna
             Category,
             DocumentTemplate,
             Document,
+            DocumentRevision,
             Employee,
             Department,
             Position,
@@ -48,6 +51,7 @@ import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-sna
         DomainCategoryModule,
         DomainDocumentTemplateModule,
         DomainDocumentModule,
+        DomainDocumentRevisionModule,
         DomainEmployeeModule,
         DomainDepartmentModule,
         DomainPositionModule,
@@ -61,6 +65,7 @@ import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-sna
         DomainCategoryModule,
         DomainDocumentTemplateModule,
         DomainDocumentModule,
+        DomainDocumentRevisionModule,
         DomainEmployeeModule,
         DomainDepartmentModule,
         DomainPositionModule,

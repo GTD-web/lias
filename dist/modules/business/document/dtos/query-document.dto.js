@@ -23,7 +23,7 @@ class QueryDocumentsDto {
 exports.QueryDocumentsDto = QueryDocumentsDto;
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '문서 상태',
+        description: '문서 상태 (DRAFT=임시저장, PENDING=대기, APPROVED=승인, REJECTED=반려, IMPLEMENTED=시행)',
         enum: approval_enum_1.DocumentStatus,
         example: approval_enum_1.DocumentStatus.PENDING,
     }),
@@ -33,7 +33,7 @@ __decorate([
 ], QueryDocumentsDto.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '대기 중인 단계 타입 (status가 PENDING일 때만 유효)',
+        description: 'PENDING 상태일 때 현재 단계 타입 (AGREEMENT=협의, APPROVAL=미결)',
         enum: approval_enum_1.ApprovalStepType,
         example: approval_enum_1.ApprovalStepType.APPROVAL,
     }),
@@ -43,8 +43,8 @@ __decorate([
 ], QueryDocumentsDto.prototype, "pendingStepType", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '기안자 ID',
-        example: 'uuid',
+        description: '기안자 ID (내가 기안한 문서 조회)',
+        example: '550e8400-e29b-41d4-a716-446655440000',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
@@ -52,8 +52,8 @@ __decorate([
 ], QueryDocumentsDto.prototype, "drafterId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '참조자 ID (내가 참조자로 있는 문서)',
-        example: 'uuid',
+        description: '참조자 ID (내가 참조자로 있는 문서 조회, 기안자 무관, DRAFT 제외)',
+        example: '550e8400-e29b-41d4-a716-446655440001',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),

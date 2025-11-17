@@ -37,7 +37,7 @@ export class CreateDocumentDto {
 export class UpdateDocumentDto {
     title?: string;
     content?: string;
-    metadata?: Record<string, any>;
+    comment?: string; // 문서 수정 코멘트
     status?: DocumentStatus; // 상태 업데이트용
     approvalSteps?: ApprovalStepSnapshotItemDto[]; // 결재단계 스냅샷 목록 (id가 있으면 수정, 없으면 생성)
 }
@@ -54,12 +54,28 @@ export class SubmitDocumentDto {
 
 /**
  * 문서 조회 필터 DTO
+ *
+ * 필터링 조건 가이드:
+ *
+ * === 내가 기안한 문서 (drafterId 지정) ===
+ * 1. 임시저장: status=DRAFT, pendingStepType 미지정
+ * 2. 전체 상신: status 미지정, pendingStepType 미지정
+ * 3. 협의 대기: status=PENDING, pendingStepType=AGREEMENT
+ * 4. 미결 대기: status=PENDING, pendingStepType=APPROVAL
+ * 5. 기결: status=APPROVED, pendingStepType 미지정
+ * 6. 반려: status=REJECTED, pendingStepType 미지정
+ * 7. 시행: status=IMPLEMENTED, pendingStepType 미지정
+ *
+ * === 내가 참조자로 있는 문서 (referenceUserId 지정) ===
+ * 8. 참조: referenceUserId만 지정, status 미지정, pendingStepType 미지정
+ *
+ * 주의: drafterId와 referenceUserId는 상호 배타적 (referenceUserId 우선)
  */
 export class DocumentFilterDto {
-    status?: DocumentStatus;
-    pendingStepType?: ApprovalStepType; // PENDING 상태일 때, 대기 중인 단계 타입
-    drafterId?: string; // 기안자로 필터링
-    referenceUserId?: string; // 참조자로 필터링 (내가 참조자로 있는 문서)
+    status?: DocumentStatus; // 문서 상태 (DRAFT, PENDING, APPROVED, REJECTED, IMPLEMENTED)
+    pendingStepType?: ApprovalStepType; // PENDING 상태일 때 현재 단계 타입 (AGREEMENT=협의, APPROVAL=미결)
+    drafterId?: string; // 기안자 ID (내가 기안한 문서)
+    referenceUserId?: string; // 참조자 ID (내가 참조자로 있는 문서, status 무관)
     categoryId?: string;
     documentTemplateId?: string;
     startDate?: Date;

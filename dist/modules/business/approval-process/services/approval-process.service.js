@@ -119,7 +119,7 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
                 }
                 return await this.cancelApproval({
                     documentId: dto.documentId,
-                    drafterId: dto.approverId,
+                    requesterId: dto.approverId,
                     reason: dto.reason,
                 });
             default:

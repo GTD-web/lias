@@ -74,6 +74,21 @@ export class DocumentController {
         summary: '문서 목록 조회 (페이징, 필터링)',
         description:
             '문서 목록을 조회합니다. 상태, 기안자, 카테고리, 검색어 등으로 필터링 가능하며 페이징을 지원합니다.\n\n' +
+            '**=== 필터링 조건 가이드 ===**\n\n' +
+            '**▣ 내가 기안한 문서 조회 (drafterId 지정)**\n' +
+            '1. **임시저장**: `status=DRAFT`, `pendingStepType 미지정`\n' +
+            '2. **전체 상신**: `status 미지정`, `pendingStepType 미지정`\n' +
+            '3. **협의 대기**: `status=PENDING`, `pendingStepType=AGREEMENT`\n' +
+            '4. **미결 대기**: `status=PENDING`, `pendingStepType=APPROVAL`\n' +
+            '5. **기결**: `status=APPROVED`, `pendingStepType 미지정`\n' +
+            '6. **반려**: `status=REJECTED`, `pendingStepType 미지정`\n' +
+            '7. **시행**: `status=IMPLEMENTED`, `pendingStepType 미지정`\n\n' +
+            '**▣ 내가 참조자로 있는 문서 조회 (referenceUserId 지정)**\n' +
+            '8. **참조**: `referenceUserId만 지정`, `status 미지정`, `pendingStepType 미지정` (DRAFT 제외)\n\n' +
+            '**⚠️ 주의사항:**\n' +
+            '- drafterId와 referenceUserId는 상호 배타적 (referenceUserId 우선)\n' +
+            '- PENDING 상태는 현재 진행 중인 단계(가장 작은 stepOrder)를 기준으로 분류\n' +
+            '- 참조 문서는 임시저장(DRAFT) 상태 제외\n\n' +
             '**주요 기능:**\n' +
             '- 상태별 필터링 (PENDING 상태는 pendingStepType으로 세분화 가능)\n' +
             '- 카테고리별 필터링\n' +

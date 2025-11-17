@@ -110,16 +110,30 @@ export class ApprovalProcessController {
     @Post('cancel')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: '결재 취소',
+        summary: '결재 취소 (대리취소 지원)',
         description:
-            '기안자가 결재 진행 중인 문서를 취소합니다. 기안자만 취소할 수 있습니다.\n\n' +
+            '결재 진행 중인 문서를 취소합니다.\n\n' +
+            '**취소 가능 대상:**\n' +
+            '- 기안자: 항상 취소 가능\n' +
+            '- 결재자: 자신이 가장 최근에 APPROVAL 결재를 완료한 경우에만 취소 가능 (대리취소)\n' +
+            '  - ⚠️ APPROVAL 타입의 결재만 취소 대상 (AGREEMENT, REFERENCE, IMPLEMENTATION 제외)\n\n' +
+            '**예시:**\n' +
+            '- 협의(AGREEMENT) → 1번 결재자(APPROVAL) 완료 → 1번 결재자 취소 가능, 기안자도 취소 가능\n' +
+            '- 1번 결재자(APPROVAL) → 2번 결재자(APPROVAL) 완료 → 1번 취소 불가, 2번 취소 가능, 기안자도 가능\n' +
+            '- 협의자나 참조자는 취소 권한 없음\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 결재 취소\n' +
+            '- ✅ 정상: 기안자가 결재 취소\n' +
+            '- ✅ 정상: 가장 최근에 APPROVAL 결재를 완료한 결재자가 취소\n' +
+            '- ❌ 실패: 이전에 결재를 완료한 결재자가 취소 시도\n' +
+            '- ❌ 실패: AGREEMENT, REFERENCE 단계의 사람이 취소 시도\n' +
             '- ❌ 실패: 필수 필드 누락 (reason)',
     })
     @ApiResponse({ status: 200, description: '결재 취소 성공', type: CancelApprovalResponseDto })
     @ApiResponse({ status: 400, description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능)' })
-    @ApiResponse({ status: 403, description: '권한 없음 (기안자만 취소 가능)' })
+    @ApiResponse({
+        status: 403,
+        description: '권한 없음 (기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소 가능)',
+    })
     @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
     async cancelApproval(@Body() dto: CancelApprovalDto) {
         return await this.approvalProcessService.cancelApproval(dto);

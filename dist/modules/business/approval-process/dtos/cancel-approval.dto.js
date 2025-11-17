@@ -25,12 +25,12 @@ __decorate([
 ], CancelApprovalDto.prototype, "documentId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '기안자 ID',
+        description: '취소 요청자 ID (기안자 또는 가장 최근에 결재를 완료한 결재자)',
         example: 'uuid',
     }),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
-], CancelApprovalDto.prototype, "drafterId", void 0);
+], CancelApprovalDto.prototype, "requesterId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '취소 사유',

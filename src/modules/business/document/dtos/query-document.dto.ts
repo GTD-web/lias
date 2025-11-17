@@ -5,10 +5,29 @@ import { DocumentStatus, ApprovalStepType } from '../../../../common/enums/appro
 
 /**
  * 문서 목록 조회 쿼리 DTO
+ *
+ * === 필터링 조건 가이드 ===
+ *
+ * ▣ 내가 기안한 문서 조회 (drafterId 지정)
+ * 1. 임시저장:     status=DRAFT, pendingStepType 미지정
+ * 2. 전체 상신:     status 미지정, pendingStepType 미지정
+ * 3. 협의 대기:     status=PENDING, pendingStepType=AGREEMENT
+ * 4. 미결 대기:     status=PENDING, pendingStepType=APPROVAL
+ * 5. 기결:         status=APPROVED, pendingStepType 미지정
+ * 6. 반려:         status=REJECTED, pendingStepType 미지정
+ * 7. 시행:         status=IMPLEMENTED, pendingStepType 미지정
+ *
+ * ▣ 내가 참조자로 있는 문서 조회 (referenceUserId 지정)
+ * 8. 참조:         referenceUserId만 지정, status 미지정, pendingStepType 미지정 (DRAFT 제외)
+ *
+ * ⚠️ 주의사항:
+ * - drafterId와 referenceUserId는 상호 배타적 (referenceUserId 우선)
+ * - PENDING 상태는 현재 진행 중인 단계(가장 작은 stepOrder)를 기준으로 분류
+ * - 참조 문서는 임시저장(DRAFT) 상태 제외
  */
 export class QueryDocumentsDto {
     @ApiPropertyOptional({
-        description: '문서 상태',
+        description: '문서 상태 (DRAFT=임시저장, PENDING=대기, APPROVED=승인, REJECTED=반려, IMPLEMENTED=시행)',
         enum: DocumentStatus,
         example: DocumentStatus.PENDING,
     })
@@ -17,7 +36,7 @@ export class QueryDocumentsDto {
     status?: DocumentStatus;
 
     @ApiPropertyOptional({
-        description: '대기 중인 단계 타입 (status가 PENDING일 때만 유효)',
+        description: 'PENDING 상태일 때 현재 단계 타입 (AGREEMENT=협의, APPROVAL=미결)',
         enum: ApprovalStepType,
         example: ApprovalStepType.APPROVAL,
     })
@@ -26,16 +45,16 @@ export class QueryDocumentsDto {
     pendingStepType?: ApprovalStepType;
 
     @ApiPropertyOptional({
-        description: '기안자 ID',
-        example: 'uuid',
+        description: '기안자 ID (내가 기안한 문서 조회)',
+        example: '550e8400-e29b-41d4-a716-446655440000',
     })
     @IsOptional()
     @IsUUID()
     drafterId?: string;
 
     @ApiPropertyOptional({
-        description: '참조자 ID (내가 참조자로 있는 문서)',
-        example: 'uuid',
+        description: '참조자 ID (내가 참조자로 있는 문서 조회, 기안자 무관, DRAFT 제외)',
+        example: '550e8400-e29b-41d4-a716-446655440001',
     })
     @IsOptional()
     @IsUUID()

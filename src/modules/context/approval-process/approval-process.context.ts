@@ -279,7 +279,8 @@ export class ApprovalProcessContext {
     }
 
     /**
-     * 5. 결재 취소 (기안자만 가능, 결재 진행중일 때만)
+     * 5. 결재 취소 (기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 가능, 결재 진행중일 때만)
+     * - APPROVAL 타입의 결재만 취소 대상 (AGREEMENT, REFERENCE, IMPLEMENTATION 제외)
      */
     async cancelApproval(dto: CancelApprovalDto, externalQueryRunner?: QueryRunner) {
         this.logger.log(`결재 취소 시작: ${dto.documentId}`);
@@ -290,6 +291,7 @@ export class ApprovalProcessContext {
                 // 1) Document 조회
                 const document = await this.documentService.findOne({
                     where: { id: dto.documentId },
+                    relations: ['approvalSteps'],
                     queryRunner,
                 });
 
@@ -297,14 +299,29 @@ export class ApprovalProcessContext {
                     throw new NotFoundException(`문서를 찾을 수 없습니다: ${dto.documentId}`);
                 }
 
-                // 2) 기안자 확인
-                if (document.drafterId !== dto.drafterId) {
-                    throw new ForbiddenException('문서 작성자만 취소할 수 있습니다.');
-                }
-
-                // 3) 상태 확인
+                // 2) 상태 확인
                 if (document.status !== DocumentStatus.PENDING) {
                     throw new BadRequestException('결재 진행 중인 문서만 취소할 수 있습니다.');
+                }
+
+                // 3) 권한 확인: 기안자이거나 가장 최근에 결재를 완료한 결재자인지 확인
+                const isDrafter = document.drafterId === dto.requesterId;
+
+                // 가장 최근에 결재를 완료한 결재자 찾기 (APPROVAL 타입만)
+                const approvedSteps = document.approvalSteps
+                    .filter(
+                        (step) =>
+                            step.status === ApprovalStatus.APPROVED && step.stepType === ApprovalStepType.APPROVAL,
+                    )
+                    .sort((a, b) => b.stepOrder - a.stepOrder); // stepOrder 내림차순 정렬
+
+                const lastApprovedStep = approvedSteps[0];
+                const isLastApprover = lastApprovedStep && lastApprovedStep.approverId === dto.requesterId;
+
+                if (!isDrafter && !isLastApprover) {
+                    throw new ForbiddenException(
+                        '기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소할 수 있습니다.',
+                    );
                 }
 
                 // 4) Document 상태를 CANCELLED로 변경
@@ -318,7 +335,7 @@ export class ApprovalProcessContext {
                     { queryRunner },
                 );
 
-                this.logger.log(`결재 취소 완료: ${dto.documentId}`);
+                this.logger.log(`결재 취소 완료: ${dto.documentId}, 취소자: ${dto.requesterId}`);
                 return cancelledDocument;
             },
             externalQueryRunner,

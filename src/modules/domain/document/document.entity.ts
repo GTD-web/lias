@@ -12,6 +12,7 @@ import {
 import { DocumentStatus } from '../../../common/enums/approval.enum';
 import { Employee } from '../employee/employee.entity';
 import { ApprovalStepSnapshot } from '../approval-step-snapshot/approval-step-snapshot.entity';
+import { DocumentRevision } from '../document-revision/document-revision.entity';
 
 /**
  * Document 엔티티
@@ -95,4 +96,7 @@ export class Document {
 
     @OneToMany(() => ApprovalStepSnapshot, (approvalStepSnapshot) => approvalStepSnapshot.document)
     approvalSteps: ApprovalStepSnapshot[];
+
+    @OneToMany(() => DocumentRevision, (revision) => revision.document)
+    revisions: DocumentRevision[];
 }

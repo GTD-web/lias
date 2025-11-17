@@ -319,8 +319,11 @@ export class TemplateContext {
                                 email: emp.email,
                                 type: 'DEPARTMENT_REFERENCE',
                             }));
+                            mappedStep.targetDepartment = await this.departmentService.findOne({
+                                where: { id: step.targetDepartmentId },
+                            });
 
-                            delete mappedStep.targetDepartment;
+                            // delete mappedStep.targetDepartment;
                         }
                         break;
                 }

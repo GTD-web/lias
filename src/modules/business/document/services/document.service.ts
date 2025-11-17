@@ -56,7 +56,7 @@ export class DocumentService {
         const contextDto = {
             title: dto.title,
             content: dto.content,
-            metadata: dto.metadata,
+            comment: dto.comment,
             approvalSteps: dto.approvalSteps?.map((step) => ({
                 id: step.id,
                 stepOrder: step.stepOrder,

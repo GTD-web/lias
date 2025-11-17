@@ -1,6 +1,7 @@
 import { DocumentStatus } from '../../../common/enums/approval.enum';
 import { Employee } from '../employee/employee.entity';
 import { ApprovalStepSnapshot } from '../approval-step-snapshot/approval-step-snapshot.entity';
+import { DocumentRevision } from '../document-revision/document-revision.entity';
 export declare class Document {
     id: string;
     documentNumber?: string;
@@ -24,4 +25,5 @@ export declare class Document {
     updatedAt: Date;
     drafter: Employee;
     approvalSteps: ApprovalStepSnapshot[];
+    revisions: DocumentRevision[];
 }

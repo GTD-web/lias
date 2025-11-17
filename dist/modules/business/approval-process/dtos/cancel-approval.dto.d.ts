@@ -1,5 +1,5 @@
 export declare class CancelApprovalDto {
     documentId: string;
-    drafterId: string;
+    requesterId: string;
     reason: string;
 }

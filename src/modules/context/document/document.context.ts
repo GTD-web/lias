@@ -14,6 +14,17 @@ import {
 } from '../../domain/approval-step-snapshot/approval-step-snapshot.entity';
 
 /**
+ * 문서 수정 이력 항목 인터페이스
+ */
+export interface DocumentModificationHistoryItem {
+    previousTitle: string;
+    previousContent: string;
+    modifiedAt: string;
+    modificationComment: string;
+    documentStatus: DocumentStatus;
+}
+
+/**
  * 문서 컨텍스트
  *
  * 역할:
@@ -113,24 +124,52 @@ export class DocumentContext {
                     throw new NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
                 }
 
-                // 2) 상태 체크 (DRAFT에서 PENDING으로 변경하는 경우는 허용)
-                if (document.status !== DocumentStatus.DRAFT && dto.status !== DocumentStatus.PENDING) {
-                    throw new BadRequestException('임시저장 상태의 문서만 수정할 수 있습니다.');
+                // 2) 상태 체크
+                // 결재선을 수정하는 경우: DRAFT 상태만 가능
+                if (dto.approvalSteps !== undefined && document.status !== DocumentStatus.DRAFT) {
+                    throw new BadRequestException('결재선은 임시저장 상태의 문서만 수정할 수 있습니다.');
+                }
+                // 타이틀과 컨텐츠 수정은 모든 상태에서 가능
+
+                // 3) 타이틀/컨텐츠가 수정된 경우 메타데이터에 수정 이력 추가
+                const isTitleOrContentUpdated = dto.title !== undefined || dto.content !== undefined;
+                let updatedMetadata = document.metadata;
+
+                if (isTitleOrContentUpdated) {
+                    // 기존 수정 이력 배열 가져오기 (없으면 빈 배열)
+                    const existingHistory =
+                        (document.metadata?.modificationHistory as DocumentModificationHistoryItem[]) || [];
+
+                    // 새로운 수정 이력 항목 생성
+                    const newHistoryItem: DocumentModificationHistoryItem = {
+                        previousTitle: document.title,
+                        previousContent: document.content,
+                        modifiedAt: new Date().toISOString(),
+                        modificationComment: dto.comment || '수정 사유 없음',
+                        documentStatus: document.status,
+                    };
+
+                    // 기존 메타데이터 유지하면서 수정 이력 배열에 추가
+                    updatedMetadata = {
+                        ...(document.metadata || {}),
+                        modificationHistory: [...existingHistory, newHistoryItem],
+                    };
                 }
 
-                // 3) 업데이트
+                // 4) 업데이트
                 const updatedDocument = await this.documentService.update(
                     documentId,
                     {
                         title: dto.title ?? document.title,
                         content: dto.content ?? document.content,
-                        metadata: dto.metadata ?? document.metadata,
+                        comment: dto.comment ?? document.comment,
+                        metadata: updatedMetadata,
                         status: dto.status ?? document.status,
                     },
                     { queryRunner },
                 );
 
-                // 4) 결재단계 스냅샷 수정 (제공된 경우)
+                // 5) 결재단계 스냅샷 수정 (제공된 경우)
                 if (dto.approvalSteps !== undefined) {
                     await this.updateApprovalStepSnapshots(documentId, dto.approvalSteps, queryRunner);
                 }
