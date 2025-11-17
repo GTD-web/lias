@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApprovalStepSnapshot = exports.ApprovalStepTemplate = exports.Category = exports.DocumentTemplate = exports.Document = exports.EmployeeDepartmentPosition = exports.Rank = exports.Position = exports.Department = exports.Employee = void 0;
+exports.ApprovalStepSnapshot = exports.ApprovalStepTemplate = exports.Category = exports.DocumentTemplate = exports.DocumentRevision = exports.Document = exports.EmployeeDepartmentPosition = exports.Rank = exports.Position = exports.Department = exports.Employee = void 0;
 var employee_entity_1 = require("./employee/employee.entity");
 Object.defineProperty(exports, "Employee", { enumerable: true, get: function () { return employee_entity_1.Employee; } });
 var department_entity_1 = require("./department/department.entity");
@@ -13,6 +13,8 @@ var employee_department_position_entity_1 = require("./employee-department-posit
 Object.defineProperty(exports, "EmployeeDepartmentPosition", { enumerable: true, get: function () { return employee_department_position_entity_1.EmployeeDepartmentPosition; } });
 var document_entity_1 = require("./document/document.entity");
 Object.defineProperty(exports, "Document", { enumerable: true, get: function () { return document_entity_1.Document; } });
+var document_revision_entity_1 = require("./document-revision/document-revision.entity");
+Object.defineProperty(exports, "DocumentRevision", { enumerable: true, get: function () { return document_revision_entity_1.DocumentRevision; } });
 var document_template_entity_1 = require("./document-template/document-template.entity");
 Object.defineProperty(exports, "DocumentTemplate", { enumerable: true, get: function () { return document_template_entity_1.DocumentTemplate; } });
 var category_entity_1 = require("./category/category.entity");

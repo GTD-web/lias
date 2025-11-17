@@ -1,4 +1,15 @@
 import { DocumentTemplateStatus, ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
+import { DepartmentType } from '../../../../common/enums/department.enum';
+export declare class DepartmentDto {
+    id: string;
+    departmentName: string;
+    departmentCode: string;
+    type: DepartmentType;
+    parentDepartmentId?: string;
+    order: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
 export declare class MappedApproverDto {
     employeeId: string;
     employeeNumber: string;
@@ -16,6 +27,7 @@ export declare class ApprovalStepTemplateWithApproversDto {
     targetDepartmentId?: string;
     targetPositionId?: string;
     mappedApprovers: MappedApproverDto[];
+    targetDepartment?: DepartmentDto;
     createdAt: Date;
     updatedAt: Date;
 }

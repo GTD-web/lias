@@ -12,6 +12,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const category_module_1 = require("./category/category.module");
 const document_template_module_1 = require("./document-template/document-template.module");
 const document_module_1 = require("./document/document.module");
+const document_revision_module_1 = require("./document-revision/document-revision.module");
 const employee_module_1 = require("./employee/employee.module");
 const department_module_1 = require("./department/department.module");
 const position_module_1 = require("./position/position.module");
@@ -22,6 +23,7 @@ const approval_step_snapshot_module_1 = require("./approval-step-snapshot/approv
 const category_entity_1 = require("./category/category.entity");
 const document_template_entity_1 = require("./document-template/document-template.entity");
 const document_entity_1 = require("./document/document.entity");
+const document_revision_entity_1 = require("./document-revision/document-revision.entity");
 const employee_entity_1 = require("./employee/employee.entity");
 const department_entity_1 = require("./department/department.entity");
 const position_entity_1 = require("./position/position.entity");
@@ -40,6 +42,7 @@ exports.DomainModule = DomainModule = __decorate([
                 category_entity_1.Category,
                 document_template_entity_1.DocumentTemplate,
                 document_entity_1.Document,
+                document_revision_entity_1.DocumentRevision,
                 employee_entity_1.Employee,
                 department_entity_1.Department,
                 position_entity_1.Position,
@@ -51,6 +54,7 @@ exports.DomainModule = DomainModule = __decorate([
             category_module_1.DomainCategoryModule,
             document_template_module_1.DomainDocumentTemplateModule,
             document_module_1.DomainDocumentModule,
+            document_revision_module_1.DomainDocumentRevisionModule,
             employee_module_1.DomainEmployeeModule,
             department_module_1.DomainDepartmentModule,
             position_module_1.DomainPositionModule,
@@ -63,6 +67,7 @@ exports.DomainModule = DomainModule = __decorate([
             category_module_1.DomainCategoryModule,
             document_template_module_1.DomainDocumentTemplateModule,
             document_module_1.DomainDocumentModule,
+            document_revision_module_1.DomainDocumentRevisionModule,
             employee_module_1.DomainEmployeeModule,
             department_module_1.DomainDepartmentModule,
             position_module_1.DomainPositionModule,

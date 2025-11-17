@@ -20,7 +20,7 @@ export declare class CreateDocumentDto {
 export declare class UpdateDocumentDto {
     title?: string;
     content?: string;
-    metadata?: Record<string, any>;
+    comment?: string;
     status?: DocumentStatus;
     approvalSteps?: ApprovalStepSnapshotItemDto[];
 }
@@ -33,6 +33,7 @@ export declare class DocumentFilterDto {
     status?: DocumentStatus;
     pendingStepType?: ApprovalStepType;
     drafterId?: string;
+    referenceUserId?: string;
     categoryId?: string;
     documentTemplateId?: string;
     startDate?: Date;

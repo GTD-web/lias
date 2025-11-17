@@ -155,23 +155,30 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
         return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
             const document = await this.documentService.findOne({
                 where: { id: dto.documentId },
+                relations: ['approvalSteps'],
                 queryRunner,
             });
             if (!document) {
                 throw new common_1.NotFoundException(`문서를 찾을 수 없습니다: ${dto.documentId}`);
             }
-            if (document.drafterId !== dto.drafterId) {
-                throw new common_1.ForbiddenException('문서 작성자만 취소할 수 있습니다.');
-            }
             if (document.status !== approval_enum_1.DocumentStatus.PENDING) {
                 throw new common_1.BadRequestException('결재 진행 중인 문서만 취소할 수 있습니다.');
+            }
+            const isDrafter = document.drafterId === dto.requesterId;
+            const approvedSteps = document.approvalSteps
+                .filter((step) => step.status === approval_enum_1.ApprovalStatus.APPROVED && step.stepType === approval_enum_1.ApprovalStepType.APPROVAL)
+                .sort((a, b) => b.stepOrder - a.stepOrder);
+            const lastApprovedStep = approvedSteps[0];
+            const isLastApprover = lastApprovedStep && lastApprovedStep.approverId === dto.requesterId;
+            if (!isDrafter && !isLastApprover) {
+                throw new common_1.ForbiddenException('기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소할 수 있습니다.');
             }
             const cancelledDocument = await this.documentService.update(dto.documentId, {
                 status: approval_enum_1.DocumentStatus.CANCELLED,
                 cancelReason: dto.reason,
                 cancelledAt: new Date(),
             }, { queryRunner });
-            this.logger.log(`결재 취소 완료: ${dto.documentId}`);
+            this.logger.log(`결재 취소 완료: ${dto.documentId}, 취소자: ${dto.requesterId}`);
             return cancelledDocument;
         }, externalQueryRunner);
     }

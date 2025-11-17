@@ -1,5 +1,60 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DocumentTemplateStatus, ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
+import { DepartmentType } from '../../../../common/enums/department.enum';
+
+/**
+ * 부서 정보 DTO
+ */
+export class DepartmentDto {
+    @ApiProperty({
+        description: '부서 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '부서명',
+        example: '개발팀',
+    })
+    departmentName: string;
+
+    @ApiProperty({
+        description: '부서 코드',
+        example: 'DEV',
+    })
+    departmentCode: string;
+
+    @ApiProperty({
+        description: '부서 유형',
+        enum: DepartmentType,
+        example: DepartmentType.DEPARTMENT,
+    })
+    type: DepartmentType;
+
+    @ApiPropertyOptional({
+        description: '상위 부서 ID',
+        example: 'uuid',
+    })
+    parentDepartmentId?: string;
+
+    @ApiProperty({
+        description: '정렬 순서',
+        example: 0,
+    })
+    order: number;
+
+    @ApiProperty({
+        description: '생성일',
+        example: '2025-11-11T00:00:00.000Z',
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        description: '수정일',
+        example: '2025-11-11T00:00:00.000Z',
+    })
+    updatedAt: Date;
+}
 
 /**
  * 맵핑된 결재자 정보 DTO
@@ -95,6 +150,12 @@ export class ApprovalStepTemplateWithApproversDto {
         type: [MappedApproverDto],
     })
     mappedApprovers: MappedApproverDto[];
+
+    @ApiPropertyOptional({
+        description: '대상 부서 정보',
+        type: DepartmentDto,
+    })
+    targetDepartment?: DepartmentDto;
 
     @ApiProperty({
         description: '생성일',
@@ -209,4 +270,3 @@ export class DocumentTemplateWithApproversResponseDto {
     })
     updatedAt: Date;
 }
-

@@ -13,11 +13,11 @@ export class CancelApprovalDto {
     documentId: string;
 
     @ApiProperty({
-        description: '기안자 ID',
+        description: '취소 요청자 ID (기안자 또는 가장 최근에 결재를 완료한 결재자)',
         example: 'uuid',
     })
     @IsUUID()
-    drafterId: string;
+    requesterId: string;
 
     @ApiProperty({
         description: '취소 사유',

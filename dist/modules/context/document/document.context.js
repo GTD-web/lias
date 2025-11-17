@@ -75,13 +75,30 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             if (!document) {
                 throw new common_1.NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
             }
-            if (document.status !== approval_enum_1.DocumentStatus.DRAFT && dto.status !== approval_enum_1.DocumentStatus.PENDING) {
-                throw new common_1.BadRequestException('임시저장 상태의 문서만 수정할 수 있습니다.');
+            if (dto.approvalSteps !== undefined && document.status !== approval_enum_1.DocumentStatus.DRAFT) {
+                throw new common_1.BadRequestException('결재선은 임시저장 상태의 문서만 수정할 수 있습니다.');
+            }
+            const isTitleOrContentUpdated = dto.title !== undefined || dto.content !== undefined;
+            let updatedMetadata = document.metadata;
+            if (isTitleOrContentUpdated) {
+                const existingHistory = document.metadata?.modificationHistory || [];
+                const newHistoryItem = {
+                    previousTitle: document.title,
+                    previousContent: document.content,
+                    modifiedAt: new Date().toISOString(),
+                    modificationComment: dto.comment || '수정 사유 없음',
+                    documentStatus: document.status,
+                };
+                updatedMetadata = {
+                    ...(document.metadata || {}),
+                    modificationHistory: [...existingHistory, newHistoryItem],
+                };
             }
             const updatedDocument = await this.documentService.update(documentId, {
                 title: dto.title ?? document.title,
                 content: dto.content ?? document.content,
-                metadata: dto.metadata ?? document.metadata,
+                comment: dto.comment ?? document.comment,
+                metadata: updatedMetadata,
                 status: dto.status ?? document.status,
             }, { queryRunner });
             if (dto.approvalSteps !== undefined) {
@@ -206,35 +223,50 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
             .orderBy('document.createdAt', 'DESC')
             .addOrderBy('approvalSteps.stepOrder', 'ASC');
-        if (filter.status) {
-            qb.andWhere('document.status = :status', { status: filter.status });
+        if (filter.referenceUserId) {
+            qb.andWhere(`document.id IN (
+                    SELECT DISTINCT d.id
+                    FROM documents d
+                    INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                    WHERE ass."stepType" = :referenceStepType
+                    AND ass."approverId" = :referenceUserId
+                    AND d.status != :draftStatus
+                )`, {
+                referenceStepType: approval_enum_1.ApprovalStepType.REFERENCE,
+                referenceUserId: filter.referenceUserId,
+                draftStatus: approval_enum_1.DocumentStatus.DRAFT,
+            });
         }
-        if (filter.drafterId) {
+        else if (filter.drafterId) {
             qb.andWhere('document.drafterId = :drafterId', { drafterId: filter.drafterId });
+            if (filter.status) {
+                qb.andWhere('document.status = :status', { status: filter.status });
+            }
+            if (filter.status === approval_enum_1.DocumentStatus.PENDING && filter.pendingStepType) {
+                qb.andWhere(`document.id IN (
+                        SELECT document_id
+                        FROM (
+                            SELECT DISTINCT ON (d.id)
+                                d.id as document_id,
+                                ass."stepType"
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE d.status = :pendingStatus
+                            AND ass.status = :pendingStepStatus
+                            AND d."drafterId" = :drafterId
+                            ORDER BY d.id, ass."stepOrder" ASC
+                        ) current_steps
+                        WHERE "stepType" = :stepType
+                    )`, {
+                    pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                    pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                    stepType: filter.pendingStepType,
+                });
+            }
         }
         if (filter.documentTemplateId) {
             qb.andWhere('document.documentTemplateId = :documentTemplateId', {
                 documentTemplateId: filter.documentTemplateId,
-            });
-        }
-        if (filter.status === approval_enum_1.DocumentStatus.PENDING && filter.pendingStepType) {
-            qb.andWhere(`document.id IN (
-                    SELECT document_id
-                    FROM (
-                        SELECT DISTINCT ON (d.id)
-                            d.id as document_id,
-                            ass."stepType"
-                        FROM documents d
-                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                        WHERE d.status = :pendingStatus
-                        AND ass.status = :pendingStepStatus
-                        ORDER BY d.id, ass."stepOrder" ASC
-                    ) current_steps
-                    WHERE "stepType" = :stepType
-                )`, {
-                pendingStatus: approval_enum_1.DocumentStatus.PENDING,
-                pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
-                stepType: filter.pendingStepType,
             });
         }
         if (filter.categoryId) {
@@ -402,10 +434,10 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             SELECT COUNT(DISTINCT d.id) as reference
             FROM documents d
             INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-            WHERE ass."approverId" = $1
-            AND ass."stepType" = $2
-            AND d."drafterId" != $1
-            `, [userId, approval_enum_1.ApprovalStepType.REFERENCE]);
+            WHERE ass."stepType" = $1
+            AND ass."approverId" = $2
+            AND d.status != $3
+            `, [approval_enum_1.ApprovalStepType.REFERENCE, userId, approval_enum_1.DocumentStatus.DRAFT]);
         const myStats = myDocumentsStats[0];
         const pendingStats = pendingStepStats[0];
         const refStats = referenceStats[0];

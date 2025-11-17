@@ -14,6 +14,17 @@ import {
 } from '../../domain/approval-step-snapshot/approval-step-snapshot.entity';
 
 /**
+ * 문서 수정 이력 항목 인터페이스
+ */
+export interface DocumentModificationHistoryItem {
+    previousTitle: string;
+    previousContent: string;
+    modifiedAt: string;
+    modificationComment: string;
+    documentStatus: DocumentStatus;
+}
+
+/**
  * 문서 컨텍스트
  *
  * 역할:
@@ -113,24 +124,52 @@ export class DocumentContext {
                     throw new NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
                 }
 
-                // 2) 상태 체크 (DRAFT에서 PENDING으로 변경하는 경우는 허용)
-                if (document.status !== DocumentStatus.DRAFT && dto.status !== DocumentStatus.PENDING) {
-                    throw new BadRequestException('임시저장 상태의 문서만 수정할 수 있습니다.');
+                // 2) 상태 체크
+                // 결재선을 수정하는 경우: DRAFT 상태만 가능
+                if (dto.approvalSteps !== undefined && document.status !== DocumentStatus.DRAFT) {
+                    throw new BadRequestException('결재선은 임시저장 상태의 문서만 수정할 수 있습니다.');
+                }
+                // 타이틀과 컨텐츠 수정은 모든 상태에서 가능
+
+                // 3) 타이틀/컨텐츠가 수정된 경우 메타데이터에 수정 이력 추가
+                const isTitleOrContentUpdated = dto.title !== undefined || dto.content !== undefined;
+                let updatedMetadata = document.metadata;
+
+                if (isTitleOrContentUpdated) {
+                    // 기존 수정 이력 배열 가져오기 (없으면 빈 배열)
+                    const existingHistory =
+                        (document.metadata?.modificationHistory as DocumentModificationHistoryItem[]) || [];
+
+                    // 새로운 수정 이력 항목 생성
+                    const newHistoryItem: DocumentModificationHistoryItem = {
+                        previousTitle: document.title,
+                        previousContent: document.content,
+                        modifiedAt: new Date().toISOString(),
+                        modificationComment: dto.comment || '수정 사유 없음',
+                        documentStatus: document.status,
+                    };
+
+                    // 기존 메타데이터 유지하면서 수정 이력 배열에 추가
+                    updatedMetadata = {
+                        ...(document.metadata || {}),
+                        modificationHistory: [...existingHistory, newHistoryItem],
+                    };
                 }
 
-                // 3) 업데이트
+                // 4) 업데이트
                 const updatedDocument = await this.documentService.update(
                     documentId,
                     {
                         title: dto.title ?? document.title,
                         content: dto.content ?? document.content,
-                        metadata: dto.metadata ?? document.metadata,
+                        comment: dto.comment ?? document.comment,
+                        metadata: updatedMetadata,
                         status: dto.status ?? document.status,
                     },
                     { queryRunner },
                 );
 
-                // 4) 결재단계 스냅샷 수정 (제공된 경우)
+                // 5) 결재단계 스냅샷 수정 (제공된 경우)
                 if (dto.approvalSteps !== undefined) {
                     await this.updateApprovalStepSnapshots(documentId, dto.approvalSteps, queryRunner);
                 }
@@ -323,6 +362,12 @@ export class DocumentContext {
 
     /**
      * 6. 문서 목록 조회 (필터링)
+     *
+     * 조회 모드:
+     * 1. 내가 기안한 문서 (drafterId 지정)
+     * 2. 내가 참조자로 있는 문서 (referenceUserId 지정)
+     *
+     * 두 모드는 상호 배타적이며, referenceUserId가 우선됩니다.
      */
     async getDocuments(filter: DocumentFilterDto, queryRunner?: QueryRunner) {
         const repository = queryRunner
@@ -336,45 +381,68 @@ export class DocumentContext {
             .orderBy('document.createdAt', 'DESC')
             .addOrderBy('approvalSteps.stepOrder', 'ASC');
 
-        // 1. 기본 필터
-        if (filter.status) {
-            qb.andWhere('document.status = :status', { status: filter.status });
-        }
-
-        if (filter.drafterId) {
+        // 조회 모드 결정: 참조자 모드 vs 기안자 모드
+        if (filter.referenceUserId) {
+            // === 모드 1: 내가 참조자로 있는 문서 ===
+            // 기안자 상관없음, 임시저장 제외 (기안된 문서만)
+            // 단계 타입이 REFERENCE이고 approverId가 나인 문서
+            qb.andWhere(
+                `document.id IN (
+                    SELECT DISTINCT d.id
+                    FROM documents d
+                    INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                    WHERE ass."stepType" = :referenceStepType
+                    AND ass."approverId" = :referenceUserId
+                    AND d.status != :draftStatus
+                )`,
+                {
+                    referenceStepType: ApprovalStepType.REFERENCE,
+                    referenceUserId: filter.referenceUserId,
+                    draftStatus: DocumentStatus.DRAFT,
+                },
+            );
+        } else if (filter.drafterId) {
+            // === 모드 2: 내가 기안한 문서 ===
             qb.andWhere('document.drafterId = :drafterId', { drafterId: filter.drafterId });
+
+            // 1. 기본 필터
+            if (filter.status) {
+                qb.andWhere('document.status = :status', { status: filter.status });
+            }
+
+            // 2. PENDING 상태의 문서 중 현재 단계 타입별 필터링
+            // 현재 진행 중인 단계(가장 작은 stepOrder의 PENDING 단계)의 타입으로 필터링
+            if (filter.status === DocumentStatus.PENDING && filter.pendingStepType) {
+                qb.andWhere(
+                    `document.id IN (
+                        SELECT document_id
+                        FROM (
+                            SELECT DISTINCT ON (d.id)
+                                d.id as document_id,
+                                ass."stepType"
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE d.status = :pendingStatus
+                            AND ass.status = :pendingStepStatus
+                            AND d."drafterId" = :drafterId
+                            ORDER BY d.id, ass."stepOrder" ASC
+                        ) current_steps
+                        WHERE "stepType" = :stepType
+                    )`,
+                    {
+                        pendingStatus: DocumentStatus.PENDING,
+                        pendingStepStatus: ApprovalStatus.PENDING,
+                        stepType: filter.pendingStepType,
+                    },
+                );
+            }
         }
 
+        // 공통 필터 (모든 모드에 적용)
         if (filter.documentTemplateId) {
             qb.andWhere('document.documentTemplateId = :documentTemplateId', {
                 documentTemplateId: filter.documentTemplateId,
             });
-        }
-
-        // 2. PENDING 상태의 문서 중 현재 단계 타입별 필터링
-        // 현재 진행 중인 단계(가장 작은 stepOrder의 PENDING 단계)의 타입으로 필터링
-        if (filter.status === DocumentStatus.PENDING && filter.pendingStepType) {
-            qb.andWhere(
-                `document.id IN (
-                    SELECT document_id
-                    FROM (
-                        SELECT DISTINCT ON (d.id)
-                            d.id as document_id,
-                            ass."stepType"
-                        FROM documents d
-                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                        WHERE d.status = :pendingStatus
-                        AND ass.status = :pendingStepStatus
-                        ORDER BY d.id, ass."stepOrder" ASC
-                    ) current_steps
-                    WHERE "stepType" = :stepType
-                )`,
-                {
-                    pendingStatus: DocumentStatus.PENDING,
-                    pendingStepStatus: ApprovalStatus.PENDING,
-                    stepType: filter.pendingStepType,
-                },
-            );
         }
 
         // 3. 카테고리 필터 (문서 템플릿을 통해 조인)
@@ -635,16 +703,18 @@ export class DocumentContext {
         );
 
         // 3. 내가 참조자로 있는 문서 통계
+        // 기안자 상관없음, 임시저장 제외 (기안된 문서만)
+        // 단계 타입이 REFERENCE이고 approverId가 나인 문서
         const referenceStats = await this.dataSource.query(
             `
             SELECT COUNT(DISTINCT d.id) as reference
             FROM documents d
             INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-            WHERE ass."approverId" = $1
-            AND ass."stepType" = $2
-            AND d."drafterId" != $1
+            WHERE ass."stepType" = $1
+            AND ass."approverId" = $2
+            AND d.status != $3
             `,
-            [userId, ApprovalStepType.REFERENCE],
+            [ApprovalStepType.REFERENCE, userId, DocumentStatus.DRAFT],
         );
 
         const myStats = myDocumentsStats[0];

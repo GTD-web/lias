@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const approval_enum_1 = require("../../../common/enums/approval.enum");
 const employee_entity_1 = require("../employee/employee.entity");
 const approval_step_snapshot_entity_1 = require("../approval-step-snapshot/approval-step-snapshot.entity");
+const document_revision_entity_1 = require("../document-revision/document-revision.entity");
 let Document = class Document {
 };
 exports.Document = Document;
@@ -111,6 +112,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => approval_step_snapshot_entity_1.ApprovalStepSnapshot, (approvalStepSnapshot) => approvalStepSnapshot.document),
     __metadata("design:type", Array)
 ], Document.prototype, "approvalSteps", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => document_revision_entity_1.DocumentRevision, (revision) => revision.document),
+    __metadata("design:type", Array)
+], Document.prototype, "revisions", void 0);
 exports.Document = Document = __decorate([
     (0, typeorm_1.Entity)('documents'),
     (0, typeorm_1.Index)(['drafterId']),

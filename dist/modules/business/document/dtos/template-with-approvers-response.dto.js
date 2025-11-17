@@ -9,9 +9,70 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentTemplateWithApproversResponseDto = exports.CategoryResponseDto = exports.ApprovalStepTemplateWithApproversDto = exports.MappedApproverDto = void 0;
+exports.DocumentTemplateWithApproversResponseDto = exports.CategoryResponseDto = exports.ApprovalStepTemplateWithApproversDto = exports.MappedApproverDto = exports.DepartmentDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
+const department_enum_1 = require("../../../../common/enums/department.enum");
+class DepartmentDto {
+}
+exports.DepartmentDto = DepartmentDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], DepartmentDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서명',
+        example: '개발팀',
+    }),
+    __metadata("design:type", String)
+], DepartmentDto.prototype, "departmentName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서 코드',
+        example: 'DEV',
+    }),
+    __metadata("design:type", String)
+], DepartmentDto.prototype, "departmentCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서 유형',
+        enum: department_enum_1.DepartmentType,
+        example: department_enum_1.DepartmentType.DEPARTMENT,
+    }),
+    __metadata("design:type", String)
+], DepartmentDto.prototype, "type", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '상위 부서 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], DepartmentDto.prototype, "parentDepartmentId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '정렬 순서',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], DepartmentDto.prototype, "order", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '생성일',
+        example: '2025-11-11T00:00:00.000Z',
+    }),
+    __metadata("design:type", Date)
+], DepartmentDto.prototype, "createdAt", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '수정일',
+        example: '2025-11-11T00:00:00.000Z',
+    }),
+    __metadata("design:type", Date)
+], DepartmentDto.prototype, "updatedAt", void 0);
 class MappedApproverDto {
 }
 exports.MappedApproverDto = MappedApproverDto;
@@ -118,6 +179,13 @@ __decorate([
     }),
     __metadata("design:type", Array)
 ], ApprovalStepTemplateWithApproversDto.prototype, "mappedApprovers", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '대상 부서 정보',
+        type: DepartmentDto,
+    }),
+    __metadata("design:type", DepartmentDto)
+], ApprovalStepTemplateWithApproversDto.prototype, "targetDepartment", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '생성일',

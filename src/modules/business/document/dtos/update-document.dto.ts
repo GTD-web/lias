@@ -24,12 +24,12 @@ export class UpdateDocumentDto {
     content?: string;
 
     @ApiPropertyOptional({
-        description: '추가 메타데이터 (금액, 날짜 등)',
-        example: { amount: 100000, date: '2025-01-01' },
+        description: '문서 수정 코멘트',
+        example: '금액 수정',
     })
     @IsOptional()
-    @IsObject()
-    metadata?: Record<string, any>;
+    @IsString()
+    comment?: string;
 
     @ApiPropertyOptional({
         description: '결재단계 스냅샷 목록 (id가 있으면 수정, 없으면 생성, 기존 것 중 요청에 없는 것은 삭제)',
@@ -41,4 +41,3 @@ export class UpdateDocumentDto {
     @Type(() => UpdateApprovalStepSnapshotItemDto)
     approvalSteps?: UpdateApprovalStepSnapshotItemDto[];
 }
-

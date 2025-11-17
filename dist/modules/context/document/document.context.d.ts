@@ -5,6 +5,14 @@ import { DomainDocumentTemplateService } from '../../domain/document-template/do
 import { DomainEmployeeService } from '../../domain/employee/employee.service';
 import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, DocumentFilterDto } from './dtos/document.dto';
+import { DocumentStatus } from '../../../common/enums/approval.enum';
+export interface DocumentModificationHistoryItem {
+    previousTitle: string;
+    previousContent: string;
+    modifiedAt: string;
+    modificationComment: string;
+    documentStatus: DocumentStatus;
+}
 export declare class DocumentContext {
     private readonly dataSource;
     private readonly documentService;

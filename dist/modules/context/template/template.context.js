@@ -212,7 +212,9 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
                             email: emp.email,
                             type: 'DEPARTMENT_REFERENCE',
                         }));
-                        delete mappedStep.targetDepartment;
+                        mappedStep.targetDepartment = await this.departmentService.findOne({
+                            where: { id: step.targetDepartmentId },
+                        });
                     }
                     break;
             }

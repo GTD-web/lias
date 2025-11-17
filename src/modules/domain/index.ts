@@ -4,6 +4,7 @@ export { Position } from './position/position.entity';
 export { Rank } from './rank/rank.entity';
 export { EmployeeDepartmentPosition } from './employee-department-position/employee-department-position.entity';
 export { Document } from './document/document.entity';
+export { DocumentRevision } from './document-revision/document-revision.entity';
 export { DocumentTemplate } from './document-template/document-template.entity';
 export { Category } from './category/category.entity';
 export { ApprovalStepTemplate } from './approval-step-template/approval-step-template.entity';

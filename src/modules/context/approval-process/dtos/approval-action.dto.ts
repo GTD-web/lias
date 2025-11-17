@@ -42,7 +42,7 @@ export class CompleteImplementationDto {
  */
 export class CancelApprovalDto {
     documentId: string;
-    drafterId: string;
+    requesterId: string; // 취소 요청자 ID (기안자 또는 가장 최근에 결재를 완료한 결재자)
     reason: string;
 }
 

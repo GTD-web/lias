@@ -178,7 +178,7 @@ export class ApprovalProcessService {
                 }
                 return await this.cancelApproval({
                     documentId: dto.documentId,
-                    drafterId: dto.approverId,
+                    requesterId: dto.approverId,
                     reason: dto.reason,
                 });
 
