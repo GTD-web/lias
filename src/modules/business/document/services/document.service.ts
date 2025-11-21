@@ -208,4 +208,39 @@ export class DocumentService {
         this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
         return await this.documentContext.getDocumentStatistics(userId);
     }
+
+    /**
+     * 내 전체 문서 통계 조회 (작성 + 결재라인)
+     */
+    async getMyAllDocumentsStatistics(userId: string) {
+        this.logger.debug(`내 전체 문서 통계 조회: 사용자 ${userId}`);
+        return await this.documentContext.getMyAllDocumentsStatistics(userId);
+    }
+
+    /**
+     * 내 전체 문서 목록 조회 (작성 + 결재라인)
+     */
+    async getMyAllDocuments(params: {
+        userId: string;
+        filterType?: string;
+        approvalStatus?: string;
+        referenceReadStatus?: string;
+        searchKeyword?: string;
+        categoryId?: string;
+        startDate?: Date;
+        endDate?: Date;
+        page?: number;
+        limit?: number;
+    }) {
+        this.logger.debug('내 전체 문서 목록 조회', params);
+        return await this.documentContext.getMyAllDocuments(params);
+    }
+
+    /**
+     * 내가 작성한 문서 전체 조회 (상태 무관)
+     */
+    async getMyDrafts(drafterId: string, page: number, limit: number) {
+        this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
+        return await this.documentContext.getMyDrafts(drafterId, page, limit);
+    }
 }

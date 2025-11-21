@@ -180,34 +180,55 @@ let TestDataService = TestDataService_1 = class TestDataService {
         const employees = await this.getRandomEmployees(10);
         const drafter = employees[0];
         const approvalSteps = [];
+        const stepEmployees = [];
         let stepOrder = 1;
-        if (options?.hasAgreement) {
-            approvalSteps.push({
+        let currentEmployeeIndex = 1;
+        if (options?.hasAgreement && currentEmployeeIndex < employees.length) {
+            const step = {
                 stepOrder: stepOrder++,
                 stepType: approval_enum_1.ApprovalStepType.AGREEMENT,
-                approverId: employees[1].id,
-            });
+                approverId: employees[currentEmployeeIndex].id,
+            };
+            approvalSteps.push(step);
+            stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+            currentEmployeeIndex++;
         }
         const approvalCount = Math.min(options?.approvalCount || 2, 5);
-        const approverStartIndex = options?.hasAgreement ? 2 : 1;
         for (let i = 0; i < approvalCount; i++) {
-            const employeeIndex = approverStartIndex + i;
-            if (employeeIndex >= employees.length)
+            if (currentEmployeeIndex >= employees.length)
                 break;
-            approvalSteps.push({
+            const step = {
                 stepOrder: stepOrder++,
                 stepType: approval_enum_1.ApprovalStepType.APPROVAL,
-                approverId: employees[employeeIndex].id,
-            });
+                approverId: employees[currentEmployeeIndex].id,
+            };
+            approvalSteps.push(step);
+            stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+            currentEmployeeIndex++;
         }
-        if (options?.hasImplementation !== false) {
-            const implementerIndex = approverStartIndex + approvalCount;
-            if (implementerIndex < employees.length) {
-                approvalSteps.push({
+        if (options?.hasImplementation !== false && currentEmployeeIndex < employees.length) {
+            const step = {
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
+                approverId: employees[currentEmployeeIndex].id,
+            };
+            approvalSteps.push(step);
+            stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+            currentEmployeeIndex++;
+        }
+        if (options?.hasReference !== false) {
+            const referenceCount = Math.min(options?.referenceCount || 1, 3);
+            for (let i = 0; i < referenceCount; i++) {
+                if (currentEmployeeIndex >= employees.length)
+                    break;
+                const step = {
                     stepOrder: stepOrder++,
-                    stepType: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
-                    approverId: employees[implementerIndex].id,
-                });
+                    stepType: approval_enum_1.ApprovalStepType.REFERENCE,
+                    approverId: employees[currentEmployeeIndex].id,
+                };
+                approvalSteps.push(step);
+                stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+                currentEmployeeIndex++;
             }
         }
         const createDto = {
@@ -227,10 +248,7 @@ let TestDataService = TestDataService_1 = class TestDataService {
         return {
             document,
             drafter,
-            approvalSteps: approvalSteps.map((step, index) => ({
-                ...step,
-                employee: employees[index + (options?.hasAgreement ? 0 : 1)],
-            })),
+            approvalSteps: stepEmployees,
         };
     }
     async createAndSubmitTestDocument(options) {
@@ -239,10 +257,10 @@ let TestDataService = TestDataService_1 = class TestDataService {
         const submitDto = {
             documentId: document.id,
             documentTemplateId: document.documentTemplateId,
-            approvalSteps: approvalSteps.map((step) => ({
-                stepOrder: step.stepOrder,
-                stepType: step.stepType,
-                approverId: step.approverId,
+            approvalSteps: approvalSteps.map((item) => ({
+                stepOrder: item.step.stepOrder,
+                stepType: item.step.stepType,
+                approverId: item.step.approverId,
             })),
         };
         const submittedDocument = await this.documentService.submitDocument(submitDto);
@@ -260,8 +278,10 @@ let TestDataService = TestDataService_1 = class TestDataService {
             const options = {
                 title: `일괄 테스트 문서 ${i + 1}/${count}`,
                 hasAgreement: Math.random() > 0.5,
-                hasImplementation: Math.random() > 0.3,
+                hasImplementation: true,
                 approvalCount: Math.floor(Math.random() * 3) + 2,
+                hasReference: Math.random() > 0.3,
+                referenceCount: Math.floor(Math.random() * 2) + 1,
             };
             try {
                 if (submitImmediately) {

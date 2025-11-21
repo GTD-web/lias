@@ -59,4 +59,47 @@ export declare class DocumentService {
             reference: number;
         };
     }>;
+    getMyAllDocumentsStatistics(userId: string): Promise<{
+        DRAFT: number;
+        PENDING: number;
+        PENDING_AGREEMENT: number;
+        PENDING_APPROVAL: number;
+        IMPLEMENTATION: number;
+        APPROVED: number;
+        REJECTED: number;
+        RECEIVED_REFERENCE: number;
+    }>;
+    getMyAllDocuments(params: {
+        userId: string;
+        filterType?: string;
+        approvalStatus?: string;
+        referenceReadStatus?: string;
+        searchKeyword?: string;
+        categoryId?: string;
+        startDate?: Date;
+        endDate?: Date;
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        data: import("../../../domain").Document[];
+        meta: {
+            currentPage: number;
+            itemsPerPage: number;
+            totalItems: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+        };
+    }>;
+    getMyDrafts(drafterId: string, page: number, limit: number): Promise<{
+        data: import("../../../domain").Document[];
+        meta: {
+            currentPage: number;
+            itemsPerPage: number;
+            totalItems: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+        };
+    }>;
 }

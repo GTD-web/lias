@@ -27,6 +27,8 @@ import {
     PaginatedDocumentsResponseDto,
     DocumentTemplateWithApproversResponseDto,
     DocumentStatisticsResponseDto,
+    QueryMyAllDocumentsDto,
+    MyAllDocumentsStatisticsResponseDto,
 } from '../dtos';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 
@@ -69,62 +71,212 @@ export class DocumentController {
         return await this.documentService.createDocument(dto);
     }
 
-    @Get()
+    /** Deprecated: 더 이상 사용되지 않음, 대신 getMyAllDocuments 사용 */
+    // @Get()
+    // @ApiOperation({
+    //     summary: '문서 목록 조회 (페이징, 필터링)',
+    //     description:
+    //         '문서 목록을 조회합니다. 상태, 기안자, 카테고리, 검색어 등으로 필터링 가능하며 페이징을 지원합니다.\n\n' +
+    //         '**=== 필터링 조건 가이드 ===**\n\n' +
+    //         '**▣ 내가 기안한 문서 조회 (drafterId 지정)**\n' +
+    //         '1. **임시저장**: `status=DRAFT`, `pendingStepType 미지정`\n' +
+    //         '2. **전체 상신**: `status 미지정`, `pendingStepType 미지정`\n' +
+    //         '3. **협의 대기**: `status=PENDING`, `pendingStepType=AGREEMENT`\n' +
+    //         '4. **미결 대기**: `status=PENDING`, `pendingStepType=APPROVAL`\n' +
+    //         '5. **기결**: `status=APPROVED`, `pendingStepType 미지정`\n' +
+    //         '6. **반려**: `status=REJECTED`, `pendingStepType 미지정`\n' +
+    //         '7. **시행**: `status=IMPLEMENTED`, `pendingStepType 미지정`\n\n' +
+    //         '**▣ 내가 참조자로 있는 문서 조회 (referenceUserId 지정)**\n' +
+    //         '8. **참조**: `referenceUserId만 지정`, `status 미지정`, `pendingStepType 미지정` (DRAFT 제외)\n\n' +
+    //         '**⚠️ 주의사항:**\n' +
+    //         '- drafterId와 referenceUserId는 상호 배타적 (referenceUserId 우선)\n' +
+    //         '- PENDING 상태는 현재 진행 중인 단계(가장 작은 stepOrder)를 기준으로 분류\n' +
+    //         '- 참조 문서는 임시저장(DRAFT) 상태 제외\n\n' +
+    //         '**주요 기능:**\n' +
+    //         '- 상태별 필터링 (PENDING 상태는 pendingStepType으로 세분화 가능)\n' +
+    //         '- 카테고리별 필터링\n' +
+    //         '- 제목 검색\n' +
+    //         '- 페이징 처리 (기본 20개)\n\n' +
+    //         '**테스트 시나리오:**\n' +
+    //         '- ✅ 정상: 전체 문서 목록 조회\n' +
+    //         '- ✅ 정상: 상태별 필터링 조회\n' +
+    //         '- ✅ 정상: PENDING + 협의 단계 필터링\n' +
+    //         '- ✅ 정상: PENDING + 결재 단계 필터링\n' +
+    //         '- ✅ 정상: 카테고리별 필터링\n' +
+    //         '- ✅ 정상: 제목 검색\n' +
+    //         '- ✅ 정상: 페이징 처리',
+    // })
+    // @ApiResponse({
+    //     status: 200,
+    //     description: '문서 목록 조회 성공',
+    //     type: PaginatedDocumentsResponseDto,
+    // })
+    // @ApiResponse({
+    //     status: 401,
+    //     description: '인증 실패',
+    // })
+    // async getDocuments(@Query() query: QueryDocumentsDto) {
+    //     return await this.documentService.getDocuments({
+    //         status: query.status,
+    //         pendingStepType: query.pendingStepType,
+    //         drafterId: query.drafterId,
+    //         referenceUserId: query.referenceUserId,
+    //         categoryId: query.categoryId,
+    //         searchKeyword: query.searchKeyword,
+    //         startDate: query.startDate ? new Date(query.startDate) : undefined,
+    //         endDate: query.endDate ? new Date(query.endDate) : undefined,
+    //         page: query.page,
+    //         limit: query.limit,
+    //     });
+    // }
+
+    @Get('my-all/statistics')
     @ApiOperation({
-        summary: '문서 목록 조회 (페이징, 필터링)',
+        summary: '내 전체 문서 통계 조회 (사이드바용)',
         description:
-            '문서 목록을 조회합니다. 상태, 기안자, 카테고리, 검색어 등으로 필터링 가능하며 페이징을 지원합니다.\n\n' +
-            '**=== 필터링 조건 가이드 ===**\n\n' +
-            '**▣ 내가 기안한 문서 조회 (drafterId 지정)**\n' +
-            '1. **임시저장**: `status=DRAFT`, `pendingStepType 미지정`\n' +
-            '2. **전체 상신**: `status 미지정`, `pendingStepType 미지정`\n' +
-            '3. **협의 대기**: `status=PENDING`, `pendingStepType=AGREEMENT`\n' +
-            '4. **미결 대기**: `status=PENDING`, `pendingStepType=APPROVAL`\n' +
-            '5. **기결**: `status=APPROVED`, `pendingStepType 미지정`\n' +
-            '6. **반려**: `status=REJECTED`, `pendingStepType 미지정`\n' +
-            '7. **시행**: `status=IMPLEMENTED`, `pendingStepType 미지정`\n\n' +
-            '**▣ 내가 참조자로 있는 문서 조회 (referenceUserId 지정)**\n' +
-            '8. **참조**: `referenceUserId만 지정`, `status 미지정`, `pendingStepType 미지정` (DRAFT 제외)\n\n' +
-            '**⚠️ 주의사항:**\n' +
-            '- drafterId와 referenceUserId는 상호 배타적 (referenceUserId 우선)\n' +
-            '- PENDING 상태는 현재 진행 중인 단계(가장 작은 stepOrder)를 기준으로 분류\n' +
-            '- 참조 문서는 임시저장(DRAFT) 상태 제외\n\n' +
-            '**주요 기능:**\n' +
-            '- 상태별 필터링 (PENDING 상태는 pendingStepType으로 세분화 가능)\n' +
-            '- 카테고리별 필터링\n' +
-            '- 제목 검색\n' +
-            '- 페이징 처리 (기본 20개)\n\n' +
+            '사이드바 표시를 위한 통계를 조회합니다.\n\n' +
+            '**응답 형식:**\n' +
+            '```json\n' +
+            '{\n' +
+            '  "DRAFT": 1,                  // 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
+            '  "PENDING": 10,               // 상신함 (내가 기안한 제출된 전체 문서)\n' +
+            '  "PENDING_AGREEMENT": 1,      // 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
+            '  "PENDING_APPROVAL": 2,       // 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
+            '  "IMPLEMENTATION": 1,         // 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태)\n' +
+            '  "APPROVED": 20,              // 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
+            '  "REJECTED": 3,               // 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
+            '  "RECEIVED_REFERENCE": 23     // 수신참조함 (내가 참조자로 있는 문서)\n' +
+            '}\n' +
+            '```\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 전체 문서 목록 조회\n' +
-            '- ✅ 정상: 상태별 필터링 조회\n' +
-            '- ✅ 정상: PENDING + 협의 단계 필터링\n' +
-            '- ✅ 정상: PENDING + 결재 단계 필터링\n' +
-            '- ✅ 정상: 카테고리별 필터링\n' +
-            '- ✅ 정상: 제목 검색\n' +
-            '- ✅ 정상: 페이징 처리',
+            '- ✅ 정상: 문서 통계 조회\n' +
+            '- ❌ 실패: 존재하지 않는 사용자 ID',
+    })
+    @ApiQuery({
+        name: 'userId',
+        required: true,
+        description: '사용자 ID',
+        example: '550e8400-e29b-41d4-a716-446655440000',
     })
     @ApiResponse({
         status: 200,
-        description: '문서 목록 조회 성공',
+        description: '내 전체 문서 통계 조회 성공',
+        type: MyAllDocumentsStatisticsResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    async getMyAllDocumentsStatistics(@Query('userId') userId: string) {
+        return await this.documentService.getMyAllDocumentsStatistics(userId);
+    }
+
+    @Get('my-all')
+    @ApiOperation({
+        summary: '내 전체 문서 목록 조회 (통계와 동일한 필터)',
+        description:
+            '통계 조회와 동일한 필터로 실제 문서 목록을 조회합니다.\n\n' +
+            '**필터 타입 (filterType):**\n' +
+            '- DRAFT: 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
+            '- PENDING: 상신함 (내가 기안한 제출된 전체 문서)\n' +
+            '- PENDING_AGREEMENT: 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
+            '- PENDING_APPROVAL: 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
+            '- IMPLEMENTATION: 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태 - 결재 완료, 시행 대기)\n' +
+            '- APPROVED: 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
+            '- REJECTED: 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
+            '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서)\n' +
+            '- 미지정: 내가 기안한 문서 + 내가 참여하는 문서 전체\n\n' +
+            '**승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용:**\n' +
+            '- SCHEDULED: 승인 예정 (아직 내 차례가 아님, 내 앞에 PENDING 단계가 있음)\n' +
+            '- CURRENT: 승인할 차례 (현재 내 차례, 내가 현재 가장 작은 stepOrder의 PENDING)\n' +
+            '- COMPLETED: 승인 완료 (내가 이미 승인함, 내 단계가 APPROVED)\n' +
+            '- 미지정: 모든 승인 상태 포함\n\n' +
+            '**추가 필터링:**\n' +
+            '- searchKeyword: 제목 검색\n' +
+            '- categoryId: 카테고리 구분\n' +
+            '- startDate, endDate: 제출일 구분\n' +
+            '- page, limit: 페이징\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 전체 문서 목록 조회 (filterType 없음)\n' +
+            '- ✅ 정상: DRAFT 필터링\n' +
+            '- ✅ 정상: PENDING_APPROVAL + CURRENT 필터링\n' +
+            '- ✅ 정상: PENDING_AGREEMENT + SCHEDULED 필터링\n' +
+            '- ✅ 정상: IMPLEMENTATION 필터링\n' +
+            '- ✅ 정상: RECEIVED_REFERENCE 필터링\n' +
+            '- ✅ 정상: 제목 검색\n' +
+            '- ✅ 정상: 카테고리별 필터링\n' +
+            '- ✅ 정상: 제출일 범위 필터링',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '내 전체 문서 목록 조회 성공',
         type: PaginatedDocumentsResponseDto,
     })
     @ApiResponse({
         status: 401,
         description: '인증 실패',
     })
-    async getDocuments(@Query() query: QueryDocumentsDto) {
-        return await this.documentService.getDocuments({
-            status: query.status,
-            pendingStepType: query.pendingStepType,
-            drafterId: query.drafterId,
-            referenceUserId: query.referenceUserId,
-            categoryId: query.categoryId,
+    async getMyAllDocuments(@Query() query: QueryMyAllDocumentsDto) {
+        return await this.documentService.getMyAllDocuments({
+            userId: query.userId!,
+            filterType: query.filterType,
+            approvalStatus: query.approvalStatus,
+            referenceReadStatus: query.referenceReadStatus,
             searchKeyword: query.searchKeyword,
+            categoryId: query.categoryId,
             startDate: query.startDate ? new Date(query.startDate) : undefined,
             endDate: query.endDate ? new Date(query.endDate) : undefined,
             page: query.page,
             limit: query.limit,
         });
+    }
+
+    @Get('my-drafts/:drafterId')
+    @ApiOperation({
+        summary: '내가 작성한 문서 전체 조회 (상태 무관)',
+        description:
+            '내가 작성한 모든 문서를 상태에 상관없이 조회합니다.\n\n' +
+            '**주요 기능:**\n' +
+            '- 내가 기안한 모든 문서 조회 (DRAFT, PENDING, APPROVED, REJECTED, IMPLEMENTED 모두 포함)\n' +
+            '- 페이징 지원\n' +
+            '- 생성일 기준 내림차순 정렬\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 내가 작성한 문서 전체 조회\n' +
+            '- ✅ 정상: 페이징 처리\n' +
+            '- ❌ 실패: 존재하지 않는 사용자 ID',
+    })
+    @ApiParam({
+        name: 'userId',
+        description: '사용자 ID',
+        example: '550e8400-e29b-41d4-a716-446655440000',
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: '페이지 번호 (1부터 시작)',
+        example: 1,
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        description: '페이지당 항목 수',
+        example: 20,
+    })
+    @ApiResponse({
+        status: 200,
+        description: '내가 작성한 문서 전체 조회 성공',
+        type: PaginatedDocumentsResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    async getMyDrafts(
+        @Param('drafterId') drafterId: string,
+        @Query('page') page?: number,
+        @Query('limit') limit?: number,
+    ) {
+        return await this.documentService.getMyDrafts(drafterId, page || 1, limit || 20);
     }
 
     @Get(':documentId')

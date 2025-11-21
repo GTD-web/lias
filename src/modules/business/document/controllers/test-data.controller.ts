@@ -85,6 +85,18 @@ export class TestDataController {
                     minimum: 1,
                     maximum: 5,
                 },
+                hasReference: {
+                    type: 'boolean',
+                    description: '참조자 포함 여부',
+                    default: true,
+                },
+                referenceCount: {
+                    type: 'number',
+                    description: '참조자 수 (최소 1, 최대 3)',
+                    default: 1,
+                    minimum: 1,
+                    maximum: 3,
+                },
             },
         },
     })
@@ -104,6 +116,8 @@ export class TestDataController {
             hasAgreement?: boolean;
             hasImplementation?: boolean;
             approvalCount?: number;
+            hasReference?: boolean;
+            referenceCount?: number;
         },
     ) {
         return await this.testDataService.createTestDocument(body);
@@ -152,6 +166,18 @@ export class TestDataController {
                     minimum: 1,
                     maximum: 5,
                 },
+                hasReference: {
+                    type: 'boolean',
+                    description: '참조자 포함 여부',
+                    default: true,
+                },
+                referenceCount: {
+                    type: 'number',
+                    description: '참조자 수 (최소 1, 최대 3)',
+                    default: 1,
+                    minimum: 1,
+                    maximum: 3,
+                },
             },
         },
     })
@@ -175,6 +201,8 @@ export class TestDataController {
             hasAgreement?: boolean;
             hasImplementation?: boolean;
             approvalCount?: number;
+            hasReference?: boolean;
+            referenceCount?: number;
         },
     ) {
         return await this.testDataService.createAndSubmitTestDocument(body);

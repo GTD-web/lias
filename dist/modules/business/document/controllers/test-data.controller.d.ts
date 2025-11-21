@@ -16,14 +16,14 @@ export declare class TestDataController {
         hasAgreement?: boolean;
         hasImplementation?: boolean;
         approvalCount?: number;
+        hasReference?: boolean;
+        referenceCount?: number;
     }): Promise<{
         document: import("../../../domain").Document;
         drafter: import("../../../domain").Employee;
         approvalSteps: {
+            step: import("../dtos").CreateDocumentDto["approvalSteps"][0];
             employee: import("../../../domain").Employee;
-            stepOrder: number;
-            stepType: import("../../../../common/enums").ApprovalStepType;
-            approverId: string;
         }[];
     }>;
     createAndSubmitTestDocument(body?: {
@@ -32,14 +32,14 @@ export declare class TestDataController {
         hasAgreement?: boolean;
         hasImplementation?: boolean;
         approvalCount?: number;
+        hasReference?: boolean;
+        referenceCount?: number;
     }): Promise<{
         document: import("../../../domain").Document;
         drafter: import("../../../domain").Employee;
         approvalSteps: {
+            step: import("../dtos").CreateDocumentDto["approvalSteps"][0];
             employee: import("../../../domain").Employee;
-            stepOrder: number;
-            stepType: import("../../../../common/enums").ApprovalStepType;
-            approverId: string;
         }[];
     }>;
     createMultipleTestDocuments(count: number, submit?: boolean): Promise<any[]>;

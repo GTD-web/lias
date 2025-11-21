@@ -1,10 +1,31 @@
 import { DocumentService } from '../services/document.service';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryDocumentsDto } from '../dtos';
+import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto } from '../dtos';
 export declare class DocumentController {
     private readonly documentService;
     constructor(documentService: DocumentService);
     createDocument(dto: CreateDocumentDto): Promise<import("../../../domain").Document>;
-    getDocuments(query: QueryDocumentsDto): Promise<{
+    getMyAllDocumentsStatistics(userId: string): Promise<{
+        DRAFT: number;
+        PENDING: number;
+        PENDING_AGREEMENT: number;
+        PENDING_APPROVAL: number;
+        IMPLEMENTATION: number;
+        APPROVED: number;
+        REJECTED: number;
+        RECEIVED_REFERENCE: number;
+    }>;
+    getMyAllDocuments(query: QueryMyAllDocumentsDto): Promise<{
+        data: import("../../../domain").Document[];
+        meta: {
+            currentPage: number;
+            itemsPerPage: number;
+            totalItems: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+        };
+    }>;
+    getMyDrafts(drafterId: string, page?: number, limit?: number): Promise<{
         data: import("../../../domain").Document[];
         meta: {
             currentPage: number;

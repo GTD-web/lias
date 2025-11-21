@@ -16,6 +16,12 @@ let BaseRepository = class BaseRepository {
     constructor(repository) {
         this.repository = repository;
     }
+    createQueryBuilder(alias) {
+        return this.repository.createQueryBuilder(alias);
+    }
+    get manager() {
+        return this.repository.manager;
+    }
     async create(entity, repositoryOptions) {
         const repository = repositoryOptions?.queryRunner
             ? repositoryOptions.queryRunner.manager.getRepository(this.repository.target)

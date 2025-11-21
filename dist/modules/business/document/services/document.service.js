@@ -137,6 +137,18 @@ let DocumentService = DocumentService_1 = class DocumentService {
         this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
         return await this.documentContext.getDocumentStatistics(userId);
     }
+    async getMyAllDocumentsStatistics(userId) {
+        this.logger.debug(`내 전체 문서 통계 조회: 사용자 ${userId}`);
+        return await this.documentContext.getMyAllDocumentsStatistics(userId);
+    }
+    async getMyAllDocuments(params) {
+        this.logger.debug('내 전체 문서 목록 조회', params);
+        return await this.documentContext.getMyAllDocuments(params);
+    }
+    async getMyDrafts(drafterId, page, limit) {
+        this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
+        return await this.documentContext.getMyDrafts(drafterId, page, limit);
+    }
 };
 exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = DocumentService_1 = __decorate([

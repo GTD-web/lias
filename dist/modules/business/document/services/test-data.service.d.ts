@@ -8,7 +8,7 @@ import { ApprovalStepSnapshot } from '../../../domain/approval-step-snapshot/app
 import { ApprovalStepTemplate } from '../../../domain/approval-step-template/approval-step-template.entity';
 import { Category } from '../../../domain/category/category.entity';
 import { DocumentService } from './document.service';
-import { ApprovalStepType } from '../../../../common/enums/approval.enum';
+import { CreateDocumentDto } from '../dtos';
 export declare class TestDataService {
     private readonly employeeRepository;
     private readonly departmentRepository;
@@ -35,14 +35,14 @@ export declare class TestDataService {
         hasAgreement?: boolean;
         hasImplementation?: boolean;
         approvalCount?: number;
+        hasReference?: boolean;
+        referenceCount?: number;
     }): Promise<{
         document: Document;
         drafter: Employee;
         approvalSteps: {
+            step: CreateDocumentDto["approvalSteps"][0];
             employee: Employee;
-            stepOrder: number;
-            stepType: ApprovalStepType;
-            approverId: string;
         }[];
     }>;
     createAndSubmitTestDocument(options?: {
@@ -51,14 +51,14 @@ export declare class TestDataService {
         hasAgreement?: boolean;
         hasImplementation?: boolean;
         approvalCount?: number;
+        hasReference?: boolean;
+        referenceCount?: number;
     }): Promise<{
         document: Document;
         drafter: Employee;
         approvalSteps: {
+            step: CreateDocumentDto["approvalSteps"][0];
             employee: Employee;
-            stepOrder: number;
-            stepType: ApprovalStepType;
-            approverId: string;
         }[];
     }>;
     createMultipleTestDocuments(count: number, submitImmediately?: boolean): Promise<any[]>;
