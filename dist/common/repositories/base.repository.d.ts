@@ -3,6 +3,8 @@ import { ObjectLiteral, Repository, DeepPartial } from 'typeorm';
 export declare abstract class BaseRepository<T extends ObjectLiteral> implements IRepository<T> {
     protected readonly repository: Repository<T>;
     protected constructor(repository: Repository<T>);
+    createQueryBuilder(alias: string): import("typeorm").SelectQueryBuilder<T>;
+    get manager(): import("typeorm").EntityManager;
     create(entity: DeepPartial<T>, repositoryOptions?: IRepositoryOptions<T>): Promise<T>;
     save(entity: DeepPartial<T>, repositoryOptions?: IRepositoryOptions<T>): Promise<T>;
     findOne(repositoryOptions?: IRepositoryOptions<T>): Promise<T | null>;

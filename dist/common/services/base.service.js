@@ -15,6 +15,12 @@ let BaseService = class BaseService {
     constructor(repository) {
         this.repository = repository;
     }
+    createQueryBuilder(alias) {
+        return this.repository.createQueryBuilder(alias);
+    }
+    get manager() {
+        return this.repository.manager;
+    }
     async create(entity, options) {
         return this.repository.create(entity, options);
     }

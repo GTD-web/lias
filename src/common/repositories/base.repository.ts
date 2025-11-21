@@ -6,6 +6,16 @@ import { ObjectLiteral, Repository, DeepPartial, FindOptionsWhere, FindOneOption
 export abstract class BaseRepository<T extends ObjectLiteral> implements IRepository<T> {
     protected constructor(protected readonly repository: Repository<T>) {}
 
+    // QueryBuilder 접근을 위한 메서드
+    createQueryBuilder(alias: string) {
+        return this.repository.createQueryBuilder(alias);
+    }
+
+    // Transaction Manager 접근을 위한 메서드
+    get manager() {
+        return this.repository.manager;
+    }
+
     async create(entity: DeepPartial<T>, repositoryOptions?: IRepositoryOptions<T>): Promise<T> {
         const repository = repositoryOptions?.queryRunner
             ? repositoryOptions.queryRunner.manager.getRepository(this.repository.target)

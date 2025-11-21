@@ -5,6 +5,8 @@ import { ObjectLiteral, DeepPartial } from 'typeorm';
 export declare abstract class BaseService<T extends ObjectLiteral> implements IService<T> {
     protected readonly repository: IRepository<T>;
     protected constructor(repository: IRepository<T>);
+    createQueryBuilder(alias: string): import("typeorm").SelectQueryBuilder<T>;
+    get manager(): import("typeorm").EntityManager;
     create(entity: DeepPartial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     save(entity: DeepPartial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     findAll(options?: IRepositoryOptions<T>): Promise<T[]>;

@@ -241,6 +241,8 @@ export class TestDataService {
         hasAgreement?: boolean;
         hasImplementation?: boolean;
         approvalCount?: number;
+        hasReference?: boolean;
+        referenceCount?: number;
     }) {
         this.logger.log('테스트 문서 생성 시작');
 
@@ -250,43 +252,68 @@ export class TestDataService {
         // 기안자
         const drafter = employees[0];
 
-        // 결재라인 구성
+        // 결재라인 구성 (중복 방지)
         const approvalSteps: CreateDocumentDto['approvalSteps'] = [];
+        const stepEmployees: Array<{ step: CreateDocumentDto['approvalSteps'][0]; employee: (typeof employees)[0] }> =
+            [];
         let stepOrder = 1;
+        let currentEmployeeIndex = 1; // 기안자(0) 다음부터 시작
 
         // 협의자 (옵션)
-        if (options?.hasAgreement) {
-            approvalSteps.push({
+        if (options?.hasAgreement && currentEmployeeIndex < employees.length) {
+            const step = {
                 stepOrder: stepOrder++,
                 stepType: ApprovalStepType.AGREEMENT,
-                approverId: employees[1].id,
-            });
+                approverId: employees[currentEmployeeIndex].id,
+            };
+            approvalSteps.push(step);
+            stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+            currentEmployeeIndex++;
         }
 
         // 결재자 (기본 2명, 최대 5명)
         const approvalCount = Math.min(options?.approvalCount || 2, 5);
-        const approverStartIndex = options?.hasAgreement ? 2 : 1;
 
         for (let i = 0; i < approvalCount; i++) {
-            const employeeIndex = approverStartIndex + i;
-            if (employeeIndex >= employees.length) break;
+            if (currentEmployeeIndex >= employees.length) break;
 
-            approvalSteps.push({
+            const step = {
                 stepOrder: stepOrder++,
                 stepType: ApprovalStepType.APPROVAL,
-                approverId: employees[employeeIndex].id,
-            });
+                approverId: employees[currentEmployeeIndex].id,
+            };
+            approvalSteps.push(step);
+            stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+            currentEmployeeIndex++;
         }
 
         // 시행자 (옵션, 기본 true)
-        if (options?.hasImplementation !== false) {
-            const implementerIndex = approverStartIndex + approvalCount;
-            if (implementerIndex < employees.length) {
-                approvalSteps.push({
+        if (options?.hasImplementation !== false && currentEmployeeIndex < employees.length) {
+            const step = {
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.IMPLEMENTATION,
+                approverId: employees[currentEmployeeIndex].id,
+            };
+            approvalSteps.push(step);
+            stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+            currentEmployeeIndex++;
+        }
+
+        // 참조자 (옵션, 기본 1명)
+        if (options?.hasReference !== false) {
+            const referenceCount = Math.min(options?.referenceCount || 1, 3); // 기본 1명, 최대 3명
+
+            for (let i = 0; i < referenceCount; i++) {
+                if (currentEmployeeIndex >= employees.length) break;
+
+                const step = {
                     stepOrder: stepOrder++,
-                    stepType: ApprovalStepType.IMPLEMENTATION,
-                    approverId: employees[implementerIndex].id,
-                });
+                    stepType: ApprovalStepType.REFERENCE,
+                    approverId: employees[currentEmployeeIndex].id,
+                };
+                approvalSteps.push(step);
+                stepEmployees.push({ step, employee: employees[currentEmployeeIndex] });
+                currentEmployeeIndex++;
             }
         }
 
@@ -310,10 +337,7 @@ export class TestDataService {
         return {
             document,
             drafter,
-            approvalSteps: approvalSteps.map((step, index) => ({
-                ...step,
-                employee: employees[index + (options?.hasAgreement ? 0 : 1)],
-            })),
+            approvalSteps: stepEmployees,
         };
     }
 
@@ -326,6 +350,8 @@ export class TestDataService {
         hasAgreement?: boolean;
         hasImplementation?: boolean;
         approvalCount?: number;
+        hasReference?: boolean;
+        referenceCount?: number;
     }) {
         this.logger.log('테스트 문서 생성 및 기안 시작');
 
@@ -335,10 +361,10 @@ export class TestDataService {
         const submitDto: SubmitDocumentDto = {
             documentId: document.id,
             documentTemplateId: document.documentTemplateId,
-            approvalSteps: approvalSteps.map((step) => ({
-                stepOrder: step.stepOrder,
-                stepType: step.stepType,
-                approverId: step.approverId,
+            approvalSteps: approvalSteps.map((item) => ({
+                stepOrder: item.step.stepOrder,
+                stepType: item.step.stepType,
+                approverId: item.step.approverId,
             })),
         };
 
@@ -364,8 +390,10 @@ export class TestDataService {
             const options = {
                 title: `일괄 테스트 문서 ${i + 1}/${count}`,
                 hasAgreement: Math.random() > 0.5, // 50% 확률로 협의자 포함
-                hasImplementation: Math.random() > 0.3, // 70% 확률로 시행자 포함
+                hasImplementation: true, // 시행자 포함
                 approvalCount: Math.floor(Math.random() * 3) + 2, // 2-4명
+                hasReference: Math.random() > 0.3, // 70% 확률로 참조자 포함
+                referenceCount: Math.floor(Math.random() * 2) + 1, // 1-2명
             };
 
             try {

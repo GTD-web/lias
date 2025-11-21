@@ -25,4 +25,6 @@ __exportStar(require("./document-response.dto"), exports);
 __exportStar(require("./query-document.dto"), exports);
 __exportStar(require("./template-with-approvers-response.dto"), exports);
 __exportStar(require("./document-statistics-response.dto"), exports);
+__exportStar(require("./query-my-all-documents.dto"), exports);
+__exportStar(require("./my-all-documents-statistics-response.dto"), exports);
 //# sourceMappingURL=index.js.map

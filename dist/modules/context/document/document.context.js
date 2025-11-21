@@ -214,12 +214,10 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         return document;
     }
     async getDocuments(filter, queryRunner) {
-        const repository = queryRunner
-            ? queryRunner.manager.getRepository(document_entity_1.Document)
-            : this.dataSource.getRepository(document_entity_1.Document);
-        const qb = repository
-            .createQueryBuilder('document')
-            .leftJoinAndSelect('document.drafter', 'drafter')
+        const qb = queryRunner
+            ? queryRunner.manager.getRepository(document_entity_1.Document).createQueryBuilder('document')
+            : this.documentService.createQueryBuilder('document');
+        qb.leftJoinAndSelect('document.drafter', 'drafter')
             .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
             .orderBy('document.createdAt', 'DESC')
             .addOrderBy('approvalSteps.stepOrder', 'ASC');
@@ -453,6 +451,376 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             },
             othersDocuments: {
                 reference: parseInt(refStats.reference || '0'),
+            },
+        };
+    }
+    async getMyAllDocumentsStatistics(userId) {
+        this.logger.debug(`내 전체 문서 통계 조회: 사용자 ${userId}`);
+        const myDraftedStats = await this.dataSource.query(`
+            SELECT
+                COUNT(*) FILTER (WHERE status = $1) as draft,
+                COUNT(*) FILTER (WHERE "submittedAt" IS NOT NULL) as pending,
+                COUNT(*) FILTER (WHERE status = $2) as approved,
+                COUNT(*) FILTER (WHERE status = $3) as rejected
+            FROM documents
+            WHERE "drafterId" = $4
+            `, [approval_enum_1.DocumentStatus.DRAFT, approval_enum_1.DocumentStatus.IMPLEMENTED, approval_enum_1.DocumentStatus.REJECTED, userId]);
+        const myDraftedPendingSteps = await this.dataSource.query(`
+            WITH current_steps AS (
+                SELECT 
+                    d.id as document_id,
+                    d.status as doc_status,
+                    ass."stepType"
+                FROM documents d
+                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                WHERE d."drafterId" = $1
+                AND (
+                    (d.status = $2 AND ass.status = $3)  -- PENDING 문서의 PENDING 단계들
+                    OR (d.status = $4 AND ass."stepType" = $7)  -- APPROVED 문서의 IMPLEMENTATION 단계
+                )
+            )
+            SELECT
+                COUNT(DISTINCT CASE WHEN "stepType" = $5 AND doc_status = $2 THEN document_id END) as drafted_pending_agreement,
+                COUNT(DISTINCT CASE WHEN "stepType" = $6 AND doc_status = $2 THEN document_id END) as drafted_pending_approval,
+                COUNT(DISTINCT CASE WHEN "stepType" = $7 AND doc_status = $4 THEN document_id END) as drafted_implementation
+            FROM current_steps
+            `, [
+            userId,
+            approval_enum_1.DocumentStatus.PENDING,
+            approval_enum_1.ApprovalStatus.PENDING,
+            approval_enum_1.DocumentStatus.APPROVED,
+            approval_enum_1.ApprovalStepType.AGREEMENT,
+            approval_enum_1.ApprovalStepType.APPROVAL,
+            approval_enum_1.ApprovalStepType.IMPLEMENTATION,
+        ]);
+        const myApprovalLineStats = await this.dataSource.query(`
+            SELECT
+                COUNT(DISTINCT CASE 
+                    WHEN ass."stepType" = $2 AND ass."approverId" = $6 AND d."drafterId" != $6 AND d.status = $1
+                    THEN d.id 
+                END) as approval_line_agreement,
+                COUNT(DISTINCT CASE 
+                    WHEN ass."stepType" = $3 AND ass."approverId" = $6 AND d."drafterId" != $6 AND d.status = $1
+                    THEN d.id 
+                END) as approval_line_approval,
+                COUNT(DISTINCT CASE 
+                    WHEN ass."stepType" = $4 AND ass."approverId" = $6 AND d."drafterId" != $6 AND d.status = $5
+                    THEN d.id 
+                END) as approval_line_implementation
+            FROM documents d
+            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+            WHERE (d.status = $1 OR d.status = $5)
+            AND ass."approverId" = $6
+            `, [
+            approval_enum_1.DocumentStatus.PENDING,
+            approval_enum_1.ApprovalStepType.AGREEMENT,
+            approval_enum_1.ApprovalStepType.APPROVAL,
+            approval_enum_1.ApprovalStepType.IMPLEMENTATION,
+            approval_enum_1.DocumentStatus.APPROVED,
+            userId,
+        ]);
+        const referenceStats = await this.dataSource.query(`
+            SELECT COUNT(DISTINCT d.id) as received_reference
+            FROM documents d
+            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+            WHERE ass."stepType" = $1
+            AND ass."approverId" = $2
+            AND d."drafterId" != $2
+            AND d.status != $3
+            `, [approval_enum_1.ApprovalStepType.REFERENCE, userId, approval_enum_1.DocumentStatus.DRAFT]);
+        const draftedStats = myDraftedStats[0];
+        const draftedPendingStats = myDraftedPendingSteps[0];
+        const approvalLineStats = myApprovalLineStats[0];
+        const refStats = referenceStats[0];
+        return {
+            DRAFT: parseInt(draftedStats.draft || '0'),
+            PENDING: parseInt(draftedStats.pending || '0'),
+            PENDING_AGREEMENT: parseInt(draftedPendingStats.drafted_pending_agreement || '0') +
+                parseInt(approvalLineStats.approval_line_agreement || '0'),
+            PENDING_APPROVAL: parseInt(draftedPendingStats.drafted_pending_approval || '0') +
+                parseInt(approvalLineStats.approval_line_approval || '0'),
+            IMPLEMENTATION: parseInt(draftedPendingStats.drafted_implementation || '0') +
+                parseInt(approvalLineStats.approval_line_implementation || '0'),
+            APPROVED: parseInt(draftedStats.approved || '0'),
+            REJECTED: parseInt(draftedStats.rejected || '0'),
+            RECEIVED_REFERENCE: parseInt(refStats.received_reference || '0'),
+        };
+    }
+    async getMyAllDocuments(params) {
+        const page = params.page || 1;
+        const limit = params.limit || 20;
+        const skip = (page - 1) * limit;
+        const qb = this.documentService
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.drafter', 'drafter')
+            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
+            .orderBy('document.createdAt', 'DESC')
+            .addOrderBy('approvalSteps.stepOrder', 'ASC');
+        switch (params.filterType) {
+            case 'DRAFT':
+                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.status = :status', { status: approval_enum_1.DocumentStatus.DRAFT });
+                break;
+            case 'PENDING':
+                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.submittedAt IS NOT NULL');
+                break;
+            case 'PENDING_AGREEMENT':
+                if (params.approvalStatus) {
+                    this.applyApprovalStatusFilter(qb, params.userId, approval_enum_1.ApprovalStepType.AGREEMENT, params.approvalStatus);
+                }
+                else {
+                    qb.andWhere(`(
+                            (document.drafterId = :userId AND document.id IN (
+                                SELECT DISTINCT ON (d.id) d.id
+                                FROM documents d
+                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                                WHERE d.status = :pendingStatus
+                                AND ass.status = :pendingStepStatus
+                                ORDER BY d.id, ass."stepOrder" ASC
+                            ) AND document.id IN (
+                                SELECT d.id
+                                FROM documents d
+                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                                WHERE ass."stepType" = :agreementType
+                                AND ass.status = :pendingStepStatus
+                            ))
+                            OR
+                            (document.drafterId != :userId AND document.id IN (
+                                SELECT DISTINCT d.id
+                                FROM documents d
+                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                                WHERE d.status = :pendingStatus
+                                AND ass."approverId" = :userId
+                                AND ass."stepType" = :agreementType
+                            ))
+                        )`, {
+                        userId: params.userId,
+                        pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                        pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                        agreementType: approval_enum_1.ApprovalStepType.AGREEMENT,
+                    });
+                }
+                break;
+            case 'PENDING_APPROVAL':
+                if (params.approvalStatus) {
+                    this.applyApprovalStatusFilter(qb, params.userId, approval_enum_1.ApprovalStepType.APPROVAL, params.approvalStatus);
+                }
+                else {
+                    qb.andWhere(`(
+                            (document.drafterId = :userId AND document.id IN (
+                                SELECT DISTINCT ON (d.id) d.id
+                                FROM documents d
+                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                                WHERE d.status = :pendingStatus
+                                AND ass.status = :pendingStepStatus
+                                ORDER BY d.id, ass."stepOrder" ASC
+                            ) AND document.id IN (
+                                SELECT d.id
+                                FROM documents d
+                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                                WHERE ass."stepType" = :approvalType
+                                AND ass.status = :pendingStepStatus
+                            ))
+                            OR
+                            (document.drafterId != :userId AND document.id IN (
+                                SELECT DISTINCT d.id
+                                FROM documents d
+                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                                WHERE d.status = :pendingStatus
+                                AND ass."approverId" = :userId
+                                AND ass."stepType" = :approvalType
+                            ))
+                        )`, {
+                        userId: params.userId,
+                        pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                        pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                        approvalType: approval_enum_1.ApprovalStepType.APPROVAL,
+                    });
+                }
+                break;
+            case 'IMPLEMENTATION':
+                qb.andWhere(`(
+                        (document.drafterId = :userId AND document.status = :approvedStatus)
+                        OR
+                        (document.drafterId != :userId AND document.id IN (
+                            SELECT DISTINCT d.id
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE d.status = :approvedStatus
+                            AND ass."approverId" = :userId
+                            AND ass."stepType" = :implementationType
+                        ))
+                    )`, {
+                    userId: params.userId,
+                    approvedStatus: approval_enum_1.DocumentStatus.APPROVED,
+                    implementationType: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
+                });
+                break;
+            case 'APPROVED':
+                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.status = :status', { status: approval_enum_1.DocumentStatus.IMPLEMENTED });
+                break;
+            case 'REJECTED':
+                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.status = :status', { status: approval_enum_1.DocumentStatus.REJECTED });
+                break;
+            case 'RECEIVED_REFERENCE':
+                qb.andWhere('document.drafterId != :userId', { userId: params.userId }).andWhere('document.status != :draftStatus', { draftStatus: approval_enum_1.DocumentStatus.DRAFT });
+                if (params.referenceReadStatus) {
+                    const statusCondition = params.referenceReadStatus === 'READ' ? approval_enum_1.ApprovalStatus.APPROVED : approval_enum_1.ApprovalStatus.PENDING;
+                    qb.andWhere(`document.id IN (
+                        SELECT d.id
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE ass."stepType" = :referenceType
+                        AND ass."approverId" = :userId
+                        AND ass."status" = :referenceStatus
+                    )`, {
+                        referenceType: approval_enum_1.ApprovalStepType.REFERENCE,
+                        referenceStatus: statusCondition,
+                    });
+                }
+                else {
+                    qb.andWhere(`document.id IN (
+                        SELECT d.id
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE ass."stepType" = :referenceType
+                        AND ass."approverId" = :userId
+                    )`, {
+                        referenceType: approval_enum_1.ApprovalStepType.REFERENCE,
+                    });
+                }
+                break;
+            default:
+                qb.andWhere(`(
+                        document.drafterId = :userId
+                        OR
+                        document.id IN (
+                            SELECT d.id
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE ass."approverId" = :userId
+                            AND d.status != :draftStatus
+                        )
+                    )`, {
+                    userId: params.userId,
+                    draftStatus: approval_enum_1.DocumentStatus.DRAFT,
+                });
+                break;
+        }
+        if (params.searchKeyword) {
+            qb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
+        }
+        if (params.categoryId) {
+            qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
+            qb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
+        }
+        if (params.startDate) {
+            qb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
+        }
+        if (params.endDate) {
+            qb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
+        }
+        const totalItems = await qb.getCount();
+        const documents = await qb.skip(skip).take(limit).getMany();
+        const totalPages = Math.ceil(totalItems / limit);
+        return {
+            data: documents,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
+    }
+    applyApprovalStatusFilter(qb, userId, stepType, approvalStatus) {
+        switch (approvalStatus) {
+            case 'SCHEDULED':
+                qb.andWhere(`document.id IN (
+                        SELECT DISTINCT my_step."documentId"
+                        FROM approval_step_snapshots my_step
+                        INNER JOIN documents d ON my_step."documentId" = d.id
+                        WHERE my_step."approverId" = :userId
+                        AND my_step."stepType" = :stepType
+                        AND d.status = :pendingStatus
+                        AND EXISTS (
+                            SELECT 1
+                            FROM approval_step_snapshots prior_step
+                            WHERE prior_step."documentId" = my_step."documentId"
+                            AND prior_step."stepOrder" < my_step."stepOrder"
+                            AND prior_step.status = :pendingStepStatus
+                        )
+                    )`, {
+                    userId,
+                    stepType,
+                    pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                    pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                });
+                break;
+            case 'CURRENT':
+                qb.andWhere(`document.id IN (
+                        SELECT my_step."documentId"
+                        FROM approval_step_snapshots my_step
+                        INNER JOIN documents d ON my_step."documentId" = d.id
+                        WHERE my_step."approverId" = :userId
+                        AND my_step."stepType" = :stepType
+                        AND my_step.status = :pendingStepStatus
+                        AND d.status = :pendingStatus
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM approval_step_snapshots prior_step
+                            WHERE prior_step."documentId" = my_step."documentId"
+                            AND prior_step."stepOrder" < my_step."stepOrder"
+                            AND prior_step.status != :approvedStatus
+                        )
+                    )`, {
+                    userId,
+                    stepType,
+                    pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                    pendingStepStatus: approval_enum_1.ApprovalStatus.PENDING,
+                    approvedStatus: approval_enum_1.ApprovalStatus.APPROVED,
+                });
+                break;
+            case 'COMPLETED':
+                qb.andWhere(`document.id IN (
+                        SELECT DISTINCT d.id
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE d.status = :pendingStatus
+                        AND ass."approverId" = :userId
+                        AND ass."stepType" = :stepType
+                        AND ass.status = :approvedStatus
+                    )`, {
+                    userId,
+                    stepType,
+                    pendingStatus: approval_enum_1.DocumentStatus.PENDING,
+                    approvedStatus: approval_enum_1.ApprovalStatus.APPROVED,
+                });
+                break;
+        }
+    }
+    async getMyDrafts(drafterId, page = 1, limit = 20) {
+        const skip = (page - 1) * limit;
+        const qb = this.documentService
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.drafter', 'drafter')
+            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
+            .where('document.drafterId = :drafterId', { drafterId })
+            .orderBy('document.createdAt', 'DESC')
+            .addOrderBy('approvalSteps.stepOrder', 'ASC');
+        const totalItems = await qb.getCount();
+        const documents = await qb.skip(skip).take(limit).getMany();
+        const totalPages = Math.ceil(totalItems / limit);
+        return {
+            data: documents,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
             },
         };
     }
