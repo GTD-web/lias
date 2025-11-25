@@ -7,7 +7,6 @@ export declare enum ApprovalActionType {
 }
 export declare class ProcessApprovalActionDto {
     type: ApprovalActionType;
-    approverId: string;
     stepSnapshotId?: string;
     documentId?: string;
     comment?: string;

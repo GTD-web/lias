@@ -12,12 +12,12 @@ export class CompleteAgreementDto {
     @IsUUID()
     stepSnapshotId: string;
 
-    @ApiProperty({
-        description: '협의자 ID',
-        example: 'uuid',
-    })
-    @IsUUID()
-    agreerId: string;
+    // @ApiProperty({
+    //     description: '협의자 ID',
+    //     example: 'uuid',
+    // })
+    // @IsUUID()
+    // agreerId: string;
 
     @ApiPropertyOptional({
         description: '협의 의견',

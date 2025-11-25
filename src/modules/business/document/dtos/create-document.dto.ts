@@ -29,12 +29,12 @@ export class CreateDocumentDto {
     @IsString()
     content: string;
 
-    @ApiProperty({
-        description: '기안자 ID',
-        example: 'uuid',
-    })
-    @IsUUID()
-    drafterId: string;
+    // @ApiProperty({
+    //     description: '기안자 ID',
+    //     example: 'uuid',
+    // })
+    // @IsUUID()
+    // drafterId: string;
 
     @ApiPropertyOptional({
         description: '추가 메타데이터 (금액, 날짜 등)',
@@ -54,4 +54,3 @@ export class CreateDocumentDto {
     @Type(() => ApprovalStepSnapshotItemDto)
     approvalSteps?: ApprovalStepSnapshotItemDto[];
 }
-

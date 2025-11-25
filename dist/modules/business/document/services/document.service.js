@@ -16,22 +16,24 @@ const document_context_1 = require("../../../context/document/document.context")
 const template_context_1 = require("../../../context/template/template.context");
 const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
 const notification_context_1 = require("../../../context/notification/notification.context");
+const comment_context_1 = require("../../../context/comment/comment.context");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 let DocumentService = DocumentService_1 = class DocumentService {
-    constructor(documentContext, templateContext, approvalProcessContext, notificationContext) {
+    constructor(documentContext, templateContext, approvalProcessContext, notificationContext, commentContext) {
         this.documentContext = documentContext;
         this.templateContext = templateContext;
         this.approvalProcessContext = approvalProcessContext;
         this.notificationContext = notificationContext;
+        this.commentContext = commentContext;
         this.logger = new common_1.Logger(DocumentService_1.name);
     }
-    async createDocument(dto) {
+    async createDocument(dto, drafterId) {
         this.logger.log(`문서 생성 시작: ${dto.title}`);
         const contextDto = {
             documentTemplateId: dto.documentTemplateId,
             title: dto.title,
             content: dto.content,
-            drafterId: dto.drafterId,
+            drafterId: drafterId,
             metadata: dto.metadata,
             approvalSteps: dto.approvalSteps?.map((step) => ({
                 stepOrder: step.stepOrder,
@@ -112,16 +114,15 @@ let DocumentService = DocumentService_1 = class DocumentService {
             throw error;
         }
     }
-    async submitDocumentDirect(dto) {
+    async submitDocumentDirect(dto, drafterId) {
         this.logger.log(`바로 기안 시작: ${dto.title}`);
         const createDto = {
             documentTemplateId: dto.documentTemplateId,
             title: dto.title,
             content: dto.content,
-            drafterId: dto.drafterId,
             metadata: dto.metadata,
         };
-        const draftDocument = await this.createDocument(createDto);
+        const draftDocument = await this.createDocument(createDto, drafterId);
         this.logger.debug(`임시저장 완료: ${draftDocument.id}`);
         const submitDto = {
             documentId: draftDocument.id,
@@ -149,6 +150,35 @@ let DocumentService = DocumentService_1 = class DocumentService {
         this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
         return await this.documentContext.getMyDrafts(drafterId, page, limit);
     }
+    async createComment(documentId, dto, authorId) {
+        this.logger.log(`코멘트 작성: 문서 ${documentId}`);
+        return await this.commentContext.코멘트를작성한다({
+            documentId: documentId,
+            authorId: authorId,
+            content: dto.content,
+            parentCommentId: dto.parentCommentId,
+        });
+    }
+    async updateComment(commentId, dto, authorId) {
+        this.logger.log(`코멘트 수정: ${commentId}`);
+        return await this.commentContext.코멘트를수정한다({
+            commentId: commentId,
+            authorId: authorId,
+            content: dto.content,
+        });
+    }
+    async deleteComment(commentId, authorId) {
+        this.logger.log(`코멘트 삭제: ${commentId}`);
+        return await this.commentContext.코멘트를삭제한다(commentId, authorId);
+    }
+    async getDocumentComments(documentId) {
+        this.logger.debug(`문서 코멘트 조회: ${documentId}`);
+        return await this.commentContext.문서의코멘트를조회한다(documentId);
+    }
+    async getComment(commentId) {
+        this.logger.debug(`코멘트 조회: ${commentId}`);
+        return await this.commentContext.코멘트를조회한다(commentId);
+    }
 };
 exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = DocumentService_1 = __decorate([
@@ -156,6 +186,7 @@ exports.DocumentService = DocumentService = DocumentService_1 = __decorate([
     __metadata("design:paramtypes", [document_context_1.DocumentContext,
         template_context_1.TemplateContext,
         approval_process_context_1.ApprovalProcessContext,
-        notification_context_1.NotificationContext])
+        notification_context_1.NotificationContext,
+        comment_context_1.CommentContext])
 ], DocumentService);
 //# sourceMappingURL=document.service.js.map

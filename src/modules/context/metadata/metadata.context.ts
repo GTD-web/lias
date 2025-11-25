@@ -4,6 +4,7 @@ import { DomainPositionService } from '../../domain/position/position.service';
 import { DomainEmployeeService } from '../../domain/employee/employee.service';
 import { DomainEmployeeDepartmentPositionService } from '../../domain/employee-department-position/employee-department-position.service';
 import { EmployeeStatus } from '../../../common/enums/employee.enum';
+import { SSOService } from '../../integrations/sso';
 
 /**
  * 메타데이터 컨텍스트
@@ -19,6 +20,7 @@ export class MetadataContext {
         private readonly positionService: DomainPositionService,
         private readonly employeeService: DomainEmployeeService,
         private readonly employeeDepartmentPositionService: DomainEmployeeDepartmentPositionService,
+        private readonly ssoService: SSOService,
     ) {}
 
     /**
@@ -285,5 +287,21 @@ export class MetadataContext {
         };
 
         return buildHierarchy(null);
+    }
+
+    /**
+     * 로그인
+     */
+    async 로그인한다(email: string, password: string) {
+        this.logger.debug(`로그인 시도: ${email}`);
+
+        // SSO 로그인
+        const loginResult = await this.ssoService.login(email, password);
+
+        this.logger.log(`로그인 성공: ${loginResult.name} (${loginResult.employeeNumber})`);
+
+        return {
+            accessToken: loginResult.accessToken,
+        };
     }
 }

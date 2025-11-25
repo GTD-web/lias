@@ -41,14 +41,6 @@ __decorate([
     __metadata("design:type", String)
 ], SubmitDocumentDirectDto.prototype, "content", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '기안자 ID',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], SubmitDocumentDirectDto.prototype, "drafterId", void 0);
-__decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '추가 메타데이터 (금액, 날짜 등)',
         example: { amount: 100000, date: '2025-01-01' },

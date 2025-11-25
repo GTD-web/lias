@@ -821,7 +821,7 @@ export class DocumentContext {
             ],
         );
 
-        // 4. 내가 참조자로 있는 문서 통계 (내가 기안한 문서 제외)
+        // 4. 내가 참조자로 있는 문서 통계 (내가 기안한 문서 제외, IMPLEMENTED 상태만)
         const referenceStats = await this.dataSource.query(
             `
             SELECT COUNT(DISTINCT d.id) as received_reference
@@ -830,28 +830,45 @@ export class DocumentContext {
             WHERE ass."stepType" = $1
             AND ass."approverId" = $2
             AND d."drafterId" != $2
-            AND d.status != $3
+            AND d.status = $3
             `,
-            [ApprovalStepType.REFERENCE, userId, DocumentStatus.DRAFT],
+            [ApprovalStepType.REFERENCE, userId, DocumentStatus.IMPLEMENTED],
+        );
+
+        // 5. 수신함: 내가 결재라인에 있는 모든 받은 문서 (내가 기안한 문서 제외, DRAFT 제외)
+        // 합의(AGREEMENT)와 결재(APPROVAL)만 포함, 시행(IMPLEMENTATION)과 참조(REFERENCE)는 제외
+        const receivedStats = await this.dataSource.query(
+            `
+            SELECT COUNT(DISTINCT d.id) as received
+            FROM documents d
+            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+            WHERE ass."approverId" = $1
+            AND d."drafterId" != $1
+            AND d.status != $2
+            AND ass."stepType" IN ($3, $4)
+            `,
+            [userId, DocumentStatus.DRAFT, ApprovalStepType.AGREEMENT, ApprovalStepType.APPROVAL],
         );
 
         const draftedStats = myDraftedStats[0];
         const draftedPendingStats = myDraftedPendingSteps[0];
         const approvalLineStats = myApprovalLineStats[0];
         const refStats = referenceStats[0];
+        const recvStats = receivedStats[0];
 
         return {
             DRAFT: parseInt(draftedStats.draft || '0'),
+            RECEIVED: parseInt(recvStats.received || '0'),
             PENDING: parseInt(draftedStats.pending || '0'),
             // 내가 기안한 문서 + 내가 참여하는 문서 (중복 제거됨)
             PENDING_AGREEMENT:
-                parseInt(draftedPendingStats.drafted_pending_agreement || '0') +
+                // parseInt(draftedPendingStats.drafted_pending_agreement || '0') +
                 parseInt(approvalLineStats.approval_line_agreement || '0'),
             PENDING_APPROVAL:
-                parseInt(draftedPendingStats.drafted_pending_approval || '0') +
+                // parseInt(draftedPendingStats.drafted_pending_approval || '0') +
                 parseInt(approvalLineStats.approval_line_approval || '0'),
             IMPLEMENTATION:
-                parseInt(draftedPendingStats.drafted_implementation || '0') +
+                // parseInt(draftedPendingStats.drafted_implementation || '0') +
                 parseInt(approvalLineStats.approval_line_implementation || '0'),
             APPROVED: parseInt(draftedStats.approved || '0'),
             REJECTED: parseInt(draftedStats.rejected || '0'),
@@ -894,6 +911,25 @@ export class DocumentContext {
                     'document.status = :status',
                     { status: DocumentStatus.DRAFT },
                 );
+                break;
+
+            case 'RECEIVED':
+                // 수신함 (내가 결재라인에 있는 모든 받은 문서, 내가 기안한 문서 제외, DRAFT 제외)
+                // 합의(AGREEMENT)와 결재(APPROVAL)만 포함, 시행(IMPLEMENTATION)과 참조(REFERENCE)는 제외
+                qb.andWhere('document.drafterId != :userId', { userId: params.userId })
+                    .andWhere('document.status != :draftStatus', { draftStatus: DocumentStatus.DRAFT })
+                    .andWhere(
+                        `document.id IN (
+                        SELECT d.id
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE ass."approverId" = :userId
+                        AND ass."stepType" IN (:...receivedStepTypes)
+                    )`,
+                        {
+                            receivedStepTypes: [ApprovalStepType.AGREEMENT, ApprovalStepType.APPROVAL],
+                        },
+                    );
                 break;
 
             case 'PENDING':
@@ -1035,10 +1071,10 @@ export class DocumentContext {
                 break;
 
             case 'RECEIVED_REFERENCE':
-                // 수신참조함 (내가 참조자로 있는 문서, 내가 기안한 문서 제외)
+                // 수신참조함 (내가 참조자로 있는 문서, 내가 기안한 문서 제외, IMPLEMENTED 상태만)
                 qb.andWhere('document.drafterId != :userId', { userId: params.userId }).andWhere(
-                    'document.status != :draftStatus',
-                    { draftStatus: DocumentStatus.DRAFT },
+                    'document.status = :implementedStatus',
+                    { implementedStatus: DocumentStatus.IMPLEMENTED },
                 );
 
                 // 기본 조건: 내가 참조자로 있는 문서
@@ -1055,6 +1091,7 @@ export class DocumentContext {
                         WHERE ass."stepType" = :referenceType
                         AND ass."approverId" = :userId
                         AND ass."status" = :referenceStatus
+                        AND d.status = :implementedStatus
                     )`,
                         {
                             referenceType: ApprovalStepType.REFERENCE,
@@ -1070,6 +1107,7 @@ export class DocumentContext {
                         INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
                         WHERE ass."stepType" = :referenceType
                         AND ass."approverId" = :userId
+                        AND d.status = :implementedStatus
                     )`,
                         {
                             referenceType: ApprovalStepType.REFERENCE,

@@ -9,3 +9,4 @@ export { DocumentTemplate } from './document-template/document-template.entity';
 export { Category } from './category/category.entity';
 export { ApprovalStepTemplate } from './approval-step-template/approval-step-template.entity';
 export { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-snapshot.entity';
+export { Comment } from './comment/comment.entity';

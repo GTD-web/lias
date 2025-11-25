@@ -23,41 +23,56 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
         this.notificationContext = notificationContext;
         this.logger = new common_1.Logger(ApprovalProcessService_1.name);
     }
-    async approveStep(dto) {
+    async approveStep(dto, approverId) {
         this.logger.log(`결재 승인 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.approveStep(dto);
+        const result = await this.approvalProcessContext.approveStep({
+            ...dto,
+            approverId: approverId,
+        });
         this.sendApproveNotification(result.documentId, result.id, result.approver.employeeNumber).catch((error) => {
             this.logger.error('결재 승인 알림 전송 실패', error);
         });
         return result;
     }
-    async rejectStep(dto) {
+    async rejectStep(dto, rejecterId) {
         this.logger.log(`결재 반려 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.rejectStep(dto);
+        const result = await this.approvalProcessContext.rejectStep({
+            ...dto,
+            approverId: rejecterId,
+        });
         this.sendRejectNotification(result.documentId, dto.comment, result.approver.employeeNumber).catch((error) => {
             this.logger.error('결재 반려 알림 전송 실패', error);
         });
         return result;
     }
-    async completeAgreement(dto) {
+    async completeAgreement(dto, agreerId) {
         this.logger.log(`협의 완료 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.completeAgreement(dto);
+        const result = await this.approvalProcessContext.completeAgreement({
+            ...dto,
+            agreerId: agreerId,
+        });
         this.sendCompleteAgreementNotification(result.documentId, result.approver.employeeNumber).catch((error) => {
             this.logger.error('협의 완료 알림 전송 실패', error);
         });
         return result;
     }
-    async completeImplementation(dto) {
+    async completeImplementation(dto, implementerId) {
         this.logger.log(`시행 완료 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.completeImplementation(dto);
+        const result = await this.approvalProcessContext.completeImplementation({
+            ...dto,
+            implementerId: implementerId,
+        });
         this.sendCompleteImplementationNotification(result.documentId, result.approver.employeeNumber).catch((error) => {
             this.logger.error('시행 완료 알림 전송 실패', error);
         });
         return result;
     }
-    async cancelApproval(dto) {
+    async cancelApproval(dto, cancelerId) {
         this.logger.log(`결재 취소 요청: ${dto.documentId}`);
-        return await this.approvalProcessContext.cancelApproval(dto);
+        return await this.approvalProcessContext.cancelApproval({
+            ...dto,
+            requesterId: cancelerId,
+        });
     }
     async getMyPendingApprovals(userId, type, page, limit) {
         this.logger.debug(`내 결재 대기 목록 조회: userId=${userId}, type=${type}, page=${page}, limit=${limit}`);
@@ -67,7 +82,7 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
         this.logger.debug(`문서 결재 단계 목록 조회: ${documentId}`);
         return await this.approvalProcessContext.getApprovalSteps(documentId);
     }
-    async processApprovalAction(dto) {
+    async processApprovalAction(dto, approverId) {
         this.logger.log(`통합 결재 액션 처리 요청: ${dto.type}`);
         switch (dto.type) {
             case dtos_1.ApprovalActionType.APPROVE:
@@ -76,9 +91,8 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
                 }
                 return await this.approveStep({
                     stepSnapshotId: dto.stepSnapshotId,
-                    approverId: dto.approverId,
                     comment: dto.comment,
-                });
+                }, approverId);
             case dtos_1.ApprovalActionType.REJECT:
                 if (!dto.stepSnapshotId) {
                     throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
@@ -88,28 +102,25 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
                 }
                 return await this.rejectStep({
                     stepSnapshotId: dto.stepSnapshotId,
-                    approverId: dto.approverId,
                     comment: dto.comment,
-                });
+                }, approverId);
             case dtos_1.ApprovalActionType.COMPLETE_AGREEMENT:
                 if (!dto.stepSnapshotId) {
                     throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
                 }
                 return await this.completeAgreement({
                     stepSnapshotId: dto.stepSnapshotId,
-                    agreerId: dto.approverId,
                     comment: dto.comment,
-                });
+                }, approverId);
             case dtos_1.ApprovalActionType.COMPLETE_IMPLEMENTATION:
                 if (!dto.stepSnapshotId) {
                     throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
                 }
                 return await this.completeImplementation({
                     stepSnapshotId: dto.stepSnapshotId,
-                    implementerId: dto.approverId,
                     comment: dto.comment,
                     resultData: dto.resultData,
-                });
+                }, approverId);
             case dtos_1.ApprovalActionType.CANCEL:
                 if (!dto.documentId) {
                     throw new common_1.BadRequestException('documentId는 필수입니다.');
@@ -119,9 +130,8 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
                 }
                 return await this.cancelApproval({
                     documentId: dto.documentId,
-                    requesterId: dto.approverId,
                     reason: dto.reason,
-                });
+                }, approverId);
             default:
                 throw new common_1.BadRequestException(`지원하지 않는 액션 타입입니다: ${dto.type}`);
         }

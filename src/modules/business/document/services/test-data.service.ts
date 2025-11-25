@@ -322,7 +322,6 @@ export class TestDataService {
             documentTemplateId: template.id,
             title: options?.title || `테스트 문서_${new Date().getTime()}`,
             content: `<h1>테스트 문서</h1><p>자동 생성된 테스트 문서입니다.</p><p>생성 시각: ${new Date().toLocaleString('ko-KR')}</p>`,
-            drafterId: drafter.id,
             metadata: {
                 testData: true,
                 createdBy: 'TestDataService',
@@ -331,7 +330,7 @@ export class TestDataService {
             approvalSteps,
         };
 
-        const document = await this.documentService.createDocument(createDto);
+        const document = await this.documentService.createDocument(createDto, drafter.id);
 
         this.logger.log(`테스트 문서 생성 완료: ${document.id}`);
         return {

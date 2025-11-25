@@ -13,6 +13,7 @@ const department_module_1 = require("../../domain/department/department.module")
 const position_module_1 = require("../../domain/position/position.module");
 const employee_module_1 = require("../../domain/employee/employee.module");
 const employee_department_position_module_1 = require("../../domain/employee-department-position/employee-department-position.module");
+const sso_module_1 = require("../../integrations/sso/sso.module");
 let MetadataContextModule = class MetadataContextModule {
 };
 exports.MetadataContextModule = MetadataContextModule;
@@ -23,6 +24,7 @@ exports.MetadataContextModule = MetadataContextModule = __decorate([
             position_module_1.DomainPositionModule,
             employee_module_1.DomainEmployeeModule,
             employee_department_position_module_1.DomainEmployeeDepartmentPositionModule,
+            sso_module_1.SSOModule,
         ],
         providers: [metadata_context_1.MetadataContext],
         exports: [metadata_context_1.MetadataContext],

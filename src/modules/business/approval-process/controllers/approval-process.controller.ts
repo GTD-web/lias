@@ -16,10 +16,12 @@ import {
     QueryMyPendingDto,
     PaginatedPendingApprovalsResponseDto,
 } from '../dtos';
+import { Employee } from '../../../domain/employee/employee.entity';
+import { User } from '../../../../common/decorators/user.decorator';
 
 @ApiTags('결재 프로세스')
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('approval-process')
 export class ApprovalProcessController {
     constructor(private readonly approvalProcessService: ApprovalProcessService) {}
@@ -42,8 +44,8 @@ export class ApprovalProcessController {
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 결재만 승인 가능, 순서 검증 실패 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '결재 단계를 찾을 수 없음' })
-    async approveStep(@Body() dto: ApproveStepDto) {
-        return await this.approvalProcessService.approveStep(dto);
+    async approveStep(@User() user: Employee, @Body() dto: ApproveStepDto) {
+        return await this.approvalProcessService.approveStep(dto, user.id);
     }
 
     /**
@@ -63,8 +65,8 @@ export class ApprovalProcessController {
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '결재 단계를 찾을 수 없음' })
-    async rejectStep(@Body() dto: RejectStepDto) {
-        return await this.approvalProcessService.rejectStep(dto);
+    async rejectStep(@User() user: Employee, @Body() dto: RejectStepDto) {
+        return await this.approvalProcessService.rejectStep(dto, user.id);
     }
 
     /**
@@ -80,8 +82,8 @@ export class ApprovalProcessController {
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 협의만 완료 가능)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '협의 단계를 찾을 수 없음' })
-    async completeAgreement(@Body() dto: CompleteAgreementDto) {
-        return await this.approvalProcessService.completeAgreement(dto);
+    async completeAgreement(@User() user: Employee, @Body() dto: CompleteAgreementDto) {
+        return await this.approvalProcessService.completeAgreement(dto, user.id);
     }
 
     /**
@@ -100,8 +102,8 @@ export class ApprovalProcessController {
     @ApiResponse({ status: 400, description: '잘못된 요청 (대기 중인 시행만 완료 가능, 모든 결재 미완료 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '시행 단계를 찾을 수 없음' })
-    async completeImplementation(@Body() dto: CompleteImplementationDto) {
-        return await this.approvalProcessService.completeImplementation(dto);
+    async completeImplementation(@User() user: Employee, @Body() dto: CompleteImplementationDto) {
+        return await this.approvalProcessService.completeImplementation(dto, user.id);
     }
 
     /**
@@ -135,8 +137,8 @@ export class ApprovalProcessController {
         description: '권한 없음 (기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소 가능)',
     })
     @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
-    async cancelApproval(@Body() dto: CancelApprovalDto) {
-        return await this.approvalProcessService.cancelApproval(dto);
+    async cancelApproval(@User() user: Employee, @Body() dto: CancelApprovalDto) {
+        return await this.approvalProcessService.cancelApproval(dto, user.id);
     }
 
     /**
@@ -158,9 +160,9 @@ export class ApprovalProcessController {
             '- ✅ 정상: 페이징 처리',
     })
     @ApiResponse({ status: 200, description: '조회 성공', type: PaginatedPendingApprovalsResponseDto })
-    async getMyPendingApprovals(@Query() query: QueryMyPendingDto) {
+    async getMyPendingApprovals(@User() user: Employee, @Query() query: QueryMyPendingDto) {
         return await this.approvalProcessService.getMyPendingApprovals(
-            query.userId,
+            user.id,
             query.type,
             query.page || 1,
             query.limit || 20,
@@ -211,7 +213,7 @@ export class ApprovalProcessController {
     @ApiResponse({ status: 400, description: '잘못된 요청 (필수 필드 누락, 잘못된 타입 등)' })
     @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '결재 단계 또는 문서를 찾을 수 없음' })
-    async processApprovalAction(@Body() dto: ProcessApprovalActionDto) {
-        return await this.approvalProcessService.processApprovalAction(dto);
+    async processApprovalAction(@User() user: Employee, @Body() dto: ProcessApprovalActionDto) {
+        return await this.approvalProcessService.processApprovalAction(dto, user.id);
     }
 }

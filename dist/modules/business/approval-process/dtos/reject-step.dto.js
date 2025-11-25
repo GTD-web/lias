@@ -25,14 +25,6 @@ __decorate([
 ], RejectStepDto.prototype, "stepSnapshotId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '결재자 ID',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], RejectStepDto.prototype, "approverId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
         description: '반려 사유 (필수)',
         example: '내용을 수정하여 재기안 바랍니다.',
     }),

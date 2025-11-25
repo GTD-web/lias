@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const template_service_1 = require("../services/template.service");
 const category_dto_1 = require("../dtos/category.dto");
 const template_response_dto_1 = require("../dtos/template-response.dto");
@@ -198,6 +199,8 @@ __decorate([
 ], CategoryController.prototype, "deleteCategory", null);
 exports.CategoryController = CategoryController = __decorate([
     (0, swagger_1.ApiTags)('카테고리 관리'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('categories'),
     __metadata("design:paramtypes", [template_service_1.TemplateService])
 ], CategoryController);

@@ -19,6 +19,7 @@ import { DomainModule } from './modules/domain/domain.module';
 //     TestDataBusinessModule,
 // } from './modules/business';
 
+import { AuthBusinessModule } from './modules/business/auth/auth.module';
 import { TemplateBusinessModule } from './modules/business/template/template.module';
 import { MetadataModule } from './modules/business/metadata/metadata.module';
 import { DocumentBusinessModule } from './modules/business/document/document.module';
@@ -72,6 +73,7 @@ import { NotificationContextModule } from './modules/context/notification';
         SSOModule, // SSO 통합 모듈
         NotificationModule, // 알림 서비스 통합 모듈
         NotificationContextModule, // 알림 컨텍스트 모듈 (FCM 토큰 조회 + 알림 전송)
+        AuthBusinessModule, // 인증 비즈니스 모듈
         TemplateBusinessModule,
         MetadataModule,
         DocumentBusinessModule,

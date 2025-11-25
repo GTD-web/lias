@@ -15,21 +15,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const document_service_1 = require("../services/document.service");
 const dtos_1 = require("../dtos");
+const comment_dto_1 = require("../dtos/comment.dto");
+const user_decorator_1 = require("../../../../common/decorators/user.decorator");
+const employee_entity_1 = require("../../../domain/employee/employee.entity");
 let DocumentController = class DocumentController {
     constructor(documentService) {
         this.documentService = documentService;
     }
-    async createDocument(dto) {
-        return await this.documentService.createDocument(dto);
+    async createDocument(user, dto) {
+        return await this.documentService.createDocument(dto, user.id);
     }
-    async getMyAllDocumentsStatistics(userId) {
-        return await this.documentService.getMyAllDocumentsStatistics(userId);
+    async getMyAllDocumentsStatistics(user) {
+        return await this.documentService.getMyAllDocumentsStatistics(user.id);
     }
-    async getMyAllDocuments(query) {
+    async getMyAllDocuments(user, query) {
         return await this.documentService.getMyAllDocuments({
-            userId: query.userId,
+            userId: user.id,
             filterType: query.filterType,
             approvalStatus: query.approvalStatus,
             referenceReadStatus: query.referenceReadStatus,
@@ -41,13 +45,13 @@ let DocumentController = class DocumentController {
             limit: query.limit,
         });
     }
-    async getMyDrafts(drafterId, page, limit) {
-        return await this.documentService.getMyDrafts(drafterId, page || 1, limit || 20);
+    async getMyDrafts(user, page, limit) {
+        return await this.documentService.getMyDrafts(user.id, page || 1, limit || 20);
     }
     async getDocument(documentId) {
         return await this.documentService.getDocument(documentId);
     }
-    async updateDocument(documentId, dto) {
+    async updateDocument(user, documentId, dto) {
         return await this.documentService.updateDocument(documentId, dto);
     }
     async deleteDocument(documentId) {
@@ -59,14 +63,29 @@ let DocumentController = class DocumentController {
             ...dto,
         });
     }
-    async submitDocumentDirect(dto) {
-        return await this.documentService.submitDocumentDirect(dto);
+    async submitDocumentDirect(user, dto) {
+        return await this.documentService.submitDocumentDirect(dto, user.id);
     }
     async getTemplateForNewDocument(templateId, drafterId) {
         return await this.documentService.getTemplateForNewDocument(templateId, drafterId);
     }
     async getDocumentStatistics(userId) {
         return await this.documentService.getDocumentStatistics(userId);
+    }
+    async createComment(documentId, user, dto) {
+        return await this.documentService.createComment(documentId, dto, user.id);
+    }
+    async getDocumentComments(documentId) {
+        return await this.documentService.getDocumentComments(documentId);
+    }
+    async updateComment(commentId, user, dto) {
+        return await this.documentService.updateComment(commentId, dto, user.id);
+    }
+    async deleteComment(commentId, user) {
+        await this.documentService.deleteComment(commentId, user.id);
+    }
+    async getComment(commentId) {
+        return await this.documentService.getComment(commentId);
     }
 };
 exports.DocumentController = DocumentController;
@@ -94,9 +113,10 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.CreateDocumentDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CreateDocumentDto]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "createDocument", null);
 __decorate([
@@ -108,24 +128,19 @@ __decorate([
             '```json\n' +
             '{\n' +
             '  "DRAFT": 1,                  // 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
+            '  "RECEIVED": 15,              // 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
             '  "PENDING": 10,               // 상신함 (내가 기안한 제출된 전체 문서)\n' +
             '  "PENDING_AGREEMENT": 1,      // 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '  "PENDING_APPROVAL": 2,       // 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '  "IMPLEMENTATION": 1,         // 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태)\n' +
             '  "APPROVED": 20,              // 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
             '  "REJECTED": 3,               // 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
-            '  "RECEIVED_REFERENCE": 23     // 수신참조함 (내가 참조자로 있는 문서)\n' +
+            '  "RECEIVED_REFERENCE": 23     // 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '}\n' +
             '```\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 통계 조회\n' +
             '- ❌ 실패: 존재하지 않는 사용자 ID',
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: 'userId',
-        required: true,
-        description: '사용자 ID',
-        example: '550e8400-e29b-41d4-a716-446655440000',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -136,25 +151,26 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, user_decorator_1.User)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getMyAllDocumentsStatistics", null);
 __decorate([
-    (0, common_1.Get)('my-all'),
+    (0, common_1.Get)('my-all/documents'),
     (0, swagger_1.ApiOperation)({
         summary: '내 전체 문서 목록 조회 (통계와 동일한 필터)',
         description: '통계 조회와 동일한 필터로 실제 문서 목록을 조회합니다.\n\n' +
             '**필터 타입 (filterType):**\n' +
             '- DRAFT: 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
+            '- RECEIVED: 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
             '- PENDING: 상신함 (내가 기안한 제출된 전체 문서)\n' +
             '- PENDING_AGREEMENT: 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '- PENDING_APPROVAL: 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '- IMPLEMENTATION: 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태 - 결재 완료, 시행 대기)\n' +
             '- APPROVED: 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
             '- REJECTED: 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
-            '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서)\n' +
+            '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '- 미지정: 내가 기안한 문서 + 내가 참여하는 문서 전체\n\n' +
             '**승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용:**\n' +
             '- SCHEDULED: 승인 예정 (아직 내 차례가 아님, 내 앞에 PENDING 단계가 있음)\n' +
@@ -169,6 +185,7 @@ __decorate([
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 전체 문서 목록 조회 (filterType 없음)\n' +
             '- ✅ 정상: DRAFT 필터링\n' +
+            '- ✅ 정상: RECEIVED 필터링\n' +
             '- ✅ 정상: PENDING_APPROVAL + CURRENT 필터링\n' +
             '- ✅ 정상: PENDING_AGREEMENT + SCHEDULED 필터링\n' +
             '- ✅ 정상: IMPLEMENTATION 필터링\n' +
@@ -186,13 +203,14 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Query)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.QueryMyAllDocumentsDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.QueryMyAllDocumentsDto]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getMyAllDocuments", null);
 __decorate([
-    (0, common_1.Get)('my-drafts/:drafterId'),
+    (0, common_1.Get)('my-drafts'),
     (0, swagger_1.ApiOperation)({
         summary: '내가 작성한 문서 전체 조회 (상태 무관)',
         description: '내가 작성한 모든 문서를 상태에 상관없이 조회합니다.\n\n' +
@@ -204,11 +222,6 @@ __decorate([
             '- ✅ 정상: 내가 작성한 문서 전체 조회\n' +
             '- ✅ 정상: 페이징 처리\n' +
             '- ❌ 실패: 존재하지 않는 사용자 ID',
-    }),
-    (0, swagger_1.ApiParam)({
-        name: 'userId',
-        description: '사용자 ID',
-        example: '550e8400-e29b-41d4-a716-446655440000',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'page',
@@ -231,11 +244,11 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Param)('drafterId')),
+    __param(0, (0, user_decorator_1.User)()),
     __param(1, (0, common_1.Query)('page')),
     __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, Number, Number]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getMyDrafts", null);
 __decorate([
@@ -299,10 +312,11 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Param)('documentId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Param)('documentId')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dtos_1.UpdateDocumentDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, String, dtos_1.UpdateDocumentDto]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "updateDocument", null);
 __decorate([
@@ -400,9 +414,10 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.SubmitDocumentDirectDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.SubmitDocumentDirectDto]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "submitDocumentDirect", null);
 __decorate([
@@ -484,8 +499,173 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getDocumentStatistics", null);
+__decorate([
+    (0, common_1.Post)(':documentId/comments'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, swagger_1.ApiOperation)({
+        summary: '문서에 코멘트 작성',
+        description: '문서에 코멘트를 작성합니다. 대댓글 작성도 가능합니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 작성\n' +
+            '- ✅ 정상: 대댓글 작성 (parentCommentId 포함)\n' +
+            '- ❌ 실패: 존재하지 않는 문서\n' +
+            '- ❌ 실패: 존재하지 않는 부모 코멘트',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'documentId',
+        description: '문서 ID',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: '코멘트 작성 성공',
+        type: comment_dto_1.CommentResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: '문서 또는 부모 코멘트를 찾을 수 없음',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: '잘못된 요청',
+    }),
+    __param(0, (0, common_1.Param)('documentId')),
+    __param(1, (0, user_decorator_1.User)()),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, employee_entity_1.Employee,
+        comment_dto_1.CreateCommentDto]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "createComment", null);
+__decorate([
+    (0, common_1.Get)(':documentId/comments'),
+    (0, swagger_1.ApiOperation)({
+        summary: '문서의 코멘트 목록 조회',
+        description: '문서의 모든 코멘트를 조회합니다. 대댓글도 함께 조회됩니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 목록 조회\n' +
+            '- ❌ 실패: 존재하지 않는 문서',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'documentId',
+        description: '문서 ID',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '코멘트 목록 조회 성공',
+        type: [comment_dto_1.CommentResponseDto],
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: '문서를 찾을 수 없음',
+    }),
+    __param(0, (0, common_1.Param)('documentId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "getDocumentComments", null);
+__decorate([
+    (0, common_1.Put)('comments/:commentId'),
+    (0, swagger_1.ApiOperation)({
+        summary: '코멘트 수정',
+        description: '작성한 코멘트를 수정합니다. 본인의 코멘트만 수정할 수 있습니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 수정\n' +
+            '- ❌ 실패: 존재하지 않는 코멘트\n' +
+            '- ❌ 실패: 다른 사람의 코멘트 수정',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'commentId',
+        description: '코멘트 ID',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '코멘트 수정 성공',
+        type: comment_dto_1.CommentResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: '코멘트를 찾을 수 없음',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: '본인의 코멘트가 아님',
+    }),
+    __param(0, (0, common_1.Param)('commentId')),
+    __param(1, (0, user_decorator_1.User)()),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, employee_entity_1.Employee, comment_dto_1.UpdateCommentDto]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "updateComment", null);
+__decorate([
+    (0, common_1.Delete)('comments/:commentId'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, swagger_1.ApiOperation)({
+        summary: '코멘트 삭제',
+        description: '작성한 코멘트를 삭제합니다. 본인의 코멘트만 삭제할 수 있습니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 삭제\n' +
+            '- ❌ 실패: 존재하지 않는 코멘트\n' +
+            '- ❌ 실패: 다른 사람의 코멘트 삭제',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'commentId',
+        description: '코멘트 ID',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'authorId',
+        required: true,
+        description: '작성자 ID (본인 확인용)',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 204,
+        description: '코멘트 삭제 성공',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: '코멘트를 찾을 수 없음',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: '본인의 코멘트가 아님',
+    }),
+    __param(0, (0, common_1.Param)('commentId')),
+    __param(1, (0, user_decorator_1.User)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, employee_entity_1.Employee]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "deleteComment", null);
+__decorate([
+    (0, common_1.Get)('comments/:commentId'),
+    (0, swagger_1.ApiOperation)({
+        summary: '코멘트 상세 조회',
+        description: '특정 코멘트의 상세 정보를 조회합니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 상세 조회\n' +
+            '- ❌ 실패: 존재하지 않는 코멘트',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'commentId',
+        description: '코멘트 ID',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '코멘트 상세 조회 성공',
+        type: comment_dto_1.CommentResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: '코멘트를 찾을 수 없음',
+    }),
+    __param(0, (0, common_1.Param)('commentId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "getComment", null);
 exports.DocumentController = DocumentController = __decorate([
     (0, swagger_1.ApiTags)('문서 관리'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('documents'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])
 ], DocumentController);

@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
  * - IMPLEMENTATION: 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태 - 결재 완료, 시행 대기)
  * - APPROVED: 기결함 (내가 기안한 문서 중 IMPLEMENTED 상태 - 시행까지 완료)
  * - REJECTED: 반려함 (내가 기안한 문서 중 REJECTED 상태)
- * - RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서)
+ * - RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)
  */
 export class MyAllDocumentsStatisticsResponseDto {
     @ApiProperty({
@@ -19,6 +19,12 @@ export class MyAllDocumentsStatisticsResponseDto {
         example: 1,
     })
     DRAFT: number;
+
+    @ApiProperty({
+        description: '수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)',
+        example: 10,
+    })
+    RECEIVED: number;
 
     @ApiProperty({
         description: '상신함 (내가 기안한 문서 중 제출된 전체)',
@@ -33,7 +39,7 @@ export class MyAllDocumentsStatisticsResponseDto {
     PENDING_AGREEMENT: number;
 
     @ApiProperty({
-        description: '결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)',
+        description: '미결함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)',
         example: 2,
     })
     PENDING_APPROVAL: number;
@@ -57,7 +63,7 @@ export class MyAllDocumentsStatisticsResponseDto {
     REJECTED: number;
 
     @ApiProperty({
-        description: '수신참조함 (내가 참조자로 있는 문서)',
+        description: '수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)',
         example: 23,
     })
     RECEIVED_REFERENCE: number;

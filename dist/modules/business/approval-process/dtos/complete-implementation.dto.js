@@ -24,14 +24,6 @@ __decorate([
     __metadata("design:type", String)
 ], CompleteImplementationDto.prototype, "stepSnapshotId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '시행자 ID',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CompleteImplementationDto.prototype, "implementerId", void 0);
-__decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '시행 의견',
         example: '시행 완료했습니다.',

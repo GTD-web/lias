@@ -4,8 +4,8 @@ exports.setupSwagger = setupSwagger;
 const swagger_1 = require("@nestjs/swagger");
 function setupSwagger(app, dtos) {
     const config = new swagger_1.DocumentBuilder()
-        .setTitle('Resource Management API')
-        .setDescription('Resource Management API Description')
+        .setTitle('Internal Approval System API')
+        .setDescription('Internal Approval System API Description')
         .setVersion('1.0')
         .addBearerAuth()
         .build();

@@ -8,6 +8,8 @@ import { Type } from 'class-transformer';
 export enum MyAllDocumentFilterType {
     /** 임시저장 (내가 기안한 문서 중 DRAFT 상태) */
     DRAFT = 'DRAFT',
+    /** 수신함 (내가 결재라인에 있는 모든 받은 문서) */
+    RECEIVED = 'RECEIVED',
     /** 상신함 (내가 기안한 제출된 전체 문서) */
     PENDING = 'PENDING',
     /** 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태) */
@@ -53,13 +55,14 @@ export enum ReferenceReadStatus {
  *
  * ▣ 필터 타입 (filterType) - 통계와 동일한 구분
  * - DRAFT: 임시저장 (내가 기안한 문서)
+ * - RECEIVED: 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)
  * - PENDING: 상신함 (내가 기안한 제출된 전체 문서)
  * - PENDING_AGREEMENT: 합의함
  * - PENDING_APPROVAL: 결재함
  * - IMPLEMENTATION: 시행함
  * - APPROVED: 기결함
  * - REJECTED: 반려함
- * - RECEIVED_REFERENCE: 수신참조함
+ * - RECEIVED_REFERENCE: 수신참조함 (IMPLEMENTED 상태만)
  *
  * ▣ 승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용
  * - SCHEDULED: 승인 예정 (아직 내 차례가 아님)
@@ -77,24 +80,17 @@ export enum ReferenceReadStatus {
  */
 export class QueryMyAllDocumentsDto {
     @ApiPropertyOptional({
-        description: '사용자 ID (필수)',
-        example: '550e8400-e29b-41d4-a716-446655440000',
-    })
-    @IsOptional()
-    @IsUUID()
-    userId?: string;
-
-    @ApiPropertyOptional({
         description:
             '문서 필터 타입 (통계와 동일한 구분)\n' +
             '- DRAFT: 임시저장\n' +
+            '- RECEIVED: 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
             '- PENDING: 상신함\n' +
             '- PENDING_AGREEMENT: 합의함\n' +
             '- PENDING_APPROVAL: 결재함\n' +
             '- IMPLEMENTATION: 시행함\n' +
             '- APPROVED: 기결함\n' +
             '- REJECTED: 반려함\n' +
-            '- RECEIVED_REFERENCE: 수신참조함',
+            '- RECEIVED_REFERENCE: 수신참조함 (IMPLEMENTED 상태만)',
         enum: MyAllDocumentFilterType,
         example: MyAllDocumentFilterType.PENDING_APPROVAL,
     })

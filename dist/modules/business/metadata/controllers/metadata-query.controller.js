@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MetadataQueryController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const metadata_context_1 = require("../../../context/metadata/metadata.context");
 const uuid_1 = require("uuid");
 let MetadataQueryController = class MetadataQueryController {
@@ -197,6 +198,8 @@ __decorate([
 ], MetadataQueryController.prototype, "getEmployee", null);
 exports.MetadataQueryController = MetadataQueryController = __decorate([
     (0, swagger_1.ApiTags)('메타데이터 조회'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('metadata'),
     __metadata("design:paramtypes", [metadata_context_1.MetadataContext])
 ], MetadataQueryController);

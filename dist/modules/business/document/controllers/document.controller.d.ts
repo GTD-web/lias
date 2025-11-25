@@ -1,11 +1,14 @@
 import { DocumentService } from '../services/document.service';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto } from '../dtos';
+import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
+import { Employee } from '../../../domain/employee/employee.entity';
 export declare class DocumentController {
     private readonly documentService;
     constructor(documentService: DocumentService);
-    createDocument(dto: CreateDocumentDto): Promise<import("../../../domain").Document>;
-    getMyAllDocumentsStatistics(userId: string): Promise<{
+    createDocument(user: Employee, dto: CreateDocumentDto): Promise<import("../../../domain").Document>;
+    getMyAllDocumentsStatistics(user: Employee): Promise<{
         DRAFT: number;
+        RECEIVED: number;
         PENDING: number;
         PENDING_AGREEMENT: number;
         PENDING_APPROVAL: number;
@@ -14,7 +17,7 @@ export declare class DocumentController {
         REJECTED: number;
         RECEIVED_REFERENCE: number;
     }>;
-    getMyAllDocuments(query: QueryMyAllDocumentsDto): Promise<{
+    getMyAllDocuments(user: Employee, query: QueryMyAllDocumentsDto): Promise<{
         data: import("../../../domain").Document[];
         meta: {
             currentPage: number;
@@ -25,7 +28,7 @@ export declare class DocumentController {
             hasPreviousPage: boolean;
         };
     }>;
-    getMyDrafts(drafterId: string, page?: number, limit?: number): Promise<{
+    getMyDrafts(user: Employee, page?: number, limit?: number): Promise<{
         data: import("../../../domain").Document[];
         meta: {
             currentPage: number;
@@ -37,10 +40,10 @@ export declare class DocumentController {
         };
     }>;
     getDocument(documentId: string): Promise<import("../../../domain").Document>;
-    updateDocument(documentId: string, dto: UpdateDocumentDto): Promise<import("../../../domain").Document>;
+    updateDocument(user: Employee, documentId: string, dto: UpdateDocumentDto): Promise<import("../../../domain").Document>;
     deleteDocument(documentId: string): Promise<void>;
     submitDocument(documentId: string, dto: SubmitDocumentBodyDto): Promise<import("../../../domain").Document>;
-    submitDocumentDirect(dto: SubmitDocumentDirectDto): Promise<import("../../../domain").Document>;
+    submitDocumentDirect(user: Employee, dto: SubmitDocumentDirectDto): Promise<import("../../../domain").Document>;
     getTemplateForNewDocument(templateId: string, drafterId: string): Promise<{
         approvalStepTemplates: any[];
         id: string;
@@ -68,4 +71,9 @@ export declare class DocumentController {
             reference: number;
         };
     }>;
+    createComment(documentId: string, user: Employee, dto: CreateCommentDto): Promise<import("../../../domain").Comment>;
+    getDocumentComments(documentId: string): Promise<import("../../../domain").Comment[]>;
+    updateComment(commentId: string, user: Employee, dto: UpdateCommentDto): Promise<import("../../../domain").Comment>;
+    deleteComment(commentId: string, user: Employee): Promise<void>;
+    getComment(commentId: string): Promise<import("../../../domain").Comment>;
 }

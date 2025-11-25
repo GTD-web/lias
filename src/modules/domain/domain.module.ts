@@ -11,6 +11,7 @@ import { DomainRankModule } from './rank/rank.module';
 import { DomainEmployeeDepartmentPositionModule } from './employee-department-position/employee-department-position.module';
 import { DomainApprovalStepTemplateModule } from './approval-step-template/approval-step-template.module';
 import { DomainApprovalStepSnapshotModule } from './approval-step-snapshot/approval-step-snapshot.module';
+import { DomainCommentModule } from './comment/comment.module';
 
 // 엔티티 import
 import { Category } from './category/category.entity';
@@ -24,6 +25,7 @@ import { Rank } from './rank/rank.entity';
 import { EmployeeDepartmentPosition } from './employee-department-position/employee-department-position.entity';
 import { ApprovalStepTemplate } from './approval-step-template/approval-step-template.entity';
 import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-snapshot.entity';
+import { Comment } from './comment/comment.entity';
 
 /**
  * 글로벌 도메인 모듈
@@ -46,6 +48,7 @@ import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-sna
             EmployeeDepartmentPosition,
             ApprovalStepTemplate,
             ApprovalStepSnapshot,
+            Comment,
         ]),
         // 도메인 모듈들
         DomainCategoryModule,
@@ -59,6 +62,7 @@ import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-sna
         DomainEmployeeDepartmentPositionModule,
         DomainApprovalStepTemplateModule,
         DomainApprovalStepSnapshotModule,
+        DomainCommentModule,
     ],
     exports: [
         // 모든 도메인 서비스를 export하여 다른 모듈에서 사용 가능하도록 함
@@ -73,6 +77,7 @@ import { ApprovalStepSnapshot } from './approval-step-snapshot/approval-step-sna
         DomainEmployeeDepartmentPositionModule,
         DomainApprovalStepTemplateModule,
         DomainApprovalStepSnapshotModule,
+        DomainCommentModule,
     ],
 })
 export class DomainModule {}

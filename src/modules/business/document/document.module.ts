@@ -8,6 +8,7 @@ import { DocumentModule as DocumentContextModule } from '../../context/document/
 import { TemplateModule as TemplateContextModule } from '../../context/template/template.module';
 import { ApprovalProcessModule as ApprovalProcessContextModule } from '../../context/approval-process/approval-process.module';
 import { NotificationContextModule } from '../../context/notification/notification.module';
+import { CommentContextModule } from '../../context/comment/comment.module';
 import { Employee } from '../../domain/employee/employee.entity';
 import { Department } from '../../domain/department/department.entity';
 import { EmployeeDepartmentPosition } from '../../domain/employee-department-position/employee-department-position.entity';
@@ -27,6 +28,7 @@ import { Category } from '../../domain/category/category.entity';
         TemplateContextModule,
         ApprovalProcessContextModule,
         NotificationContextModule,
+        CommentContextModule,
         TypeOrmModule.forFeature([
             Employee,
             Department,

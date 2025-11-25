@@ -8,11 +8,11 @@ export declare class ApprovalProcessService {
     private readonly notificationContext;
     private readonly logger;
     constructor(approvalProcessContext: ApprovalProcessContext, documentContext: DocumentContext, notificationContext: NotificationContext);
-    approveStep(dto: ApproveStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    rejectStep(dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    completeAgreement(dto: CompleteAgreementDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    completeImplementation(dto: CompleteImplementationDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    cancelApproval(dto: CancelApprovalDto): Promise<import("../../../domain").Document>;
+    approveStep(dto: ApproveStepDto, approverId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    rejectStep(dto: RejectStepDto, rejecterId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    completeAgreement(dto: CompleteAgreementDto, agreerId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    completeImplementation(dto: CompleteImplementationDto, implementerId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    cancelApproval(dto: CancelApprovalDto, cancelerId: string): Promise<import("../../../domain").Document>;
     getMyPendingApprovals(userId: string, type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL', page: number, limit: number): Promise<{
         data: {
             documentId: string;
@@ -53,7 +53,7 @@ export declare class ApprovalProcessService {
         };
     }>;
     getApprovalSteps(documentId: string): Promise<import("../../../domain").ApprovalStepSnapshot[]>;
-    processApprovalAction(dto: ProcessApprovalActionDto): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
+    processApprovalAction(dto: ProcessApprovalActionDto, approverId: string): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
     private sendApproveNotification;
     private sendRejectNotification;
     private sendCompleteAgreementNotification;

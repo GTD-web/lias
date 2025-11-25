@@ -33,14 +33,6 @@ __decorate([
     __metadata("design:type", String)
 ], ProcessApprovalActionDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '처리자 ID (결재자/협의자/시행자/기안자)',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], ProcessApprovalActionDto.prototype, "approverId", void 0);
-__decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '결재 단계 스냅샷 ID (approve, reject, complete-agreement, complete-implementation 타입에서 필수)',
         example: 'uuid',
