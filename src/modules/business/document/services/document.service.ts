@@ -3,12 +3,14 @@ import { DocumentContext } from '../../../context/document/document.context';
 import { TemplateContext } from '../../../context/template/template.context';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { NotificationContext } from '../../../context/notification/notification.context';
+import { CommentContext } from '../../../context/comment/comment.context';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
 import {
     CreateDocumentDto as ContextCreateDocumentDto,
     DocumentFilterDto,
 } from '../../../context/document/dtos/document.dto';
 import { ApprovalStepType } from 'src/common/enums/approval.enum';
+import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
 
 /**
  * 문서 비즈니스 서비스
@@ -23,19 +25,20 @@ export class DocumentService {
         private readonly templateContext: TemplateContext,
         private readonly approvalProcessContext: ApprovalProcessContext,
         private readonly notificationContext: NotificationContext,
+        private readonly commentContext: CommentContext,
     ) {}
 
     /**
      * 문서 생성 (임시저장)
      */
-    async createDocument(dto: CreateDocumentDto) {
+    async createDocument(dto: CreateDocumentDto, drafterId: string) {
         this.logger.log(`문서 생성 시작: ${dto.title}`);
 
         const contextDto: ContextCreateDocumentDto = {
             documentTemplateId: dto.documentTemplateId,
             title: dto.title,
             content: dto.content,
-            drafterId: dto.drafterId,
+            drafterId: drafterId,
             metadata: dto.metadata,
             approvalSteps: dto.approvalSteps?.map((step) => ({
                 stepOrder: step.stepOrder,
@@ -169,7 +172,7 @@ export class DocumentService {
      * 바로 기안 (임시저장 없이 바로 기안)
      * 내부적으로 임시저장 후 기안하는 방식으로 처리됩니다.
      */
-    async submitDocumentDirect(dto: SubmitDocumentDirectDto) {
+    async submitDocumentDirect(dto: SubmitDocumentDirectDto, drafterId: string) {
         this.logger.log(`바로 기안 시작: ${dto.title}`);
 
         // 1. 임시저장
@@ -177,11 +180,10 @@ export class DocumentService {
             documentTemplateId: dto.documentTemplateId,
             title: dto.title,
             content: dto.content,
-            drafterId: dto.drafterId,
             metadata: dto.metadata,
         };
 
-        const draftDocument = await this.createDocument(createDto);
+        const draftDocument = await this.createDocument(createDto, drafterId);
         this.logger.debug(`임시저장 완료: ${draftDocument.id}`);
 
         // 2. 기안
@@ -242,5 +244,54 @@ export class DocumentService {
     async getMyDrafts(drafterId: string, page: number, limit: number) {
         this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
         return await this.documentContext.getMyDrafts(drafterId, page, limit);
+    }
+
+    /**
+     * 코멘트 작성
+     */
+    async createComment(documentId: string, dto: CreateCommentDto, authorId: string) {
+        this.logger.log(`코멘트 작성: 문서 ${documentId}`);
+        return await this.commentContext.코멘트를작성한다({
+            documentId: documentId,
+            authorId: authorId,
+            content: dto.content,
+            parentCommentId: dto.parentCommentId,
+        });
+    }
+
+    /**
+     * 코멘트 수정
+     */
+    async updateComment(commentId: string, dto: UpdateCommentDto, authorId: string) {
+        this.logger.log(`코멘트 수정: ${commentId}`);
+        return await this.commentContext.코멘트를수정한다({
+            commentId: commentId,
+            authorId: authorId,
+            content: dto.content,
+        });
+    }
+
+    /**
+     * 코멘트 삭제
+     */
+    async deleteComment(commentId: string, authorId: string) {
+        this.logger.log(`코멘트 삭제: ${commentId}`);
+        return await this.commentContext.코멘트를삭제한다(commentId, authorId);
+    }
+
+    /**
+     * 문서의 코멘트 조회
+     */
+    async getDocumentComments(documentId: string) {
+        this.logger.debug(`문서 코멘트 조회: ${documentId}`);
+        return await this.commentContext.문서의코멘트를조회한다(documentId);
+    }
+
+    /**
+     * 코멘트 상세 조회
+     */
+    async getComment(commentId: string) {
+        this.logger.debug(`코멘트 조회: ${commentId}`);
+        return await this.commentContext.코멘트를조회한다(commentId);
     }
 }

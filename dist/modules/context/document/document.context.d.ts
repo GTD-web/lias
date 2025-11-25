@@ -60,6 +60,7 @@ export declare class DocumentContext {
     }>;
     getMyAllDocumentsStatistics(userId: string): Promise<{
         DRAFT: number;
+        RECEIVED: number;
         PENDING: number;
         PENDING_AGREEMENT: number;
         PENDING_APPROVAL: number;

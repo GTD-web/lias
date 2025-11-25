@@ -24,14 +24,6 @@ __decorate([
     __metadata("design:type", String)
 ], CompleteAgreementDto.prototype, "stepSnapshotId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '협의자 ID',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CompleteAgreementDto.prototype, "agreerId", void 0);
-__decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '협의 의견',
         example: '협의 완료합니다.',

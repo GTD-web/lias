@@ -1,5 +1,6 @@
 export declare enum MyAllDocumentFilterType {
     DRAFT = "DRAFT",
+    RECEIVED = "RECEIVED",
     PENDING = "PENDING",
     PENDING_AGREEMENT = "PENDING_AGREEMENT",
     PENDING_APPROVAL = "PENDING_APPROVAL",
@@ -18,7 +19,6 @@ export declare enum ReferenceReadStatus {
     UNREAD = "UNREAD"
 }
 export declare class QueryMyAllDocumentsDto {
-    userId?: string;
     filterType?: MyAllDocumentFilterType;
     approvalStatus?: ApprovalFilterStatus;
     referenceReadStatus?: ReferenceReadStatus;

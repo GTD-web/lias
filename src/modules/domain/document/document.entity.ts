@@ -13,6 +13,7 @@ import { DocumentStatus } from '../../../common/enums/approval.enum';
 import { Employee } from '../employee/employee.entity';
 import { ApprovalStepSnapshot } from '../approval-step-snapshot/approval-step-snapshot.entity';
 import { DocumentRevision } from '../document-revision/document-revision.entity';
+import { Comment } from '../comment/comment.entity';
 
 /**
  * Document 엔티티
@@ -99,4 +100,7 @@ export class Document {
 
     @OneToMany(() => DocumentRevision, (revision) => revision.document)
     revisions: DocumentRevision[];
+
+    @OneToMany(() => Comment, (comment) => comment.document)
+    comments: Comment[];
 }

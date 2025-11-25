@@ -4,6 +4,7 @@ import { DomainDepartmentModule } from '../../domain/department/department.modul
 import { DomainPositionModule } from '../../domain/position/position.module';
 import { DomainEmployeeModule } from '../../domain/employee/employee.module';
 import { DomainEmployeeDepartmentPositionModule } from '../../domain/employee-department-position/employee-department-position.module';
+import { SSOModule } from '../../integrations/sso/sso.module';
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { DomainEmployeeDepartmentPositionModule } from '../../domain/employee-de
         DomainPositionModule,
         DomainEmployeeModule,
         DomainEmployeeDepartmentPositionModule,
+        SSOModule,
     ],
     providers: [MetadataContext],
     exports: [MetadataContext],

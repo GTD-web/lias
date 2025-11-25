@@ -20,6 +20,7 @@ const rank_module_1 = require("./rank/rank.module");
 const employee_department_position_module_1 = require("./employee-department-position/employee-department-position.module");
 const approval_step_template_module_1 = require("./approval-step-template/approval-step-template.module");
 const approval_step_snapshot_module_1 = require("./approval-step-snapshot/approval-step-snapshot.module");
+const comment_module_1 = require("./comment/comment.module");
 const category_entity_1 = require("./category/category.entity");
 const document_template_entity_1 = require("./document-template/document-template.entity");
 const document_entity_1 = require("./document/document.entity");
@@ -31,6 +32,7 @@ const rank_entity_1 = require("./rank/rank.entity");
 const employee_department_position_entity_1 = require("./employee-department-position/employee-department-position.entity");
 const approval_step_template_entity_1 = require("./approval-step-template/approval-step-template.entity");
 const approval_step_snapshot_entity_1 = require("./approval-step-snapshot/approval-step-snapshot.entity");
+const comment_entity_1 = require("./comment/comment.entity");
 let DomainModule = class DomainModule {
 };
 exports.DomainModule = DomainModule;
@@ -50,6 +52,7 @@ exports.DomainModule = DomainModule = __decorate([
                 employee_department_position_entity_1.EmployeeDepartmentPosition,
                 approval_step_template_entity_1.ApprovalStepTemplate,
                 approval_step_snapshot_entity_1.ApprovalStepSnapshot,
+                comment_entity_1.Comment,
             ]),
             category_module_1.DomainCategoryModule,
             document_template_module_1.DomainDocumentTemplateModule,
@@ -62,6 +65,7 @@ exports.DomainModule = DomainModule = __decorate([
             employee_department_position_module_1.DomainEmployeeDepartmentPositionModule,
             approval_step_template_module_1.DomainApprovalStepTemplateModule,
             approval_step_snapshot_module_1.DomainApprovalStepSnapshotModule,
+            comment_module_1.DomainCommentModule,
         ],
         exports: [
             category_module_1.DomainCategoryModule,
@@ -75,6 +79,7 @@ exports.DomainModule = DomainModule = __decorate([
             employee_department_position_module_1.DomainEmployeeDepartmentPositionModule,
             approval_step_template_module_1.DomainApprovalStepTemplateModule,
             approval_step_snapshot_module_1.DomainApprovalStepSnapshotModule,
+            comment_module_1.DomainCommentModule,
         ],
     })
 ], DomainModule);

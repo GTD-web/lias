@@ -1,14 +1,15 @@
 import { ApprovalProcessService } from '../services/approval-process.service';
 import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, ProcessApprovalActionDto, QueryMyPendingDto } from '../dtos';
+import { Employee } from '../../../domain/employee/employee.entity';
 export declare class ApprovalProcessController {
     private readonly approvalProcessService;
     constructor(approvalProcessService: ApprovalProcessService);
-    approveStep(dto: ApproveStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    rejectStep(dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    completeAgreement(dto: CompleteAgreementDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    completeImplementation(dto: CompleteImplementationDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    cancelApproval(dto: CancelApprovalDto): Promise<import("../../../domain").Document>;
-    getMyPendingApprovals(query: QueryMyPendingDto): Promise<{
+    approveStep(user: Employee, dto: ApproveStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    rejectStep(user: Employee, dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    completeAgreement(user: Employee, dto: CompleteAgreementDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    completeImplementation(user: Employee, dto: CompleteImplementationDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    cancelApproval(user: Employee, dto: CancelApprovalDto): Promise<import("../../../domain").Document>;
+    getMyPendingApprovals(user: Employee, query: QueryMyPendingDto): Promise<{
         data: {
             documentId: string;
             documentNumber: string;
@@ -48,5 +49,5 @@ export declare class ApprovalProcessController {
         };
     }>;
     getApprovalSteps(documentId: string): Promise<import("../../../domain").ApprovalStepSnapshot[]>;
-    processApprovalAction(dto: ProcessApprovalActionDto): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
+    processApprovalAction(user: Employee, dto: ProcessApprovalActionDto): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
 }

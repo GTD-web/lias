@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TemplateController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const template_service_1 = require("../services/template.service");
 const create_template_dto_1 = require("../dtos/create-template.dto");
 const update_template_dto_1 = require("../dtos/update-template.dto");
@@ -218,6 +219,8 @@ __decorate([
 ], TemplateController.prototype, "deleteTemplate", null);
 exports.TemplateController = TemplateController = __decorate([
     (0, swagger_1.ApiTags)('템플릿 관리'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('templates'),
     __metadata("design:paramtypes", [template_service_1.TemplateService])
 ], TemplateController);

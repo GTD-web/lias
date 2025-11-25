@@ -3,8 +3,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export function setupSwagger(app: INestApplication, dtos: any[]) {
     const config = new DocumentBuilder()
-        .setTitle('Resource Management API')
-        .setDescription('Resource Management API Description')
+        .setTitle('Internal Approval System API')
+        .setDescription('Internal Approval System API Description')
         .setVersion('1.0')
         .addBearerAuth()
         .build();

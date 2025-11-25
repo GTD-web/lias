@@ -17,12 +17,14 @@ const position_service_1 = require("../../domain/position/position.service");
 const employee_service_1 = require("../../domain/employee/employee.service");
 const employee_department_position_service_1 = require("../../domain/employee-department-position/employee-department-position.service");
 const employee_enum_1 = require("../../../common/enums/employee.enum");
+const sso_1 = require("../../integrations/sso");
 let MetadataContext = MetadataContext_1 = class MetadataContext {
-    constructor(departmentService, positionService, employeeService, employeeDepartmentPositionService) {
+    constructor(departmentService, positionService, employeeService, employeeDepartmentPositionService, ssoService) {
         this.departmentService = departmentService;
         this.positionService = positionService;
         this.employeeService = employeeService;
         this.employeeDepartmentPositionService = employeeDepartmentPositionService;
+        this.ssoService = ssoService;
         this.logger = new common_1.Logger(MetadataContext_1.name);
     }
     async getAllDepartments() {
@@ -223,6 +225,14 @@ let MetadataContext = MetadataContext_1 = class MetadataContext {
         };
         return buildHierarchy(null);
     }
+    async 로그인한다(email, password) {
+        this.logger.debug(`로그인 시도: ${email}`);
+        const loginResult = await this.ssoService.login(email, password);
+        this.logger.log(`로그인 성공: ${loginResult.name} (${loginResult.employeeNumber})`);
+        return {
+            accessToken: loginResult.accessToken,
+        };
+    }
 };
 exports.MetadataContext = MetadataContext;
 exports.MetadataContext = MetadataContext = MetadataContext_1 = __decorate([
@@ -230,6 +240,7 @@ exports.MetadataContext = MetadataContext = MetadataContext_1 = __decorate([
     __metadata("design:paramtypes", [department_service_1.DomainDepartmentService,
         position_service_1.DomainPositionService,
         employee_service_1.DomainEmployeeService,
-        employee_department_position_service_1.DomainEmployeeDepartmentPositionService])
+        employee_department_position_service_1.DomainEmployeeDepartmentPositionService,
+        sso_1.SSOService])
 ], MetadataContext);
 //# sourceMappingURL=metadata.context.js.map

@@ -526,21 +526,29 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             WHERE ass."stepType" = $1
             AND ass."approverId" = $2
             AND d."drafterId" != $2
-            AND d.status != $3
-            `, [approval_enum_1.ApprovalStepType.REFERENCE, userId, approval_enum_1.DocumentStatus.DRAFT]);
+            AND d.status = $3
+            `, [approval_enum_1.ApprovalStepType.REFERENCE, userId, approval_enum_1.DocumentStatus.IMPLEMENTED]);
+        const receivedStats = await this.dataSource.query(`
+            SELECT COUNT(DISTINCT d.id) as received
+            FROM documents d
+            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+            WHERE ass."approverId" = $1
+            AND d."drafterId" != $1
+            AND d.status != $2
+            AND ass."stepType" IN ($3, $4)
+            `, [userId, approval_enum_1.DocumentStatus.DRAFT, approval_enum_1.ApprovalStepType.AGREEMENT, approval_enum_1.ApprovalStepType.APPROVAL]);
         const draftedStats = myDraftedStats[0];
         const draftedPendingStats = myDraftedPendingSteps[0];
         const approvalLineStats = myApprovalLineStats[0];
         const refStats = referenceStats[0];
+        const recvStats = receivedStats[0];
         return {
             DRAFT: parseInt(draftedStats.draft || '0'),
+            RECEIVED: parseInt(recvStats.received || '0'),
             PENDING: parseInt(draftedStats.pending || '0'),
-            PENDING_AGREEMENT: parseInt(draftedPendingStats.drafted_pending_agreement || '0') +
-                parseInt(approvalLineStats.approval_line_agreement || '0'),
-            PENDING_APPROVAL: parseInt(draftedPendingStats.drafted_pending_approval || '0') +
-                parseInt(approvalLineStats.approval_line_approval || '0'),
-            IMPLEMENTATION: parseInt(draftedPendingStats.drafted_implementation || '0') +
-                parseInt(approvalLineStats.approval_line_implementation || '0'),
+            PENDING_AGREEMENT: parseInt(approvalLineStats.approval_line_agreement || '0'),
+            PENDING_APPROVAL: parseInt(approvalLineStats.approval_line_approval || '0'),
+            IMPLEMENTATION: parseInt(approvalLineStats.approval_line_implementation || '0'),
             APPROVED: parseInt(draftedStats.approved || '0'),
             REJECTED: parseInt(draftedStats.rejected || '0'),
             RECEIVED_REFERENCE: parseInt(refStats.received_reference || '0'),
@@ -559,6 +567,19 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         switch (params.filterType) {
             case 'DRAFT':
                 qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.status = :status', { status: approval_enum_1.DocumentStatus.DRAFT });
+                break;
+            case 'RECEIVED':
+                qb.andWhere('document.drafterId != :userId', { userId: params.userId })
+                    .andWhere('document.status != :draftStatus', { draftStatus: approval_enum_1.DocumentStatus.DRAFT })
+                    .andWhere(`document.id IN (
+                        SELECT d.id
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE ass."approverId" = :userId
+                        AND ass."stepType" IN (:...receivedStepTypes)
+                    )`, {
+                    receivedStepTypes: [approval_enum_1.ApprovalStepType.AGREEMENT, approval_enum_1.ApprovalStepType.APPROVAL],
+                });
                 break;
             case 'PENDING':
                 qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.submittedAt IS NOT NULL');
@@ -662,7 +683,7 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
                 qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere('document.status = :status', { status: approval_enum_1.DocumentStatus.REJECTED });
                 break;
             case 'RECEIVED_REFERENCE':
-                qb.andWhere('document.drafterId != :userId', { userId: params.userId }).andWhere('document.status != :draftStatus', { draftStatus: approval_enum_1.DocumentStatus.DRAFT });
+                qb.andWhere('document.drafterId != :userId', { userId: params.userId }).andWhere('document.status = :implementedStatus', { implementedStatus: approval_enum_1.DocumentStatus.IMPLEMENTED });
                 if (params.referenceReadStatus) {
                     const statusCondition = params.referenceReadStatus === 'READ' ? approval_enum_1.ApprovalStatus.APPROVED : approval_enum_1.ApprovalStatus.PENDING;
                     qb.andWhere(`document.id IN (
@@ -672,6 +693,7 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
                         WHERE ass."stepType" = :referenceType
                         AND ass."approverId" = :userId
                         AND ass."status" = :referenceStatus
+                        AND d.status = :implementedStatus
                     )`, {
                         referenceType: approval_enum_1.ApprovalStepType.REFERENCE,
                         referenceStatus: statusCondition,
@@ -684,6 +706,7 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
                         INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
                         WHERE ass."stepType" = :referenceType
                         AND ass."approverId" = :userId
+                        AND d.status = :implementedStatus
                     )`, {
                         referenceType: approval_enum_1.ApprovalStepType.REFERENCE,
                     });

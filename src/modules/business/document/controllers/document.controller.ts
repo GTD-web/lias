@@ -30,15 +30,17 @@ import {
     QueryMyAllDocumentsDto,
     MyAllDocumentsStatisticsResponseDto,
 } from '../dtos';
+import { CreateCommentDto, UpdateCommentDto, DeleteCommentDto, CommentResponseDto } from '../dtos/comment.dto';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
-
+import { User } from '../../../../common/decorators/user.decorator';
+import { Employee } from '../../../domain/employee/employee.entity';
 /**
  * 문서 관리 컨트롤러
  * 문서 CRUD 및 기안 관련 API를 제공합니다.
  */
 @ApiTags('문서 관리')
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('documents')
 export class DocumentController {
     constructor(private readonly documentService: DocumentService) {}
@@ -67,68 +69,9 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async createDocument(@Body() dto: CreateDocumentDto) {
-        return await this.documentService.createDocument(dto);
+    async createDocument(@User() user: Employee, @Body() dto: CreateDocumentDto) {
+        return await this.documentService.createDocument(dto, user.id);
     }
-
-    /** Deprecated: 더 이상 사용되지 않음, 대신 getMyAllDocuments 사용 */
-    // @Get()
-    // @ApiOperation({
-    //     summary: '문서 목록 조회 (페이징, 필터링)',
-    //     description:
-    //         '문서 목록을 조회합니다. 상태, 기안자, 카테고리, 검색어 등으로 필터링 가능하며 페이징을 지원합니다.\n\n' +
-    //         '**=== 필터링 조건 가이드 ===**\n\n' +
-    //         '**▣ 내가 기안한 문서 조회 (drafterId 지정)**\n' +
-    //         '1. **임시저장**: `status=DRAFT`, `pendingStepType 미지정`\n' +
-    //         '2. **전체 상신**: `status 미지정`, `pendingStepType 미지정`\n' +
-    //         '3. **협의 대기**: `status=PENDING`, `pendingStepType=AGREEMENT`\n' +
-    //         '4. **미결 대기**: `status=PENDING`, `pendingStepType=APPROVAL`\n' +
-    //         '5. **기결**: `status=APPROVED`, `pendingStepType 미지정`\n' +
-    //         '6. **반려**: `status=REJECTED`, `pendingStepType 미지정`\n' +
-    //         '7. **시행**: `status=IMPLEMENTED`, `pendingStepType 미지정`\n\n' +
-    //         '**▣ 내가 참조자로 있는 문서 조회 (referenceUserId 지정)**\n' +
-    //         '8. **참조**: `referenceUserId만 지정`, `status 미지정`, `pendingStepType 미지정` (DRAFT 제외)\n\n' +
-    //         '**⚠️ 주의사항:**\n' +
-    //         '- drafterId와 referenceUserId는 상호 배타적 (referenceUserId 우선)\n' +
-    //         '- PENDING 상태는 현재 진행 중인 단계(가장 작은 stepOrder)를 기준으로 분류\n' +
-    //         '- 참조 문서는 임시저장(DRAFT) 상태 제외\n\n' +
-    //         '**주요 기능:**\n' +
-    //         '- 상태별 필터링 (PENDING 상태는 pendingStepType으로 세분화 가능)\n' +
-    //         '- 카테고리별 필터링\n' +
-    //         '- 제목 검색\n' +
-    //         '- 페이징 처리 (기본 20개)\n\n' +
-    //         '**테스트 시나리오:**\n' +
-    //         '- ✅ 정상: 전체 문서 목록 조회\n' +
-    //         '- ✅ 정상: 상태별 필터링 조회\n' +
-    //         '- ✅ 정상: PENDING + 협의 단계 필터링\n' +
-    //         '- ✅ 정상: PENDING + 결재 단계 필터링\n' +
-    //         '- ✅ 정상: 카테고리별 필터링\n' +
-    //         '- ✅ 정상: 제목 검색\n' +
-    //         '- ✅ 정상: 페이징 처리',
-    // })
-    // @ApiResponse({
-    //     status: 200,
-    //     description: '문서 목록 조회 성공',
-    //     type: PaginatedDocumentsResponseDto,
-    // })
-    // @ApiResponse({
-    //     status: 401,
-    //     description: '인증 실패',
-    // })
-    // async getDocuments(@Query() query: QueryDocumentsDto) {
-    //     return await this.documentService.getDocuments({
-    //         status: query.status,
-    //         pendingStepType: query.pendingStepType,
-    //         drafterId: query.drafterId,
-    //         referenceUserId: query.referenceUserId,
-    //         categoryId: query.categoryId,
-    //         searchKeyword: query.searchKeyword,
-    //         startDate: query.startDate ? new Date(query.startDate) : undefined,
-    //         endDate: query.endDate ? new Date(query.endDate) : undefined,
-    //         page: query.page,
-    //         limit: query.limit,
-    //     });
-    // }
 
     @Get('my-all/statistics')
     @ApiOperation({
@@ -139,24 +82,19 @@ export class DocumentController {
             '```json\n' +
             '{\n' +
             '  "DRAFT": 1,                  // 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
+            '  "RECEIVED": 15,              // 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
             '  "PENDING": 10,               // 상신함 (내가 기안한 제출된 전체 문서)\n' +
             '  "PENDING_AGREEMENT": 1,      // 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '  "PENDING_APPROVAL": 2,       // 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '  "IMPLEMENTATION": 1,         // 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태)\n' +
             '  "APPROVED": 20,              // 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
             '  "REJECTED": 3,               // 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
-            '  "RECEIVED_REFERENCE": 23     // 수신참조함 (내가 참조자로 있는 문서)\n' +
+            '  "RECEIVED_REFERENCE": 23     // 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '}\n' +
             '```\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 통계 조회\n' +
             '- ❌ 실패: 존재하지 않는 사용자 ID',
-    })
-    @ApiQuery({
-        name: 'userId',
-        required: true,
-        description: '사용자 ID',
-        example: '550e8400-e29b-41d4-a716-446655440000',
     })
     @ApiResponse({
         status: 200,
@@ -167,24 +105,25 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async getMyAllDocumentsStatistics(@Query('userId') userId: string) {
-        return await this.documentService.getMyAllDocumentsStatistics(userId);
+    async getMyAllDocumentsStatistics(@User() user: Employee) {
+        return await this.documentService.getMyAllDocumentsStatistics(user.id);
     }
 
-    @Get('my-all')
+    @Get('my-all/documents')
     @ApiOperation({
         summary: '내 전체 문서 목록 조회 (통계와 동일한 필터)',
         description:
             '통계 조회와 동일한 필터로 실제 문서 목록을 조회합니다.\n\n' +
             '**필터 타입 (filterType):**\n' +
             '- DRAFT: 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
+            '- RECEIVED: 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
             '- PENDING: 상신함 (내가 기안한 제출된 전체 문서)\n' +
             '- PENDING_AGREEMENT: 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '- PENDING_APPROVAL: 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
             '- IMPLEMENTATION: 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태 - 결재 완료, 시행 대기)\n' +
             '- APPROVED: 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
             '- REJECTED: 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
-            '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서)\n' +
+            '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '- 미지정: 내가 기안한 문서 + 내가 참여하는 문서 전체\n\n' +
             '**승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용:**\n' +
             '- SCHEDULED: 승인 예정 (아직 내 차례가 아님, 내 앞에 PENDING 단계가 있음)\n' +
@@ -199,6 +138,7 @@ export class DocumentController {
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 전체 문서 목록 조회 (filterType 없음)\n' +
             '- ✅ 정상: DRAFT 필터링\n' +
+            '- ✅ 정상: RECEIVED 필터링\n' +
             '- ✅ 정상: PENDING_APPROVAL + CURRENT 필터링\n' +
             '- ✅ 정상: PENDING_AGREEMENT + SCHEDULED 필터링\n' +
             '- ✅ 정상: IMPLEMENTATION 필터링\n' +
@@ -216,9 +156,9 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async getMyAllDocuments(@Query() query: QueryMyAllDocumentsDto) {
+    async getMyAllDocuments(@User() user: Employee, @Query() query: QueryMyAllDocumentsDto) {
         return await this.documentService.getMyAllDocuments({
-            userId: query.userId!,
+            userId: user.id,
             filterType: query.filterType,
             approvalStatus: query.approvalStatus,
             referenceReadStatus: query.referenceReadStatus,
@@ -231,7 +171,7 @@ export class DocumentController {
         });
     }
 
-    @Get('my-drafts/:drafterId')
+    @Get('my-drafts')
     @ApiOperation({
         summary: '내가 작성한 문서 전체 조회 (상태 무관)',
         description:
@@ -244,11 +184,6 @@ export class DocumentController {
             '- ✅ 정상: 내가 작성한 문서 전체 조회\n' +
             '- ✅ 정상: 페이징 처리\n' +
             '- ❌ 실패: 존재하지 않는 사용자 ID',
-    })
-    @ApiParam({
-        name: 'userId',
-        description: '사용자 ID',
-        example: '550e8400-e29b-41d4-a716-446655440000',
     })
     @ApiQuery({
         name: 'page',
@@ -271,12 +206,8 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async getMyDrafts(
-        @Param('drafterId') drafterId: string,
-        @Query('page') page?: number,
-        @Query('limit') limit?: number,
-    ) {
-        return await this.documentService.getMyDrafts(drafterId, page || 1, limit || 20);
+    async getMyDrafts(@User() user: Employee, @Query('page') page?: number, @Query('limit') limit?: number) {
+        return await this.documentService.getMyDrafts(user.id, page || 1, limit || 20);
     }
 
     @Get(':documentId')
@@ -339,7 +270,11 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async updateDocument(@Param('documentId') documentId: string, @Body() dto: UpdateDocumentDto) {
+    async updateDocument(
+        @User() user: Employee,
+        @Param('documentId') documentId: string,
+        @Body() dto: UpdateDocumentDto,
+    ) {
         return await this.documentService.updateDocument(documentId, dto);
     }
 
@@ -438,8 +373,8 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async submitDocumentDirect(@Body() dto: SubmitDocumentDirectDto) {
-        return await this.documentService.submitDocumentDirect(dto);
+    async submitDocumentDirect(@User() user: Employee, @Body() dto: SubmitDocumentDirectDto) {
+        return await this.documentService.submitDocumentDirect(dto, user.id);
     }
 
     @Get('templates/:templateId')
@@ -516,5 +451,163 @@ export class DocumentController {
     })
     async getDocumentStatistics(@Param('userId') userId: string) {
         return await this.documentService.getDocumentStatistics(userId);
+    }
+
+    // ==================== 코멘트 관련 API ====================
+
+    @Post(':documentId/comments')
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({
+        summary: '문서에 코멘트 작성',
+        description:
+            '문서에 코멘트를 작성합니다. 대댓글 작성도 가능합니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 작성\n' +
+            '- ✅ 정상: 대댓글 작성 (parentCommentId 포함)\n' +
+            '- ❌ 실패: 존재하지 않는 문서\n' +
+            '- ❌ 실패: 존재하지 않는 부모 코멘트',
+    })
+    @ApiParam({
+        name: 'documentId',
+        description: '문서 ID',
+    })
+    @ApiResponse({
+        status: 201,
+        description: '코멘트 작성 성공',
+        type: CommentResponseDto,
+    })
+    @ApiResponse({
+        status: 404,
+        description: '문서 또는 부모 코멘트를 찾을 수 없음',
+    })
+    @ApiResponse({
+        status: 400,
+        description: '잘못된 요청',
+    })
+    async createComment(
+        @Param('documentId') documentId: string,
+        @User() user: Employee,
+        @Body() dto: CreateCommentDto,
+    ) {
+        return await this.documentService.createComment(documentId, dto, user.id);
+    }
+
+    @Get(':documentId/comments')
+    @ApiOperation({
+        summary: '문서의 코멘트 목록 조회',
+        description:
+            '문서의 모든 코멘트를 조회합니다. 대댓글도 함께 조회됩니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 목록 조회\n' +
+            '- ❌ 실패: 존재하지 않는 문서',
+    })
+    @ApiParam({
+        name: 'documentId',
+        description: '문서 ID',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '코멘트 목록 조회 성공',
+        type: [CommentResponseDto],
+    })
+    @ApiResponse({
+        status: 404,
+        description: '문서를 찾을 수 없음',
+    })
+    async getDocumentComments(@Param('documentId') documentId: string) {
+        return await this.documentService.getDocumentComments(documentId);
+    }
+
+    @Put('comments/:commentId')
+    @ApiOperation({
+        summary: '코멘트 수정',
+        description:
+            '작성한 코멘트를 수정합니다. 본인의 코멘트만 수정할 수 있습니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 수정\n' +
+            '- ❌ 실패: 존재하지 않는 코멘트\n' +
+            '- ❌ 실패: 다른 사람의 코멘트 수정',
+    })
+    @ApiParam({
+        name: 'commentId',
+        description: '코멘트 ID',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '코멘트 수정 성공',
+        type: CommentResponseDto,
+    })
+    @ApiResponse({
+        status: 404,
+        description: '코멘트를 찾을 수 없음',
+    })
+    @ApiResponse({
+        status: 400,
+        description: '본인의 코멘트가 아님',
+    })
+    async updateComment(@Param('commentId') commentId: string, @User() user: Employee, @Body() dto: UpdateCommentDto) {
+        return await this.documentService.updateComment(commentId, dto, user.id);
+    }
+
+    @Delete('comments/:commentId')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({
+        summary: '코멘트 삭제',
+        description:
+            '작성한 코멘트를 삭제합니다. 본인의 코멘트만 삭제할 수 있습니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 삭제\n' +
+            '- ❌ 실패: 존재하지 않는 코멘트\n' +
+            '- ❌ 실패: 다른 사람의 코멘트 삭제',
+    })
+    @ApiParam({
+        name: 'commentId',
+        description: '코멘트 ID',
+    })
+    @ApiQuery({
+        name: 'authorId',
+        required: true,
+        description: '작성자 ID (본인 확인용)',
+    })
+    @ApiResponse({
+        status: 204,
+        description: '코멘트 삭제 성공',
+    })
+    @ApiResponse({
+        status: 404,
+        description: '코멘트를 찾을 수 없음',
+    })
+    @ApiResponse({
+        status: 400,
+        description: '본인의 코멘트가 아님',
+    })
+    async deleteComment(@Param('commentId') commentId: string, @User() user: Employee) {
+        await this.documentService.deleteComment(commentId, user.id);
+    }
+
+    @Get('comments/:commentId')
+    @ApiOperation({
+        summary: '코멘트 상세 조회',
+        description:
+            '특정 코멘트의 상세 정보를 조회합니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 코멘트 상세 조회\n' +
+            '- ❌ 실패: 존재하지 않는 코멘트',
+    })
+    @ApiParam({
+        name: 'commentId',
+        description: '코멘트 ID',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '코멘트 상세 조회 성공',
+        type: CommentResponseDto,
+    })
+    @ApiResponse({
+        status: 404,
+        description: '코멘트를 찾을 수 없음',
+    })
+    async getComment(@Param('commentId') commentId: string) {
+        return await this.documentService.getComment(commentId);
     }
 }

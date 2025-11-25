@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApprovalStepSnapshot = exports.ApprovalStepTemplate = exports.Category = exports.DocumentTemplate = exports.DocumentRevision = exports.Document = exports.EmployeeDepartmentPosition = exports.Rank = exports.Position = exports.Department = exports.Employee = void 0;
+exports.Comment = exports.ApprovalStepSnapshot = exports.ApprovalStepTemplate = exports.Category = exports.DocumentTemplate = exports.DocumentRevision = exports.Document = exports.EmployeeDepartmentPosition = exports.Rank = exports.Position = exports.Department = exports.Employee = void 0;
 var employee_entity_1 = require("./employee/employee.entity");
 Object.defineProperty(exports, "Employee", { enumerable: true, get: function () { return employee_entity_1.Employee; } });
 var department_entity_1 = require("./department/department.entity");
@@ -23,4 +23,6 @@ var approval_step_template_entity_1 = require("./approval-step-template/approval
 Object.defineProperty(exports, "ApprovalStepTemplate", { enumerable: true, get: function () { return approval_step_template_entity_1.ApprovalStepTemplate; } });
 var approval_step_snapshot_entity_1 = require("./approval-step-snapshot/approval-step-snapshot.entity");
 Object.defineProperty(exports, "ApprovalStepSnapshot", { enumerable: true, get: function () { return approval_step_snapshot_entity_1.ApprovalStepSnapshot; } });
+var comment_entity_1 = require("./comment/comment.entity");
+Object.defineProperty(exports, "Comment", { enumerable: true, get: function () { return comment_entity_1.Comment; } });
 //# sourceMappingURL=index.js.map

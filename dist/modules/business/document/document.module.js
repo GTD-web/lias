@@ -17,6 +17,7 @@ const document_module_1 = require("../../context/document/document.module");
 const template_module_1 = require("../../context/template/template.module");
 const approval_process_module_1 = require("../../context/approval-process/approval-process.module");
 const notification_module_1 = require("../../context/notification/notification.module");
+const comment_module_1 = require("../../context/comment/comment.module");
 const employee_entity_1 = require("../../domain/employee/employee.entity");
 const department_entity_1 = require("../../domain/department/department.entity");
 const employee_department_position_entity_1 = require("../../domain/employee-department-position/employee-department-position.entity");
@@ -35,6 +36,7 @@ exports.DocumentBusinessModule = DocumentBusinessModule = __decorate([
             template_module_1.TemplateModule,
             approval_process_module_1.ApprovalProcessModule,
             notification_module_1.NotificationContextModule,
+            comment_module_1.CommentContextModule,
             typeorm_1.TypeOrmModule.forFeature([
                 employee_entity_1.Employee,
                 department_entity_1.Department,

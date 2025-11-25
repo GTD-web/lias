@@ -16,6 +16,7 @@ const class_transformer_1 = require("class-transformer");
 var MyAllDocumentFilterType;
 (function (MyAllDocumentFilterType) {
     MyAllDocumentFilterType["DRAFT"] = "DRAFT";
+    MyAllDocumentFilterType["RECEIVED"] = "RECEIVED";
     MyAllDocumentFilterType["PENDING"] = "PENDING";
     MyAllDocumentFilterType["PENDING_AGREEMENT"] = "PENDING_AGREEMENT";
     MyAllDocumentFilterType["PENDING_APPROVAL"] = "PENDING_APPROVAL";
@@ -44,24 +45,16 @@ class QueryMyAllDocumentsDto {
 exports.QueryMyAllDocumentsDto = QueryMyAllDocumentsDto;
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '사용자 ID (필수)',
-        example: '550e8400-e29b-41d4-a716-446655440000',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], QueryMyAllDocumentsDto.prototype, "userId", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
         description: '문서 필터 타입 (통계와 동일한 구분)\n' +
             '- DRAFT: 임시저장\n' +
+            '- RECEIVED: 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
             '- PENDING: 상신함\n' +
             '- PENDING_AGREEMENT: 합의함\n' +
             '- PENDING_APPROVAL: 결재함\n' +
             '- IMPLEMENTATION: 시행함\n' +
             '- APPROVED: 기결함\n' +
             '- REJECTED: 반려함\n' +
-            '- RECEIVED_REFERENCE: 수신참조함',
+            '- RECEIVED_REFERENCE: 수신참조함 (IMPLEMENTED 상태만)',
         enum: MyAllDocumentFilterType,
         example: MyAllDocumentFilterType.PENDING_APPROVAL,
     }),

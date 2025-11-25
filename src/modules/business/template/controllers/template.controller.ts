@@ -24,8 +24,8 @@ import { CreateTemplateResponseDto, DocumentTemplateResponseDto } from '../dtos/
  * 문서 템플릿과 결재단계 템플릿을 함께 관리합니다.
  */
 @ApiTags('템플릿 관리')
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('templates')
 export class TemplateController {
     constructor(private readonly templateService: TemplateService) {}

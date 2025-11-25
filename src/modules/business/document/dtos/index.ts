@@ -11,4 +11,5 @@ export * from './template-with-approvers-response.dto';
 export * from './document-statistics-response.dto';
 export * from './query-my-all-documents.dto';
 export * from './my-all-documents-statistics-response.dto';
+export * from './comment.dto';
 

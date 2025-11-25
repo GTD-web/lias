@@ -15,35 +15,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApprovalProcessController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const approval_process_service_1 = require("../services/approval-process.service");
 const dtos_1 = require("../dtos");
+const employee_entity_1 = require("../../../domain/employee/employee.entity");
+const user_decorator_1 = require("../../../../common/decorators/user.decorator");
 let ApprovalProcessController = class ApprovalProcessController {
     constructor(approvalProcessService) {
         this.approvalProcessService = approvalProcessService;
     }
-    async approveStep(dto) {
-        return await this.approvalProcessService.approveStep(dto);
+    async approveStep(user, dto) {
+        return await this.approvalProcessService.approveStep(dto, user.id);
     }
-    async rejectStep(dto) {
-        return await this.approvalProcessService.rejectStep(dto);
+    async rejectStep(user, dto) {
+        return await this.approvalProcessService.rejectStep(dto, user.id);
     }
-    async completeAgreement(dto) {
-        return await this.approvalProcessService.completeAgreement(dto);
+    async completeAgreement(user, dto) {
+        return await this.approvalProcessService.completeAgreement(dto, user.id);
     }
-    async completeImplementation(dto) {
-        return await this.approvalProcessService.completeImplementation(dto);
+    async completeImplementation(user, dto) {
+        return await this.approvalProcessService.completeImplementation(dto, user.id);
     }
-    async cancelApproval(dto) {
-        return await this.approvalProcessService.cancelApproval(dto);
+    async cancelApproval(user, dto) {
+        return await this.approvalProcessService.cancelApproval(dto, user.id);
     }
-    async getMyPendingApprovals(query) {
-        return await this.approvalProcessService.getMyPendingApprovals(query.userId, query.type, query.page || 1, query.limit || 20);
+    async getMyPendingApprovals(user, query) {
+        return await this.approvalProcessService.getMyPendingApprovals(user.id, query.type, query.page || 1, query.limit || 20);
     }
     async getApprovalSteps(documentId) {
         return await this.approvalProcessService.getApprovalSteps(documentId);
     }
-    async processApprovalAction(dto) {
-        return await this.approvalProcessService.processApprovalAction(dto);
+    async processApprovalAction(user, dto) {
+        return await this.approvalProcessService.processApprovalAction(dto, user.id);
     }
 };
 exports.ApprovalProcessController = ApprovalProcessController;
@@ -62,9 +65,10 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 승인 가능, 순서 검증 실패 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.ApproveStepDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.ApproveStepDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "approveStep", null);
 __decorate([
@@ -81,9 +85,10 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.RejectStepDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.RejectStepDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "rejectStep", null);
 __decorate([
@@ -97,9 +102,10 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 협의만 완료 가능)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '협의 단계를 찾을 수 없음' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.CompleteAgreementDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CompleteAgreementDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "completeAgreement", null);
 __decorate([
@@ -115,9 +121,10 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 시행만 완료 가능, 모든 결재 미완료 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '시행 단계를 찾을 수 없음' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.CompleteImplementationDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CompleteImplementationDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "completeImplementation", null);
 __decorate([
@@ -148,9 +155,10 @@ __decorate([
         description: '권한 없음 (기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소 가능)',
     }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '문서를 찾을 수 없음' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.CancelApprovalDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CancelApprovalDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "cancelApproval", null);
 __decorate([
@@ -169,9 +177,10 @@ __decorate([
             '- ✅ 정상: 페이징 처리',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '조회 성공', type: dtos_1.PaginatedPendingApprovalsResponseDto }),
-    __param(0, (0, common_1.Query)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.QueryMyPendingDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.QueryMyPendingDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "getMyPendingApprovals", null);
 __decorate([
@@ -213,13 +222,16 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (필수 필드 누락, 잘못된 타입 등)' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계 또는 문서를 찾을 수 없음' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dtos_1.ProcessApprovalActionDto]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.ProcessApprovalActionDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "processApprovalAction", null);
 exports.ApprovalProcessController = ApprovalProcessController = __decorate([
     (0, swagger_1.ApiTags)('결재 프로세스'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('approval-process'),
     __metadata("design:paramtypes", [approval_process_service_1.ApprovalProcessService])
 ], ApprovalProcessController);

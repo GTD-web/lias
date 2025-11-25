@@ -12,12 +12,12 @@ export class ApproveStepDto {
     @IsUUID()
     stepSnapshotId: string;
 
-    @ApiProperty({
-        description: '결재자 ID',
-        example: 'uuid',
-    })
-    @IsUUID()
-    approverId: string;
+    // @ApiProperty({
+    //     description: '결재자 ID',
+    //     example: 'uuid',
+    // })
+    // @IsUUID()
+    // approverId: string;
 
     @ApiPropertyOptional({
         description: '결재 의견',
@@ -27,4 +27,3 @@ export class ApproveStepDto {
     @IsString()
     comment?: string;
 }
-

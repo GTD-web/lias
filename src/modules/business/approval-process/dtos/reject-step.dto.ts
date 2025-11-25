@@ -12,12 +12,12 @@ export class RejectStepDto {
     @IsUUID()
     stepSnapshotId: string;
 
-    @ApiProperty({
-        description: '결재자 ID',
-        example: 'uuid',
-    })
-    @IsUUID()
-    approverId: string;
+    // @ApiProperty({
+    //     description: '결재자 ID',
+    //     example: 'uuid',
+    // })
+    // @IsUUID()
+    // approverId: string;
 
     @ApiProperty({
         description: '반려 사유 (필수)',
@@ -26,4 +26,3 @@ export class RejectStepDto {
     @IsString()
     comment: string;
 }
-

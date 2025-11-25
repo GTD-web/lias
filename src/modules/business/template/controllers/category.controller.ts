@@ -9,8 +9,8 @@ import { CategoryResponseDto } from '../dtos/template-response.dto';
  * 카테고리 관리 컨트롤러
  */
 @ApiTags('카테고리 관리')
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('categories')
 export class CategoryController {
     constructor(private readonly templateService: TemplateService) {}

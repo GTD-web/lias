@@ -12,12 +12,12 @@ export class CompleteImplementationDto {
     @IsUUID()
     stepSnapshotId: string;
 
-    @ApiProperty({
-        description: '시행자 ID',
-        example: 'uuid',
-    })
-    @IsUUID()
-    implementerId: string;
+    // @ApiProperty({
+    //     description: '시행자 ID',
+    //     example: 'uuid',
+    // })
+    // @IsUUID()
+    // implementerId: string;
 
     @ApiPropertyOptional({
         description: '시행 의견',

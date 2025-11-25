@@ -2,16 +2,19 @@ import { DocumentContext } from '../../../context/document/document.context';
 import { TemplateContext } from '../../../context/template/template.context';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { NotificationContext } from '../../../context/notification/notification.context';
+import { CommentContext } from '../../../context/comment/comment.context';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
 import { DocumentFilterDto } from '../../../context/document/dtos/document.dto';
+import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
 export declare class DocumentService {
     private readonly documentContext;
     private readonly templateContext;
     private readonly approvalProcessContext;
     private readonly notificationContext;
+    private readonly commentContext;
     private readonly logger;
-    constructor(documentContext: DocumentContext, templateContext: TemplateContext, approvalProcessContext: ApprovalProcessContext, notificationContext: NotificationContext);
-    createDocument(dto: CreateDocumentDto): Promise<import("../../../domain").Document>;
+    constructor(documentContext: DocumentContext, templateContext: TemplateContext, approvalProcessContext: ApprovalProcessContext, notificationContext: NotificationContext, commentContext: CommentContext);
+    createDocument(dto: CreateDocumentDto, drafterId: string): Promise<import("../../../domain").Document>;
     updateDocument(documentId: string, dto: UpdateDocumentDto): Promise<import("../../../domain").Document>;
     deleteDocument(documentId: string): Promise<{
         deleted: boolean;
@@ -31,7 +34,7 @@ export declare class DocumentService {
     }>;
     submitDocument(dto: SubmitDocumentDto): Promise<import("../../../domain").Document>;
     private sendSubmitNotification;
-    submitDocumentDirect(dto: SubmitDocumentDirectDto): Promise<import("../../../domain").Document>;
+    submitDocumentDirect(dto: SubmitDocumentDirectDto, drafterId: string): Promise<import("../../../domain").Document>;
     getTemplateForNewDocument(templateId: string, drafterId: string): Promise<{
         approvalStepTemplates: any[];
         id: string;
@@ -61,6 +64,7 @@ export declare class DocumentService {
     }>;
     getMyAllDocumentsStatistics(userId: string): Promise<{
         DRAFT: number;
+        RECEIVED: number;
         PENDING: number;
         PENDING_AGREEMENT: number;
         PENDING_APPROVAL: number;
@@ -102,4 +106,9 @@ export declare class DocumentService {
             hasPreviousPage: boolean;
         };
     }>;
+    createComment(documentId: string, dto: CreateCommentDto, authorId: string): Promise<import("../../../domain").Comment>;
+    updateComment(commentId: string, dto: UpdateCommentDto, authorId: string): Promise<import("../../../domain").Comment>;
+    deleteComment(commentId: string, authorId: string): Promise<import("../../../domain").Comment>;
+    getDocumentComments(documentId: string): Promise<import("../../../domain").Comment[]>;
+    getComment(commentId: string): Promise<import("../../../domain").Comment>;
 }

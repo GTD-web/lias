@@ -15,6 +15,7 @@ const typeorm_config_1 = require("./configs/typeorm.config");
 const env_config_1 = require("./configs/env.config");
 const auth_module_1 = require("./common/auth/auth.module");
 const domain_module_1 = require("./modules/domain/domain.module");
+const auth_module_2 = require("./modules/business/auth/auth.module");
 const template_module_1 = require("./modules/business/template/template.module");
 const metadata_module_1 = require("./modules/business/metadata/metadata.module");
 const document_module_1 = require("./modules/business/document/document.module");
@@ -42,6 +43,7 @@ exports.AppModule = AppModule = __decorate([
             sso_1.SSOModule,
             notification_1.NotificationModule,
             notification_2.NotificationContextModule,
+            auth_module_2.AuthBusinessModule,
             template_module_1.TemplateBusinessModule,
             metadata_module_1.MetadataModule,
             document_module_1.DocumentBusinessModule,

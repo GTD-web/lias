@@ -1,5 +1,6 @@
 export declare class MyAllDocumentsStatisticsResponseDto {
     DRAFT: number;
+    RECEIVED: number;
     PENDING: number;
     PENDING_AGREEMENT: number;
     PENDING_APPROVAL: number;

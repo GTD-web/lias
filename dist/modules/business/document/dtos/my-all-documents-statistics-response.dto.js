@@ -23,6 +23,13 @@ __decorate([
 ], MyAllDocumentsStatisticsResponseDto.prototype, "DRAFT", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
+        description: '수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)',
+        example: 10,
+    }),
+    __metadata("design:type", Number)
+], MyAllDocumentsStatisticsResponseDto.prototype, "RECEIVED", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
         description: '상신함 (내가 기안한 문서 중 제출된 전체)',
         example: 10,
     }),
@@ -37,7 +44,7 @@ __decorate([
 ], MyAllDocumentsStatisticsResponseDto.prototype, "PENDING_AGREEMENT", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)',
+        description: '미결함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)',
         example: 2,
     }),
     __metadata("design:type", Number)
@@ -65,7 +72,7 @@ __decorate([
 ], MyAllDocumentsStatisticsResponseDto.prototype, "REJECTED", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '수신참조함 (내가 참조자로 있는 문서)',
+        description: '수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)',
         example: 23,
     }),
     __metadata("design:type", Number)

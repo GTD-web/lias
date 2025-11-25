@@ -25,12 +25,12 @@ export class ProcessApprovalActionDto {
     @IsEnum(ApprovalActionType)
     type: ApprovalActionType;
 
-    @ApiProperty({
-        description: '처리자 ID (결재자/협의자/시행자/기안자)',
-        example: 'uuid',
-    })
-    @IsUUID()
-    approverId: string;
+    // @ApiProperty({
+    //     description: '처리자 ID (결재자/협의자/시행자/기안자)',
+    //     example: 'uuid',
+    // })
+    // @IsUUID()
+    // approverId: string;
 
     @ApiPropertyOptional({
         description: '결재 단계 스냅샷 ID (approve, reject, complete-agreement, complete-implementation 타입에서 필수)',
@@ -72,4 +72,3 @@ export class ProcessApprovalActionDto {
     @IsObject()
     resultData?: Record<string, any>;
 }
-
