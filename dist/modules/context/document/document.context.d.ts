@@ -58,17 +58,7 @@ export declare class DocumentContext {
             reference: number;
         };
     }>;
-    getMyAllDocumentsStatistics(userId: string): Promise<{
-        DRAFT: number;
-        RECEIVED: number;
-        PENDING: number;
-        PENDING_AGREEMENT: number;
-        PENDING_APPROVAL: number;
-        IMPLEMENTATION: number;
-        APPROVED: number;
-        REJECTED: number;
-        RECEIVED_REFERENCE: number;
-    }>;
+    getMyAllDocumentsStatistics(userId: string): Promise<Record<string, number>>;
     getMyAllDocuments(params: {
         userId: string;
         filterType?: string;
@@ -81,7 +71,7 @@ export declare class DocumentContext {
         page?: number;
         limit?: number;
     }): Promise<{
-        data: Document[];
+        data: any[];
         meta: {
             currentPage: number;
             itemsPerPage: number;
@@ -91,6 +81,7 @@ export declare class DocumentContext {
             hasPreviousPage: boolean;
         };
     }>;
+    private applyFilterTypeCondition;
     private applyApprovalStatusFilter;
     getMyDrafts(drafterId: string, page?: number, limit?: number): Promise<{
         data: Document[];

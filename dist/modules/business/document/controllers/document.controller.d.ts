@@ -6,19 +6,9 @@ export declare class DocumentController {
     private readonly documentService;
     constructor(documentService: DocumentService);
     createDocument(user: Employee, dto: CreateDocumentDto): Promise<import("../../../domain").Document>;
-    getMyAllDocumentsStatistics(user: Employee): Promise<{
-        DRAFT: number;
-        RECEIVED: number;
-        PENDING: number;
-        PENDING_AGREEMENT: number;
-        PENDING_APPROVAL: number;
-        IMPLEMENTATION: number;
-        APPROVED: number;
-        REJECTED: number;
-        RECEIVED_REFERENCE: number;
-    }>;
+    getMyAllDocumentsStatistics(user: Employee): Promise<Record<string, number>>;
     getMyAllDocuments(user: Employee, query: QueryMyAllDocumentsDto): Promise<{
-        data: import("../../../domain").Document[];
+        data: any[];
         meta: {
             currentPage: number;
             itemsPerPage: number;

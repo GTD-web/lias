@@ -65,6 +65,37 @@
 
 **테스트 케이스: 약 30개**
 
+### 5. my-all-documents-consistency.e2e-spec.ts
+
+**내 전체 문서 API 일관성 테스트 (데이터 정합성 검증)**
+
+- ✅ 통계 API와 문서 목록 API 개수 일치 검증
+  - DRAFT (임시저장)
+  - RECEIVED (수신함)
+  - PENDING (상신함)
+  - PENDING_AGREEMENT (합의함)
+  - PENDING_APPROVAL (결재함)
+  - IMPLEMENTATION (시행함)
+  - APPROVED (기결함)
+  - REJECTED (반려함)
+  - RECEIVED_REFERENCE (수신참조함)
+- ✅ 승인 상태별 개수 일관성 검증
+  - PENDING_AGREEMENT: SCHEDULED + CURRENT + COMPLETED
+  - PENDING_APPROVAL: SCHEDULED + CURRENT + COMPLETED
+- ✅ 열람 상태별 개수 일관성 검증
+  - RECEIVED_REFERENCE: READ + UNREAD
+- ✅ 페이지네이션 정확성 검증
+  - 페이지별 중복 데이터 없음
+  - totalItems 정확성
+- ✅ 전체 문서 중복도 분석
+
+**테스트 케이스: 15개**
+
+**주요 검증 사항:**
+- `/documents/my-all/statistics` 응답 개수
+- `/documents/my-all/documents` 실제 조회 개수
+- 두 API 간 데이터 정합성 보장
+
 ## 테스트 실행 방법
 
 ### 전체 테스트 실행
@@ -87,6 +118,9 @@ npm run test:e2e -- approval-process-v2.e2e-spec.ts
 
 # Metadata 테스트만
 npm run test:e2e -- metadata-query-v2.e2e-spec.ts
+
+# 내 전체 문서 일관성 테스트만
+npm run test:e2e -- my-all-documents-consistency.e2e-spec.ts
 ```
 
 ### 특정 describe 블록만 실행
@@ -309,5 +343,5 @@ jobs:
 
 ---
 
-**총 테스트 케이스: 약 150개**
+**총 테스트 케이스: 약 165개**
 **예상 실행 시간: 2-3분**

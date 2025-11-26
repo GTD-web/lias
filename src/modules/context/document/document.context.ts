@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { DataSource, In, QueryRunner } from 'typeorm';
+import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { Document } from '../../domain/document/document.entity';
 import { DomainDocumentService } from '../../domain/document/document.service';
 import { DomainDocumentTemplateService } from '../../domain/document-template/document-template.service';
@@ -738,147 +738,44 @@ export class DocumentContext {
     /**
      * 10. 내 전체 문서 통계 조회 (작성 + 결재라인)
      * 사이드바 표시용 통계
+     * - getMyAllDocuments와 동일한 조건을 사용하여 데이터 정합성 보장
      */
     async getMyAllDocumentsStatistics(userId: string) {
         this.logger.debug(`내 전체 문서 통계 조회: 사용자 ${userId}`);
 
-        // 1. 내가 기안한 문서 기본 통계 (DRAFT, PENDING, APPROVED, REJECTED)
-        const myDraftedStats = await this.dataSource.query(
-            `
-            SELECT
-                COUNT(*) FILTER (WHERE status = $1) as draft,
-                COUNT(*) FILTER (WHERE "submittedAt" IS NOT NULL) as pending,
-                COUNT(*) FILTER (WHERE status = $2) as approved,
-                COUNT(*) FILTER (WHERE status = $3) as rejected
-            FROM documents
-            WHERE "drafterId" = $4
-            `,
-            [DocumentStatus.DRAFT, DocumentStatus.IMPLEMENTED, DocumentStatus.REJECTED, userId],
-        );
+        const filterTypes = [
+            'DRAFT',
+            'RECEIVED',
+            'PENDING',
+            'PENDING_AGREEMENT',
+            'PENDING_APPROVAL',
+            'IMPLEMENTATION',
+            'APPROVED',
+            'REJECTED',
+            'RECEIVED_REFERENCE',
+        ];
 
-        // 2. 내가 기안한 문서 중 현재 단계 타입별 통계 (PENDING 상태 - 협의/결재, APPROVED 상태 - 시행)
-        const myDraftedPendingSteps = await this.dataSource.query(
-            `
-            WITH current_steps AS (
-                SELECT 
-                    d.id as document_id,
-                    d.status as doc_status,
-                    ass."stepType"
-                FROM documents d
-                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                WHERE d."drafterId" = $1
-                AND (
-                    (d.status = $2 AND ass.status = $3)  -- PENDING 문서의 PENDING 단계들
-                    OR (d.status = $4 AND ass."stepType" = $7)  -- APPROVED 문서의 IMPLEMENTATION 단계
-                )
-            )
-            SELECT
-                COUNT(DISTINCT CASE WHEN "stepType" = $5 AND doc_status = $2 THEN document_id END) as drafted_pending_agreement,
-                COUNT(DISTINCT CASE WHEN "stepType" = $6 AND doc_status = $2 THEN document_id END) as drafted_pending_approval,
-                COUNT(DISTINCT CASE WHEN "stepType" = $7 AND doc_status = $4 THEN document_id END) as drafted_implementation
-            FROM current_steps
-            `,
-            [
-                userId,
-                DocumentStatus.PENDING,
-                ApprovalStatus.PENDING,
-                DocumentStatus.APPROVED,
-                ApprovalStepType.AGREEMENT,
-                ApprovalStepType.APPROVAL,
-                ApprovalStepType.IMPLEMENTATION,
-            ],
-        );
+        const statistics: Record<string, number> = {};
 
-        // 3. 내가 결재라인에 참여하고 있는 문서 통계 (현재 차례 상관없이, 해당 타입의 결재자로 있으면 조회)
-        // 협의/결재: PENDING 상태, 시행: APPROVED 상태
-        const myApprovalLineStats = await this.dataSource.query(
-            `
-            SELECT
-                COUNT(DISTINCT CASE 
-                    WHEN ass."stepType" = $2 AND ass."approverId" = $6 AND d."drafterId" != $6 AND d.status = $1
-                    THEN d.id 
-                END) as approval_line_agreement,
-                COUNT(DISTINCT CASE 
-                    WHEN ass."stepType" = $3 AND ass."approverId" = $6 AND d."drafterId" != $6 AND d.status = $1
-                    THEN d.id 
-                END) as approval_line_approval,
-                COUNT(DISTINCT CASE 
-                    WHEN ass."stepType" = $4 AND ass."approverId" = $6 AND d."drafterId" != $6 AND d.status = $5
-                    THEN d.id 
-                END) as approval_line_implementation
-            FROM documents d
-            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-            WHERE (d.status = $1 OR d.status = $5)
-            AND ass."approverId" = $6
-            `,
-            [
-                DocumentStatus.PENDING,
-                ApprovalStepType.AGREEMENT,
-                ApprovalStepType.APPROVAL,
-                ApprovalStepType.IMPLEMENTATION,
-                DocumentStatus.APPROVED,
-                userId,
-            ],
-        );
+        // 각 필터 타입별로 동일한 조건을 사용하여 개수 조회
+        for (const filterType of filterTypes) {
+            const qb = this.documentService.createQueryBuilder('document');
 
-        // 4. 내가 참조자로 있는 문서 통계 (내가 기안한 문서 제외, IMPLEMENTED 상태만)
-        const referenceStats = await this.dataSource.query(
-            `
-            SELECT COUNT(DISTINCT d.id) as received_reference
-            FROM documents d
-            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-            WHERE ass."stepType" = $1
-            AND ass."approverId" = $2
-            AND d."drafterId" != $2
-            AND d.status = $3
-            `,
-            [ApprovalStepType.REFERENCE, userId, DocumentStatus.IMPLEMENTED],
-        );
+            // 공통 조건 적용 (getMyAllDocuments와 동일한 메서드 사용)
+            this.applyFilterTypeCondition(qb, filterType, userId);
 
-        // 5. 수신함: 내가 결재라인에 있는 모든 받은 문서 (내가 기안한 문서 제외, DRAFT 제외)
-        // 합의(AGREEMENT)와 결재(APPROVAL)만 포함, 시행(IMPLEMENTATION)과 참조(REFERENCE)는 제외
-        const receivedStats = await this.dataSource.query(
-            `
-            SELECT COUNT(DISTINCT d.id) as received
-            FROM documents d
-            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-            WHERE ass."approverId" = $1
-            AND d."drafterId" != $1
-            AND d.status != $2
-            AND ass."stepType" IN ($3, $4)
-            `,
-            [userId, DocumentStatus.DRAFT, ApprovalStepType.AGREEMENT, ApprovalStepType.APPROVAL],
-        );
+            // count 조회
+            const count = await qb.getCount();
+            statistics[filterType] = count;
+        }
 
-        const draftedStats = myDraftedStats[0];
-        const draftedPendingStats = myDraftedPendingSteps[0];
-        const approvalLineStats = myApprovalLineStats[0];
-        const refStats = referenceStats[0];
-        const recvStats = receivedStats[0];
-
-        return {
-            DRAFT: parseInt(draftedStats.draft || '0'),
-            RECEIVED: parseInt(recvStats.received || '0'),
-            PENDING: parseInt(draftedStats.pending || '0'),
-            // 내가 기안한 문서 + 내가 참여하는 문서 (중복 제거됨)
-            PENDING_AGREEMENT:
-                // parseInt(draftedPendingStats.drafted_pending_agreement || '0') +
-                parseInt(approvalLineStats.approval_line_agreement || '0'),
-            PENDING_APPROVAL:
-                // parseInt(draftedPendingStats.drafted_pending_approval || '0') +
-                parseInt(approvalLineStats.approval_line_approval || '0'),
-            IMPLEMENTATION:
-                // parseInt(draftedPendingStats.drafted_implementation || '0') +
-                parseInt(approvalLineStats.approval_line_implementation || '0'),
-            APPROVED: parseInt(draftedStats.approved || '0'),
-            REJECTED: parseInt(draftedStats.rejected || '0'),
-            RECEIVED_REFERENCE: parseInt(refStats.received_reference || '0'),
-        };
+        return statistics;
     }
 
     /**
      * 11. 내 전체 문서 목록 조회 (작성 + 결재라인)
      * 통계와 동일한 필터 타입으로 문서 목록 조회
+     * - getMyAllDocumentsStatistics와 동일한 조건을 사용하여 데이터 정합성 보장
      */
     async getMyAllDocuments(params: {
         userId: string;
@@ -896,192 +793,295 @@ export class DocumentContext {
         const limit = params.limit || 20;
         const skip = (page - 1) * limit;
 
-        const qb = this.documentService
-            .createQueryBuilder('document')
-            .leftJoinAndSelect('document.drafter', 'drafter')
-            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
-            .orderBy('document.createdAt', 'DESC')
-            .addOrderBy('approvalSteps.stepOrder', 'ASC');
+        // 조인 없이 필터 조건만 적용한 쿼리빌더 생성 (ID 조회 및 카운트용)
+        const baseQb = this.documentService.createQueryBuilder('document').orderBy('document.createdAt', 'DESC');
 
-        // 필터 타입별 조건 적용
-        switch (params.filterType) {
+        // 필터 타입별 조건 적용 (통계와 동일한 메서드 사용)
+        this.applyFilterTypeCondition(
+            baseQb,
+            params.filterType || 'ALL',
+            params.userId,
+            params.approvalStatus,
+            params.referenceReadStatus,
+        );
+
+        // 추가 필터링 조건
+        if (params.searchKeyword) {
+            baseQb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
+        }
+
+        if (params.categoryId) {
+            baseQb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
+            baseQb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
+        }
+
+        if (params.startDate) {
+            baseQb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
+        }
+
+        if (params.endDate) {
+            baseQb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
+        }
+
+        // 1단계: 전체 개수 조회
+        const totalItems = await baseQb.getCount();
+
+        // 2단계: 페이지네이션 적용하여 document ID만 조회 (중복 없이)
+        const documentIds = await baseQb.clone().select('document.id').skip(skip).take(limit).getRawMany();
+
+        this.logger.debug(
+            `페이지네이션 적용: skip=${skip}, limit=${limit}, 조회된 ID 개수=${documentIds.length}, 전체=${totalItems}`,
+        );
+
+        // 3단계: ID 기준으로 전체 데이터 조회 (approvalSteps 포함)
+        let documents = [];
+        if (documentIds.length > 0) {
+            const ids = documentIds.map((item) => item.document_id);
+
+            const documentsMap = await this.documentService
+                .createQueryBuilder('document')
+                .leftJoinAndSelect('document.drafter', 'drafter')
+                .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
+                .whereInIds(ids)
+                .addOrderBy('approvalSteps.stepOrder', 'ASC')
+                .getMany();
+
+            // ID 순서대로 정렬 (페이지네이션 순서 유지)
+            const docMap = new Map(documentsMap.map((doc) => [doc.id, doc]));
+            documents = ids.map((id) => docMap.get(id)).filter((doc) => doc !== undefined);
+        }
+
+        // 페이징 메타데이터 계산
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            data: documents,
+            meta: {
+                currentPage: page,
+                itemsPerPage: limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
+    }
+
+    /**
+     * 헬퍼: 필터 타입별 조건 적용 (통계 & 목록 조회 공통 사용)
+     */
+    private applyFilterTypeCondition(
+        qb: SelectQueryBuilder<Document>,
+        filterType: string,
+        userId: string,
+        approvalStatus?: string,
+        referenceReadStatus?: string,
+    ): void {
+        switch (filterType) {
             case 'DRAFT':
-                // 임시저장 (내가 기안한 문서)
-                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere(
-                    'document.status = :status',
-                    { status: DocumentStatus.DRAFT },
-                );
+                // 임시저장 (내가 임시 저장한 문서)
+                qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status = :status', {
+                    status: DocumentStatus.DRAFT,
+                });
+                break;
+
+            case 'PENDING':
+                // 결재 진행중 문서 (내가 상신한 문서)
+                qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status = :status', {
+                    status: DocumentStatus.PENDING,
+                });
                 break;
 
             case 'RECEIVED':
-                // 수신함 (내가 결재라인에 있는 모든 받은 문서, 내가 기안한 문서 제외, DRAFT 제외)
+                // 수신함: 내가 결재라인에 있지만 현재 내 차례가 아닌 문서들
+                // - 아직 내 차례가 아닌 것 (SCHEDULED): 내 앞에 PENDING 단계가 있음
+                // - 이미 처리한 것 (COMPLETED): 내 단계가 APPROVED 상태
                 // 합의(AGREEMENT)와 결재(APPROVAL)만 포함, 시행(IMPLEMENTATION)과 참조(REFERENCE)는 제외
-                qb.andWhere('document.drafterId != :userId', { userId: params.userId })
-                    .andWhere('document.status != :draftStatus', { draftStatus: DocumentStatus.DRAFT })
+                qb.andWhere('document.drafterId != :userId', { userId })
+                    .andWhere('document.status = :pendingStatus', { pendingStatus: DocumentStatus.PENDING })
                     .andWhere(
                         `document.id IN (
-                        SELECT d.id
+                        SELECT DISTINCT d.id
                         FROM documents d
-                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                        WHERE ass."approverId" = :userId
-                        AND ass."stepType" IN (:...receivedStepTypes)
+                        INNER JOIN approval_step_snapshots my_step ON d.id = my_step."documentId"
+                        WHERE d.status = :pendingStatus
+                        AND d."drafterId" != :userId
+                        AND my_step."approverId" = :userId
+                        AND my_step."stepType" IN (:...receivedStepTypes)
+                        AND (
+                            -- 아직 내 차례가 아닌 것 (앞에 PENDING 단계가 있음)
+                            EXISTS (
+                                SELECT 1
+                                FROM approval_step_snapshots prior_step
+                                WHERE prior_step."documentId" = my_step."documentId"
+                                AND prior_step."stepOrder" < my_step."stepOrder"
+                                AND prior_step.status = :pendingStepStatus
+                            )
+                            OR
+                            -- 내 차례가 지나간 것 (내 단계가 APPROVED)
+                            my_step.status = :approvedStepStatus
+                        )
                     )`,
                         {
                             receivedStepTypes: [ApprovalStepType.AGREEMENT, ApprovalStepType.APPROVAL],
+                            pendingStepStatus: ApprovalStatus.PENDING,
+                            approvedStepStatus: ApprovalStatus.APPROVED,
                         },
                     );
                 break;
 
-            case 'PENDING':
-                // 상신함 (내가 기안한 제출된 전체 문서)
-                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere(
-                    'document.submittedAt IS NOT NULL',
-                );
-                break;
-
             case 'PENDING_AGREEMENT':
-                // 합의함: 내가 기안한 문서 중 현재 단계가 AGREEMENT + 내가 협의자로 결재라인에 있는 문서
-                if (params.approvalStatus) {
+                // 합의함: 현재 내가 협의해야 하는 문서 (CURRENT 상태)
+                if (approvalStatus) {
                     // approvalStatus 필터 적용
-                    this.applyApprovalStatusFilter(
-                        qb,
-                        params.userId,
-                        ApprovalStepType.AGREEMENT,
-                        params.approvalStatus,
-                    );
+                    this.applyApprovalStatusFilter(qb, userId, ApprovalStepType.AGREEMENT, approvalStatus);
                 } else {
-                    // 기본: 승인 상태 상관없이 모두 조회
-                    qb.andWhere(
-                        `(
-                            (document.drafterId = :userId AND document.id IN (
-                                SELECT DISTINCT ON (d.id) d.id
-                                FROM documents d
-                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                                WHERE d.status = :pendingStatus
-                                AND ass.status = :pendingStepStatus
-                                ORDER BY d.id, ass."stepOrder" ASC
-                            ) AND document.id IN (
-                                SELECT d.id
-                                FROM documents d
-                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                                WHERE ass."stepType" = :agreementType
-                                AND ass.status = :pendingStepStatus
-                            ))
-                            OR
-                            (document.drafterId != :userId AND document.id IN (
-                                SELECT DISTINCT d.id
-                                FROM documents d
-                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                                WHERE d.status = :pendingStatus
-                                AND ass."approverId" = :userId
-                                AND ass."stepType" = :agreementType
-                            ))
+                    // 기본: 현재 내 차례인 문서만 조회 (CURRENT)
+                    qb.andWhere('document.drafterId != :userId', { userId }).andWhere(
+                        `document.id IN (
+                            SELECT DISTINCT my_step."documentId"
+                            FROM approval_step_snapshots my_step
+                            INNER JOIN documents d ON my_step."documentId" = d.id
+                            WHERE my_step."approverId" = :userId
+                            AND my_step."stepType" = :agreementType
+                            AND d.status = :pendingStatus
+                            AND d."drafterId" != :userId
+                            AND my_step.status = :pendingStepStatus
+                            AND NOT EXISTS (
+                                SELECT 1
+                                FROM approval_step_snapshots prior_step
+                                WHERE prior_step."documentId" = my_step."documentId"
+                                AND prior_step."stepOrder" < my_step."stepOrder"
+                                AND prior_step.status = :pendingStepStatus
+                            )
                         )`,
                         {
-                            userId: params.userId,
                             pendingStatus: DocumentStatus.PENDING,
-                            pendingStepStatus: ApprovalStatus.PENDING,
                             agreementType: ApprovalStepType.AGREEMENT,
+                            pendingStepStatus: ApprovalStatus.PENDING,
                         },
                     );
                 }
                 break;
 
             case 'PENDING_APPROVAL':
-                // 결재함: 내가 기안한 문서 중 현재 단계가 APPROVAL + 내가 결재자로 결재라인에 있는 문서
-                if (params.approvalStatus) {
+                // 결재함: 현재 내가 결재해야 하는 문서 (CURRENT 상태)
+                if (approvalStatus) {
                     // approvalStatus 필터 적용
-                    this.applyApprovalStatusFilter(qb, params.userId, ApprovalStepType.APPROVAL, params.approvalStatus);
+                    this.applyApprovalStatusFilter(qb, userId, ApprovalStepType.APPROVAL, approvalStatus);
                 } else {
-                    // 기본: 승인 상태 상관없이 모두 조회
-                    qb.andWhere(
-                        `(
-                            (document.drafterId = :userId AND document.id IN (
-                                SELECT DISTINCT ON (d.id) d.id
-                                FROM documents d
-                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                                WHERE d.status = :pendingStatus
-                                AND ass.status = :pendingStepStatus
-                                ORDER BY d.id, ass."stepOrder" ASC
-                            ) AND document.id IN (
-                                SELECT d.id
-                                FROM documents d
-                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                                WHERE ass."stepType" = :approvalType
-                                AND ass.status = :pendingStepStatus
-                            ))
-                            OR
-                            (document.drafterId != :userId AND document.id IN (
-                                SELECT DISTINCT d.id
-                                FROM documents d
-                                INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                                WHERE d.status = :pendingStatus
-                                AND ass."approverId" = :userId
-                                AND ass."stepType" = :approvalType
-                            ))
+                    // 기본: 현재 내 차례인 문서만 조회 (CURRENT)
+                    qb.andWhere('document.drafterId != :userId', { userId }).andWhere(
+                        `document.id IN (
+                            SELECT DISTINCT my_step."documentId"
+                            FROM approval_step_snapshots my_step
+                            INNER JOIN documents d ON my_step."documentId" = d.id
+                            WHERE my_step."approverId" = :userId
+                            AND my_step."stepType" = :approvalType
+                            AND d.status = :pendingStatus
+                            AND d."drafterId" != :userId
+                            AND my_step.status = :pendingStepStatus
+                            AND NOT EXISTS (
+                                SELECT 1
+                                FROM approval_step_snapshots prior_step
+                                WHERE prior_step."documentId" = my_step."documentId"
+                                AND prior_step."stepOrder" < my_step."stepOrder"
+                                AND prior_step.status = :pendingStepStatus
+                            )
                         )`,
                         {
-                            userId: params.userId,
                             pendingStatus: DocumentStatus.PENDING,
-                            pendingStepStatus: ApprovalStatus.PENDING,
                             approvalType: ApprovalStepType.APPROVAL,
+                            pendingStepStatus: ApprovalStatus.PENDING,
                         },
                     );
                 }
                 break;
 
             case 'IMPLEMENTATION':
-                // 시행함: APPROVED 상태 (결재 완료, 시행 대기)
-                // 내가 기안한 문서 + 내가 시행자로 결재라인에 있는 문서 (현재 차례 상관없이)
-                qb.andWhere(
-                    `(
-                        (document.drafterId = :userId AND document.status = :approvedStatus)
-                        OR
-                        (document.drafterId != :userId AND document.id IN (
-                            SELECT DISTINCT d.id
-                            FROM documents d
-                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
-                            WHERE d.status = :approvedStatus
-                            AND ass."approverId" = :userId
-                            AND ass."stepType" = :implementationType
-                        ))
+                // 시행함: 현재 내가 시행해야 하는 문서
+                // - 문서 상태가 APPROVED (결재 완료)
+                // - 내가 시행자로 있으면서 아직 시행하지 않은 것 (PENDING 상태)
+                qb.andWhere('document.drafterId != :userId', { userId }).andWhere(
+                    `document.id IN (
+                        SELECT DISTINCT d.id
+                        FROM documents d
+                        INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                        WHERE d.status = :approvedStatus
+                        AND d."drafterId" != :userId
+                        AND ass."approverId" = :userId
+                        AND ass."stepType" = :implementationType
+                        AND ass.status = :pendingStepStatus
                     )`,
                     {
-                        userId: params.userId,
                         approvedStatus: DocumentStatus.APPROVED,
                         implementationType: ApprovalStepType.IMPLEMENTATION,
+                        pendingStepStatus: ApprovalStatus.PENDING,
                     },
                 );
                 break;
 
             case 'APPROVED':
-                // 기결함 (내가 기안한 시행 완료 문서)
-                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere(
-                    'document.status = :status',
-                    { status: DocumentStatus.IMPLEMENTED },
+                // 기결함: 모든 결재가 끝난 문서
+                // - 내가 기안한 문서 중 모든 결재가 끝난 것
+                // - 내가 결재라인에 속한 문서 중 모든 결재가 끝난 것
+                // 모든 결재가 끝났다 = 문서 상태가 APPROVED(결재 완료, 시행 대기) 또는 IMPLEMENTED(시행 완료)
+                qb.andWhere(
+                    `(
+                        (document.drafterId = :userId AND document.status IN (:...completedStatuses))
+                        OR
+                        (document.drafterId != :userId AND document.id IN (
+                            SELECT DISTINCT d.id
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE ass."approverId" = :userId
+                            AND d.status IN (:...completedStatuses2)
+                        ))
+                    )`,
+                    {
+                        userId,
+                        completedStatuses: [DocumentStatus.APPROVED, DocumentStatus.IMPLEMENTED],
+                        completedStatuses2: [DocumentStatus.APPROVED, DocumentStatus.IMPLEMENTED],
+                    },
                 );
                 break;
 
             case 'REJECTED':
-                // 반려함 (내가 기안한 반려 문서)
-                qb.andWhere('document.drafterId = :userId', { userId: params.userId }).andWhere(
-                    'document.status = :status',
-                    { status: DocumentStatus.REJECTED },
+                // 반려함: 반려된 문서
+                // - 내가 기안한 반려 문서
+                // - 내가 결재라인에 속했지만 반려된 문서
+                qb.andWhere(
+                    `(
+                        (document.drafterId = :userId AND document.status = :rejectedStatus)
+                        OR
+                        (document.drafterId != :userId AND document.id IN (
+                            SELECT DISTINCT d.id
+                            FROM documents d
+                            INNER JOIN approval_step_snapshots ass ON d.id = ass."documentId"
+                            WHERE ass."approverId" = :userId
+                            AND d.status = :rejectedStatus2
+                        ))
+                    )`,
+                    {
+                        userId,
+                        rejectedStatus: DocumentStatus.REJECTED,
+                        rejectedStatus2: DocumentStatus.REJECTED,
+                    },
                 );
                 break;
 
             case 'RECEIVED_REFERENCE':
                 // 수신참조함 (내가 참조자로 있는 문서, 내가 기안한 문서 제외, IMPLEMENTED 상태만)
-                qb.andWhere('document.drafterId != :userId', { userId: params.userId }).andWhere(
+                qb.andWhere('document.drafterId != :userId', { userId }).andWhere(
                     'document.status = :implementedStatus',
                     { implementedStatus: DocumentStatus.IMPLEMENTED },
                 );
 
                 // 기본 조건: 내가 참조자로 있는 문서
-                if (params.referenceReadStatus) {
+                if (referenceReadStatus) {
                     // 열람 여부 필터링
                     const statusCondition =
-                        params.referenceReadStatus === 'READ' ? ApprovalStatus.APPROVED : ApprovalStatus.PENDING;
+                        referenceReadStatus === 'READ' ? ApprovalStatus.APPROVED : ApprovalStatus.PENDING;
 
                     qb.andWhere(
                         `document.id IN (
@@ -1116,6 +1116,7 @@ export class DocumentContext {
                 }
                 break;
 
+            case 'ALL':
             default:
                 // 필터 타입이 없으면 내가 기안한 문서 + 내가 참여하는 문서 모두
                 qb.andWhere(
@@ -1131,64 +1132,23 @@ export class DocumentContext {
                         )
                     )`,
                     {
-                        userId: params.userId,
+                        userId,
                         draftStatus: DocumentStatus.DRAFT,
                     },
                 );
                 break;
         }
-
-        // 추가 필터링 조건
-        if (params.searchKeyword) {
-            qb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
-        }
-
-        if (params.categoryId) {
-            qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
-            qb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
-        }
-
-        if (params.startDate) {
-            qb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
-        }
-
-        if (params.endDate) {
-            qb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
-        }
-
-        // 전체 개수 조회
-        const totalItems = await qb.getCount();
-        // 전체 데이터 아이디 조회
-        const allDocuments = await qb.select('document.id').getMany();
-
-        // 페이지 네이션 적용
-        const documents = await this.documentService.findAll({
-            where: { id: In(allDocuments.map((document) => document.id)) },
-            relations: ['drafter', 'approvalSteps'],
-            skip,
-            take: limit,
-        });
-
-        // 페이징 메타데이터 계산
-        const totalPages = Math.ceil(totalItems / limit);
-
-        return {
-            data: documents,
-            meta: {
-                currentPage: page,
-                itemsPerPage: limit,
-                totalItems,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPreviousPage: page > 1,
-            },
-        };
     }
 
     /**
      * 헬퍼: 승인 상태 필터 적용 (PENDING_AGREEMENT, PENDING_APPROVAL에 사용)
      */
-    private applyApprovalStatusFilter(qb: any, userId: string, stepType: ApprovalStepType, approvalStatus: string) {
+    private applyApprovalStatusFilter(
+        qb: SelectQueryBuilder<Document>,
+        userId: string,
+        stepType: ApprovalStepType,
+        approvalStatus: string,
+    ) {
         switch (approvalStatus) {
             case 'SCHEDULED':
                 // 승인 예정: 내가 해당 타입의 결재자로 있지만, 내 앞에 PENDING 단계가 있는 경우

@@ -81,17 +81,29 @@ export class DocumentController {
             '**응답 형식:**\n' +
             '```json\n' +
             '{\n' +
-            '  "DRAFT": 1,                  // 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
-            '  "RECEIVED": 15,              // 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
-            '  "PENDING": 10,               // 상신함 (내가 기안한 제출된 전체 문서)\n' +
-            '  "PENDING_AGREEMENT": 1,      // 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
-            '  "PENDING_APPROVAL": 2,       // 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
-            '  "IMPLEMENTATION": 1,         // 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태)\n' +
-            '  "APPROVED": 20,              // 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
-            '  "REJECTED": 3,               // 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
+            '  "DRAFT": 1,                  // 임시저장 (내가 임시 저장한 문서, DRAFT 상태)\n' +
+            '  "PENDING": 10,               // 결재 진행중 (내가 상신한 문서, PENDING 상태)\n' +
+            '  "RECEIVED": 15,              // 수신함 (내가 결재라인에 있지만 현재 내 차례가 아닌 문서)\n' +
+            '  "PENDING_AGREEMENT": 1,      // 합의함 (현재 내가 협의해야 하는 문서)\n' +
+            '  "PENDING_APPROVAL": 2,       // 결재함 (현재 내가 결재해야 하는 문서)\n' +
+            '  "IMPLEMENTATION": 1,         // 시행함 (현재 내가 시행해야 하는 문서)\n' +
+            '  "APPROVED": 20,              // 기결함 (내가 관련된 모든 결재 완료 문서, APPROVED/IMPLEMENTED)\n' +
+            '  "REJECTED": 3,               // 반려함 (내가 관련된 모든 반려 문서, REJECTED)\n' +
             '  "RECEIVED_REFERENCE": 23     // 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '}\n' +
             '```\n\n' +
+            '**필터별 상세 설명:**\n' +
+            '- DRAFT: 내가 임시 저장한 문서 (문서 상태: DRAFT)\n' +
+            '- PENDING: 내가 상신한 결재 진행중 문서 (문서 상태: PENDING)\n' +
+            '- RECEIVED: 내가 결재라인에 있지만 현재 내 차례가 아닌 문서\n' +
+            '  * 아직 내 차례가 아닌 것 (앞에 PENDING 단계 있음)\n' +
+            '  * 이미 내가 처리한 것 (내 단계가 APPROVED)\n' +
+            '- PENDING_AGREEMENT: 현재 내가 협의해야 하는 문서 (내 차례, 내 앞에 PENDING 없음)\n' +
+            '- PENDING_APPROVAL: 현재 내가 결재해야 하는 문서 (내 차례, 내 앞에 PENDING 없음)\n' +
+            '- IMPLEMENTATION: 현재 내가 시행해야 하는 문서 (시행 단계가 PENDING)\n' +
+            '- APPROVED: 내가 기안했거나 결재라인에 속한 모든 결재 완료 문서 (APPROVED/IMPLEMENTED)\n' +
+            '- REJECTED: 내가 기안했거나 결재라인에 속했지만 반려된 문서 (REJECTED)\n' +
+            '- RECEIVED_REFERENCE: 내가 참조자로 있는 문서 (IMPLEMENTED 상태만)\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 통계 조회\n' +
             '- ❌ 실패: 존재하지 않는 사용자 ID',
@@ -115,21 +127,35 @@ export class DocumentController {
         description:
             '통계 조회와 동일한 필터로 실제 문서 목록을 조회합니다.\n\n' +
             '**필터 타입 (filterType):**\n' +
-            '- DRAFT: 임시저장 (내가 기안한 문서, DRAFT 상태)\n' +
-            '- RECEIVED: 수신함 (내가 합의/결재 라인에 있는 받은 문서, 시행/참조 제외)\n' +
-            '- PENDING: 상신함 (내가 기안한 제출된 전체 문서)\n' +
-            '- PENDING_AGREEMENT: 합의함 (내가 협의자로 결재라인에 있는 문서, PENDING 상태)\n' +
-            '- PENDING_APPROVAL: 결재함 (내가 결재자로 결재라인에 있는 문서, PENDING 상태)\n' +
-            '- IMPLEMENTATION: 시행함 (내가 시행자로 결재라인에 있는 문서, APPROVED 상태 - 결재 완료, 시행 대기)\n' +
-            '- APPROVED: 기결함 (내가 기안한 문서, IMPLEMENTED 상태 - 시행까지 완료)\n' +
-            '- REJECTED: 반려함 (내가 기안한 문서, REJECTED 상태)\n' +
+            '- DRAFT: 임시저장 (내가 임시 저장한 문서, DRAFT 상태)\n' +
+            '- PENDING: 결재 진행중 (내가 상신한 문서, PENDING 상태)\n' +
+            '- RECEIVED: 수신함 (내가 결재라인에 있지만 현재 내 차례가 아닌 문서)\n' +
+            '  * 아직 내 차례가 아닌 것 (앞에 PENDING 단계 있음)\n' +
+            '  * 이미 내가 처리한 것 (내 단계가 APPROVED)\n' +
+            '- PENDING_AGREEMENT: 합의함 (현재 내가 협의해야 하는 문서)\n' +
+            '  * 기본: CURRENT만 (내 차례인 것만)\n' +
+            '  * approvalStatus로 SCHEDULED, COMPLETED 조회 가능\n' +
+            '- PENDING_APPROVAL: 결재함 (현재 내가 결재해야 하는 문서)\n' +
+            '  * 기본: CURRENT만 (내 차례인 것만)\n' +
+            '  * approvalStatus로 SCHEDULED, COMPLETED 조회 가능\n' +
+            '- IMPLEMENTATION: 시행함 (현재 내가 시행해야 하는 문서, 시행 단계가 PENDING)\n' +
+            '- APPROVED: 기결함 (내가 관련된 모든 결재 완료 문서, APPROVED/IMPLEMENTED)\n' +
+            '  * 내가 기안한 결재 완료 문서\n' +
+            '  * 내가 결재라인에 속한 결재 완료 문서\n' +
+            '- REJECTED: 반려함 (내가 관련된 모든 반려 문서, REJECTED)\n' +
+            '  * 내가 기안한 반려 문서\n' +
+            '  * 내가 결재라인에 속했지만 반려된 문서\n' +
             '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '- 미지정: 내가 기안한 문서 + 내가 참여하는 문서 전체\n\n' +
             '**승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용:**\n' +
             '- SCHEDULED: 승인 예정 (아직 내 차례가 아님, 내 앞에 PENDING 단계가 있음)\n' +
-            '- CURRENT: 승인할 차례 (현재 내 차례, 내가 현재 가장 작은 stepOrder의 PENDING)\n' +
+            '- CURRENT: 승인할 차례 (현재 내 차례, 내 앞에 PENDING 단계 없음)\n' +
             '- COMPLETED: 승인 완료 (내가 이미 승인함, 내 단계가 APPROVED)\n' +
-            '- 미지정: 모든 승인 상태 포함\n\n' +
+            '- 미지정: CURRENT만 조회 (기본 동작)\n\n' +
+            '**열람 상태 필터 (referenceReadStatus) - RECEIVED_REFERENCE에만 적용:**\n' +
+            '- READ: 열람한 문서\n' +
+            '- UNREAD: 열람하지 않은 문서\n' +
+            '- 미지정: 모든 참조 문서\n\n' +
             '**추가 필터링:**\n' +
             '- searchKeyword: 제목 검색\n' +
             '- categoryId: 카테고리 구분\n' +
@@ -138,10 +164,15 @@ export class DocumentController {
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 전체 문서 목록 조회 (filterType 없음)\n' +
             '- ✅ 정상: DRAFT 필터링\n' +
+            '- ✅ 정상: PENDING 필터링\n' +
             '- ✅ 정상: RECEIVED 필터링\n' +
-            '- ✅ 정상: PENDING_APPROVAL + CURRENT 필터링\n' +
-            '- ✅ 정상: PENDING_AGREEMENT + SCHEDULED 필터링\n' +
+            '- ✅ 정상: PENDING_APPROVAL 필터링 (CURRENT)\n' +
+            '- ✅ 정상: PENDING_APPROVAL + SCHEDULED 필터링\n' +
+            '- ✅ 정상: PENDING_AGREEMENT 필터링 (CURRENT)\n' +
+            '- ✅ 정상: PENDING_AGREEMENT + COMPLETED 필터링\n' +
             '- ✅ 정상: IMPLEMENTATION 필터링\n' +
+            '- ✅ 정상: APPROVED 필터링\n' +
+            '- ✅ 정상: REJECTED 필터링\n' +
             '- ✅ 정상: RECEIVED_REFERENCE 필터링\n' +
             '- ✅ 정상: 제목 검색\n' +
             '- ✅ 정상: 카테고리별 필터링\n' +
