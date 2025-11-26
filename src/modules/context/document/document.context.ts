@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource, In, QueryRunner } from 'typeorm';
 import { Document } from '../../domain/document/document.entity';
 import { DomainDocumentService } from '../../domain/document/document.service';
 import { DomainDocumentTemplateService } from '../../domain/document-template/document-template.service';
@@ -1158,9 +1158,16 @@ export class DocumentContext {
 
         // 전체 개수 조회
         const totalItems = await qb.getCount();
+        // 전체 데이터 아이디 조회
+        const allDocuments = await qb.select('document.id').getMany();
 
-        // 데이터 조회
-        const documents = await qb.skip(skip).take(limit).getMany();
+        // 페이지 네이션 적용
+        const documents = await this.documentService.findAll({
+            where: { id: In(allDocuments.map((document) => document.id)) },
+            relations: ['drafter', 'approvalSteps'],
+            skip,
+            take: limit,
+        });
 
         // 페이징 메타데이터 계산
         const totalPages = Math.ceil(totalItems / limit);
