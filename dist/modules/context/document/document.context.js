@@ -743,7 +743,13 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
             qb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
         }
         const totalItems = await qb.getCount();
-        const documents = await qb.skip(skip).take(limit).getMany();
+        const allDocuments = await qb.select('document.id').getMany();
+        const documents = await this.documentService.findAll({
+            where: { id: (0, typeorm_1.In)(allDocuments.map((document) => document.id)) },
+            relations: ['drafter', 'approvalSteps'],
+            skip,
+            take: limit,
+        });
         const totalPages = Math.ceil(totalItems / limit);
         return {
             data: documents,
