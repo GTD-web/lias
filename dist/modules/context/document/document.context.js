@@ -480,41 +480,36 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         const page = params.page || 1;
         const limit = params.limit || 20;
         const skip = (page - 1) * limit;
-        const qb = this.documentService
-            .createQueryBuilder('document')
-            .leftJoinAndSelect('document.drafter', 'drafter')
-            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
-            .orderBy('document.createdAt', 'DESC')
-            .addOrderBy('approvalSteps.stepOrder', 'ASC');
-        this.applyFilterTypeCondition(qb, params.filterType || 'ALL', params.userId, params.approvalStatus, params.referenceReadStatus);
+        const baseQb = this.documentService.createQueryBuilder('document').orderBy('document.createdAt', 'DESC');
+        this.applyFilterTypeCondition(baseQb, params.filterType || 'ALL', params.userId, params.approvalStatus, params.referenceReadStatus);
         if (params.searchKeyword) {
-            qb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
+            baseQb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
         }
         if (params.categoryId) {
-            qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
-            qb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
+            baseQb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
+            baseQb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
         }
         if (params.startDate) {
-            qb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
+            baseQb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
         }
         if (params.endDate) {
-            qb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
+            baseQb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
         }
-        const countQb = qb.clone();
-        const totalItems = await countQb.getCount();
-        const documentIds = await qb.select('document.id').skip(skip).take(limit).getRawMany();
+        const totalItems = await baseQb.getCount();
+        const documentIds = await baseQb.clone().select('document.id').skip(skip).take(limit).getRawMany();
         this.logger.debug(`페이지네이션 적용: skip=${skip}, limit=${limit}, 조회된 ID 개수=${documentIds.length}, 전체=${totalItems}`);
         let documents = [];
         if (documentIds.length > 0) {
             const ids = documentIds.map((item) => item.document_id);
-            documents = await this.documentService
+            const documentsMap = await this.documentService
                 .createQueryBuilder('document')
                 .leftJoinAndSelect('document.drafter', 'drafter')
                 .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
                 .whereInIds(ids)
-                .orderBy('document.createdAt', 'DESC')
                 .addOrderBy('approvalSteps.stepOrder', 'ASC')
                 .getMany();
+            const docMap = new Map(documentsMap.map((doc) => [doc.id, doc]));
+            documents = ids.map((id) => docMap.get(id)).filter((doc) => doc !== undefined);
         }
         const totalPages = Math.ceil(totalItems / limit);
         return {

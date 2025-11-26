@@ -793,16 +793,12 @@ export class DocumentContext {
         const limit = params.limit || 20;
         const skip = (page - 1) * limit;
 
-        const qb = this.documentService
-            .createQueryBuilder('document')
-            .leftJoinAndSelect('document.drafter', 'drafter')
-            .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
-            .orderBy('document.createdAt', 'DESC')
-            .addOrderBy('approvalSteps.stepOrder', 'ASC');
+        // 조인 없이 필터 조건만 적용한 쿼리빌더 생성 (ID 조회 및 카운트용)
+        const baseQb = this.documentService.createQueryBuilder('document').orderBy('document.createdAt', 'DESC');
 
         // 필터 타입별 조건 적용 (통계와 동일한 메서드 사용)
         this.applyFilterTypeCondition(
-            qb,
+            baseQb,
             params.filterType || 'ALL',
             params.userId,
             params.approvalStatus,
@@ -811,28 +807,27 @@ export class DocumentContext {
 
         // 추가 필터링 조건
         if (params.searchKeyword) {
-            qb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
+            baseQb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
         }
 
         if (params.categoryId) {
-            qb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
-            qb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
+            baseQb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
+            baseQb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
         }
 
         if (params.startDate) {
-            qb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
+            baseQb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
         }
 
         if (params.endDate) {
-            qb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
+            baseQb.andWhere('document.submittedAt <= :endDate', { endDate: params.endDate });
         }
 
-        // 1단계: 전체 개수 조회 (조인 없는 쿼리 복제)
-        const countQb = qb.clone();
-        const totalItems = await countQb.getCount();
+        // 1단계: 전체 개수 조회
+        const totalItems = await baseQb.getCount();
 
-        // 2단계: 페이지네이션 적용하여 document ID만 먼저 조회
-        const documentIds = await qb.select('document.id').skip(skip).take(limit).getRawMany();
+        // 2단계: 페이지네이션 적용하여 document ID만 조회 (중복 없이)
+        const documentIds = await baseQb.clone().select('document.id').skip(skip).take(limit).getRawMany();
 
         this.logger.debug(
             `페이지네이션 적용: skip=${skip}, limit=${limit}, 조회된 ID 개수=${documentIds.length}, 전체=${totalItems}`,
@@ -843,14 +838,17 @@ export class DocumentContext {
         if (documentIds.length > 0) {
             const ids = documentIds.map((item) => item.document_id);
 
-            documents = await this.documentService
+            const documentsMap = await this.documentService
                 .createQueryBuilder('document')
                 .leftJoinAndSelect('document.drafter', 'drafter')
                 .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
                 .whereInIds(ids)
-                .orderBy('document.createdAt', 'DESC')
                 .addOrderBy('approvalSteps.stepOrder', 'ASC')
                 .getMany();
+
+            // ID 순서대로 정렬 (페이지네이션 순서 유지)
+            const docMap = new Map(documentsMap.map((doc) => [doc.id, doc]));
+            documents = ids.map((id) => docMap.get(id)).filter((doc) => doc !== undefined);
         }
 
         // 페이징 메타데이터 계산
