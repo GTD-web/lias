@@ -62,17 +62,7 @@ export declare class DocumentService {
             reference: number;
         };
     }>;
-    getMyAllDocumentsStatistics(userId: string): Promise<{
-        DRAFT: number;
-        RECEIVED: number;
-        PENDING: number;
-        PENDING_AGREEMENT: number;
-        PENDING_APPROVAL: number;
-        IMPLEMENTATION: number;
-        APPROVED: number;
-        REJECTED: number;
-        RECEIVED_REFERENCE: number;
-    }>;
+    getMyAllDocumentsStatistics(userId: string): Promise<Record<string, number>>;
     getMyAllDocuments(params: {
         userId: string;
         filterType?: string;
@@ -85,7 +75,7 @@ export declare class DocumentService {
         page?: number;
         limit?: number;
     }): Promise<{
-        data: import("../../../domain").Document[];
+        data: any[];
         meta: {
             currentPage: number;
             itemsPerPage: number;
