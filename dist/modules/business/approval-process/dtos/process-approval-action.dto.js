@@ -18,6 +18,7 @@ var ApprovalActionType;
     ApprovalActionType["REJECT"] = "reject";
     ApprovalActionType["COMPLETE_AGREEMENT"] = "complete-agreement";
     ApprovalActionType["COMPLETE_IMPLEMENTATION"] = "complete-implementation";
+    ApprovalActionType["MARK_REFERENCE_READ"] = "mark-reference-read";
     ApprovalActionType["CANCEL"] = "cancel";
 })(ApprovalActionType || (exports.ApprovalActionType = ApprovalActionType = {}));
 class ProcessApprovalActionDto {
@@ -34,7 +35,7 @@ __decorate([
 ], ProcessApprovalActionDto.prototype, "type", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '결재 단계 스냅샷 ID (approve, reject, complete-agreement, complete-implementation 타입에서 필수)',
+        description: '결재 단계 스냅샷 ID (approve, reject, complete-agreement, complete-implementation, mark-reference-read 타입에서 필수)',
         example: 'uuid',
     }),
     (0, class_validator_1.IsOptional)(),

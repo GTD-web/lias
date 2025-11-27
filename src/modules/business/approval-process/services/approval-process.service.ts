@@ -101,6 +101,20 @@ export class ApprovalProcessService {
     }
 
     /**
+     * 참조 열람 확인
+     */
+    async markReferenceRead(dto: { stepSnapshotId: string; comment?: string }, referenceUserId: string) {
+        this.logger.log(`참조 열람 확인 요청: ${dto.stepSnapshotId}`);
+        const result = await this.approvalProcessContext.markReferenceRead({
+            stepSnapshotId: dto.stepSnapshotId,
+            referenceUserId: referenceUserId,
+            comment: dto.comment,
+        });
+
+        return result;
+    }
+
+    /**
      * 결재 취소
      */
     async cancelApproval(dto: CancelApprovalDto, cancelerId: string) {
@@ -188,6 +202,18 @@ export class ApprovalProcessService {
                         stepSnapshotId: dto.stepSnapshotId,
                         comment: dto.comment,
                         resultData: dto.resultData,
+                    },
+                    approverId,
+                );
+
+            case ApprovalActionType.MARK_REFERENCE_READ:
+                if (!dto.stepSnapshotId) {
+                    throw new BadRequestException('stepSnapshotId는 필수입니다.');
+                }
+                return await this.markReferenceRead(
+                    {
+                        stepSnapshotId: dto.stepSnapshotId,
+                        comment: dto.comment,
                     },
                     approverId,
                 );

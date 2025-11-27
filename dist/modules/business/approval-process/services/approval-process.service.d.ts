@@ -12,6 +12,10 @@ export declare class ApprovalProcessService {
     rejectStep(dto: RejectStepDto, rejecterId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
     completeAgreement(dto: CompleteAgreementDto, agreerId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
     completeImplementation(dto: CompleteImplementationDto, implementerId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    markReferenceRead(dto: {
+        stepSnapshotId: string;
+        comment?: string;
+    }, referenceUserId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
     cancelApproval(dto: CancelApprovalDto, cancelerId: string): Promise<import("../../../domain").Document>;
     getMyPendingApprovals(userId: string, type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL', page: number, limit: number): Promise<{
         data: {

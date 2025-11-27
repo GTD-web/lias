@@ -1,13 +1,14 @@
 import { ApprovalProcessService } from '../services/approval-process.service';
-import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, ProcessApprovalActionDto, QueryMyPendingDto } from '../dtos';
+import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, MarkReferenceReadDto, ProcessApprovalActionDto, QueryMyPendingDto } from '../dtos';
 import { Employee } from '../../../domain/employee/employee.entity';
 export declare class ApprovalProcessController {
     private readonly approvalProcessService;
     constructor(approvalProcessService: ApprovalProcessService);
-    approveStep(user: Employee, dto: ApproveStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
-    rejectStep(user: Employee, dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     completeAgreement(user: Employee, dto: CompleteAgreementDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    approveStep(user: Employee, dto: ApproveStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     completeImplementation(user: Employee, dto: CompleteImplementationDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    markReferenceRead(user: Employee, dto: MarkReferenceReadDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    rejectStep(user: Employee, dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     cancelApproval(user: Employee, dto: CancelApprovalDto): Promise<import("../../../domain").Document>;
     getMyPendingApprovals(user: Employee, query: QueryMyPendingDto): Promise<{
         data: {
