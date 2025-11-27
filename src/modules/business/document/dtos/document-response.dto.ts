@@ -128,6 +128,70 @@ export class ApprovalStepSnapshotResponseDto {
 }
 
 /**
+ * 카테고리 응답 DTO (간단 버전)
+ */
+class CategorySimpleDto {
+    @ApiProperty({
+        description: '카테고리 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '카테고리 이름',
+        example: '인사',
+    })
+    name: string;
+
+    @ApiProperty({
+        description: '카테고리 코드',
+        example: 'HR',
+    })
+    code: string;
+
+    @ApiPropertyOptional({
+        description: '카테고리 설명',
+        example: '인사 관련 문서',
+    })
+    description?: string;
+
+    @ApiProperty({
+        description: '정렬 순서',
+        example: 1,
+    })
+    order: number;
+}
+
+/**
+ * 문서 템플릿 응답 DTO (간단 버전)
+ */
+export class DocumentTemplateSimpleResponseDto {
+    @ApiProperty({
+        description: '문서 템플릿 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '문서 템플릿 이름',
+        example: '휴가 신청서',
+    })
+    name: string;
+
+    @ApiProperty({
+        description: '문서 템플릿 코드',
+        example: 'VACATION',
+    })
+    code: string;
+
+    @ApiPropertyOptional({
+        description: '카테고리 정보',
+        type: CategorySimpleDto,
+    })
+    category?: CategorySimpleDto;
+}
+
+/**
  * 문서 응답 DTO
  */
 export class DocumentResponseDto {
@@ -185,6 +249,12 @@ export class DocumentResponseDto {
         example: 'uuid',
     })
     documentTemplateId?: string;
+
+    @ApiPropertyOptional({
+        description: '문서 템플릿 정보',
+        type: DocumentTemplateSimpleResponseDto,
+    })
+    documentTemplate?: DocumentTemplateSimpleResponseDto;
 
     @ApiPropertyOptional({
         description: '보존 연한',
@@ -333,4 +403,3 @@ export class PaginatedDocumentsResponseDto {
     })
     meta: PaginationMetaDto;
 }
-

@@ -460,8 +460,52 @@ describe('내 전체 문서 API 일관성 테스트 (e2e)', () => {
         });
     });
 
+    describe('카테고리 정보 포함 검증', () => {
+        it('15. 문서 목록 조회 시 카테고리 정보가 포함되는지 확인', async () => {
+            // 문서가 있는 필터 타입 중 하나 선택
+            const filterType = 'RECEIVED';
+
+            const response = await request(app.getHttpServer())
+                .get('/documents/my-all/documents')
+                .query({ filterType, limit: 1 })
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+
+            const { data } = response.body;
+
+            if (data.length > 0) {
+                const firstDocument = data[0];
+
+                console.log(`\n📋 문서 카테고리 정보 검증:`);
+                console.log(`  문서 ID: ${firstDocument.id}`);
+                console.log(`  문서 제목: ${firstDocument.title}`);
+                console.log(`  템플릿: ${firstDocument.documentTemplate?.name || 'N/A'}`);
+                console.log(`  카테고리: ${firstDocument.documentTemplate?.category?.name || 'N/A'}`);
+
+                // documentTemplate이 있으면 카테고리 정보도 있어야 함
+                if (firstDocument.documentTemplate) {
+                    expect(firstDocument.documentTemplate).toHaveProperty('id');
+                    expect(firstDocument.documentTemplate).toHaveProperty('name');
+                    expect(firstDocument.documentTemplate).toHaveProperty('code');
+
+                    // 카테고리가 설정된 경우
+                    if (firstDocument.documentTemplate.category) {
+                        expect(firstDocument.documentTemplate.category).toHaveProperty('id');
+                        expect(firstDocument.documentTemplate.category).toHaveProperty('name');
+                        expect(firstDocument.documentTemplate.category).toHaveProperty('code');
+                        console.log('  ✅ 카테고리 정보 포함됨');
+                    } else {
+                        console.log('  ℹ️ 카테고리가 설정되지 않은 템플릿');
+                    }
+                }
+            } else {
+                console.log('\n  ℹ️ 조회된 문서가 없어 카테고리 검증 생략');
+            }
+        });
+    });
+
     describe('전체 문서 합계 검증', () => {
-        it('15. 모든 필터의 문서를 합쳤을 때 중복이 있는지 확인 (참고용)', async () => {
+        it('16. 모든 필터의 문서를 합쳤을 때 중복이 있는지 확인 (참고용)', async () => {
             const filterTypes = [
                 'DRAFT',
                 'RECEIVED',

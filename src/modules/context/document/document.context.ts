@@ -846,8 +846,53 @@ export class DocumentContext {
                 .addOrderBy('approvalSteps.stepOrder', 'ASC')
                 .getMany();
 
+            // DocumentTemplate과 Category 정보를 별도로 조회
+            const templateIds = [...new Set(documentsMap.map((doc) => doc.documentTemplateId).filter(Boolean))];
+            let templatesWithCategory = [];
+
+            if (templateIds.length > 0) {
+                const templateResults = await this.dataSource
+                    .createQueryBuilder()
+                    .select([
+                        'dt.id as template_id',
+                        'dt.name as template_name',
+                        'dt.code as template_code',
+                        'c.id as category_id',
+                        'c.name as category_name',
+                        'c.code as category_code',
+                        'c.description as category_description',
+                        'c.order as category_order',
+                    ])
+                    .from('document_templates', 'dt')
+                    .leftJoin('categories', 'c', 'dt.categoryId = c.id')
+                    .where('dt.id IN (:...templateIds)', { templateIds })
+                    .getRawMany();
+
+                templatesWithCategory = templateResults.map((row) => ({
+                    id: row.template_id,
+                    name: row.template_name,
+                    code: row.template_code,
+                    category: row.category_id
+                        ? {
+                              id: row.category_id,
+                              name: row.category_name,
+                              code: row.category_code,
+                              description: row.category_description,
+                              order: row.category_order,
+                          }
+                        : undefined,
+                }));
+            }
+
+            // Template 정보를 Document에 매핑
+            const templateMap = new Map(templatesWithCategory.map((t) => [t.id, t]));
+            const documentsWithTemplate = documentsMap.map((doc) => ({
+                ...doc,
+                documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
+            }));
+
             // ID 순서대로 정렬 (페이지네이션 순서 유지)
-            const docMap = new Map(documentsMap.map((doc) => [doc.id, doc]));
+            const docMap = new Map(documentsWithTemplate.map((doc) => [doc.id, doc]));
             documents = ids.map((id) => docMap.get(id)).filter((doc) => doc !== undefined);
         }
 

@@ -50,5 +50,5 @@ export declare class ApprovalProcessController {
         };
     }>;
     getApprovalSteps(documentId: string): Promise<import("../../../domain").ApprovalStepSnapshot[]>;
-    processApprovalAction(user: Employee, dto: ProcessApprovalActionDto): Promise<import("../../../domain").ApprovalStepSnapshot | import("../../../domain").Document>;
+    processApprovalAction(user: Employee, dto: ProcessApprovalActionDto): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
 }
