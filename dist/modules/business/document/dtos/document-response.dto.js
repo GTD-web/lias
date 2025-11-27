@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginatedDocumentsResponseDto = exports.PaginationMetaDto = exports.SubmitDocumentResponseDto = exports.DocumentResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.ApproverSnapshotMetadataDto = void 0;
+exports.PaginatedDocumentsResponseDto = exports.PaginationMetaDto = exports.SubmitDocumentResponseDto = exports.DocumentResponseDto = exports.DocumentTemplateSimpleResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.ApproverSnapshotMetadataDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 class ApproverSnapshotMetadataDto {
@@ -153,6 +153,74 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], ApprovalStepSnapshotResponseDto.prototype, "updatedAt", void 0);
+class CategorySimpleDto {
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '카테고리 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], CategorySimpleDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '카테고리 이름',
+        example: '인사',
+    }),
+    __metadata("design:type", String)
+], CategorySimpleDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '카테고리 코드',
+        example: 'HR',
+    }),
+    __metadata("design:type", String)
+], CategorySimpleDto.prototype, "code", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '카테고리 설명',
+        example: '인사 관련 문서',
+    }),
+    __metadata("design:type", String)
+], CategorySimpleDto.prototype, "description", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '정렬 순서',
+        example: 1,
+    }),
+    __metadata("design:type", Number)
+], CategorySimpleDto.prototype, "order", void 0);
+class DocumentTemplateSimpleResponseDto {
+}
+exports.DocumentTemplateSimpleResponseDto = DocumentTemplateSimpleResponseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '문서 템플릿 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], DocumentTemplateSimpleResponseDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '문서 템플릿 이름',
+        example: '휴가 신청서',
+    }),
+    __metadata("design:type", String)
+], DocumentTemplateSimpleResponseDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '문서 템플릿 코드',
+        example: 'VACATION',
+    }),
+    __metadata("design:type", String)
+], DocumentTemplateSimpleResponseDto.prototype, "code", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '카테고리 정보',
+        type: CategorySimpleDto,
+    }),
+    __metadata("design:type", CategorySimpleDto)
+], DocumentTemplateSimpleResponseDto.prototype, "category", void 0);
 class DocumentResponseDto {
 }
 exports.DocumentResponseDto = DocumentResponseDto;
@@ -220,6 +288,13 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], DocumentResponseDto.prototype, "documentTemplateId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '문서 템플릿 정보',
+        type: DocumentTemplateSimpleResponseDto,
+    }),
+    __metadata("design:type", DocumentTemplateSimpleResponseDto)
+], DocumentResponseDto.prototype, "documentTemplate", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '보존 연한',

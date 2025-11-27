@@ -22,6 +22,19 @@ export declare class ApprovalStepSnapshotResponseDto {
     createdAt: Date;
     updatedAt: Date;
 }
+declare class CategorySimpleDto {
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    order: number;
+}
+export declare class DocumentTemplateSimpleResponseDto {
+    id: string;
+    name: string;
+    code: string;
+    category?: CategorySimpleDto;
+}
 export declare class DocumentResponseDto {
     id: string;
     documentNumber?: string;
@@ -32,6 +45,7 @@ export declare class DocumentResponseDto {
     metadata?: Record<string, any>;
     drafterId: string;
     documentTemplateId?: string;
+    documentTemplate?: DocumentTemplateSimpleResponseDto;
     retentionPeriod?: string;
     retentionPeriodUnit?: string;
     retentionStartDate?: Date;
@@ -61,3 +75,4 @@ export declare class PaginatedDocumentsResponseDto {
     data: DocumentResponseDto[];
     meta: PaginationMetaDto;
 }
+export {};
