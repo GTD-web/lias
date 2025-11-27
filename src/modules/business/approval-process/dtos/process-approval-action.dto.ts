@@ -9,6 +9,7 @@ export enum ApprovalActionType {
     REJECT = 'reject',
     COMPLETE_AGREEMENT = 'complete-agreement',
     COMPLETE_IMPLEMENTATION = 'complete-implementation',
+    MARK_REFERENCE_READ = 'mark-reference-read',
     CANCEL = 'cancel',
 }
 
@@ -33,7 +34,8 @@ export class ProcessApprovalActionDto {
     // approverId: string;
 
     @ApiPropertyOptional({
-        description: '결재 단계 스냅샷 ID (approve, reject, complete-agreement, complete-implementation 타입에서 필수)',
+        description:
+            '결재 단계 스냅샷 ID (approve, reject, complete-agreement, complete-implementation, mark-reference-read 타입에서 필수)',
         example: 'uuid',
     })
     @IsOptional()

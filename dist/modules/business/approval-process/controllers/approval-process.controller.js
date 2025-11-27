@@ -24,17 +24,20 @@ let ApprovalProcessController = class ApprovalProcessController {
     constructor(approvalProcessService) {
         this.approvalProcessService = approvalProcessService;
     }
-    async approveStep(user, dto) {
-        return await this.approvalProcessService.approveStep(dto, user.id);
-    }
-    async rejectStep(user, dto) {
-        return await this.approvalProcessService.rejectStep(dto, user.id);
-    }
     async completeAgreement(user, dto) {
         return await this.approvalProcessService.completeAgreement(dto, user.id);
     }
+    async approveStep(user, dto) {
+        return await this.approvalProcessService.approveStep(dto, user.id);
+    }
     async completeImplementation(user, dto) {
         return await this.approvalProcessService.completeImplementation(dto, user.id);
+    }
+    async markReferenceRead(user, dto) {
+        return await this.approvalProcessService.markReferenceRead(dto, user.id);
+    }
+    async rejectStep(user, dto) {
+        return await this.approvalProcessService.rejectStep(dto, user.id);
     }
     async cancelApproval(user, dto) {
         return await this.approvalProcessService.cancelApproval(dto, user.id);
@@ -50,6 +53,23 @@ let ApprovalProcessController = class ApprovalProcessController {
     }
 };
 exports.ApprovalProcessController = ApprovalProcessController;
+__decorate([
+    (0, common_1.Post)('complete-agreement'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: '협의 완료',
+        description: '협의 단계를 완료 처리합니다.\n\n' + '**테스트 시나리오:**\n' + '- ✅ 정상: 협의 완료',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '협의 완료 성공', type: dtos_1.ApprovalActionResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 협의만 완료 가능)' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: '협의 단계를 찾을 수 없음' }),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CompleteAgreementDto]),
+    __metadata("design:returntype", Promise)
+], ApprovalProcessController.prototype, "completeAgreement", null);
 __decorate([
     (0, common_1.Post)('approve'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
@@ -72,43 +92,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "approveStep", null);
 __decorate([
-    (0, common_1.Post)('reject'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({
-        summary: '결재 반려',
-        description: '결재 단계를 반려합니다. 반려 사유는 필수입니다.\n\n' +
-            '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 결재 반려 (사유 포함)\n' +
-            '- ❌ 실패: 필수 필드 누락 (comment)',
-    }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 반려 성공', type: dtos_1.ApprovalActionResponseDto }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
-    __param(0, (0, user_decorator_1.User)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.RejectStepDto]),
-    __metadata("design:returntype", Promise)
-], ApprovalProcessController.prototype, "rejectStep", null);
-__decorate([
-    (0, common_1.Post)('complete-agreement'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({
-        summary: '협의 완료',
-        description: '협의 단계를 완료 처리합니다.\n\n' + '**테스트 시나리오:**\n' + '- ✅ 정상: 협의 완료',
-    }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '협의 완료 성공', type: dtos_1.ApprovalActionResponseDto }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 협의만 완료 가능)' }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: '협의 단계를 찾을 수 없음' }),
-    __param(0, (0, user_decorator_1.User)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CompleteAgreementDto]),
-    __metadata("design:returntype", Promise)
-], ApprovalProcessController.prototype, "completeAgreement", null);
-__decorate([
     (0, common_1.Post)('complete-implementation'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
@@ -128,10 +111,57 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "completeImplementation", null);
 __decorate([
+    (0, common_1.Post)('mark-reference-read'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: '참조 문서 열람 확인',
+        description: '참조 문서를 열람했음을 확인합니다. 참조자가 문서를 읽은 후 열람 완료 처리합니다.\n\n' +
+            '**주요 기능:**\n' +
+            '- 참조 단계를 APPROVED 상태로 변경 (열람 완료)\n' +
+            '- 열람 의견 추가 가능 (선택)\n' +
+            '- 이미 열람한 경우 중복 처리 허용\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 참조 문서 열람 확인\n' +
+            '- ✅ 정상: 열람 의견 포함\n' +
+            '- ✅ 정상: 이미 열람한 문서 재확인\n' +
+            '- ❌ 실패: 참조자가 아닌 사용자의 열람 확인\n' +
+            '- ❌ 실패: 참조 단계가 아닌 단계 처리',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '참조 열람 확인 성공', type: dtos_1.ApprovalActionResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (참조 단계만 처리 가능)' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음 (해당 참조자만 확인 가능)' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: '참조 단계를 찾을 수 없음' }),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.MarkReferenceReadDto]),
+    __metadata("design:returntype", Promise)
+], ApprovalProcessController.prototype, "markReferenceRead", null);
+__decorate([
+    (0, common_1.Post)('reject'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: '결재 반려, 합의 반려',
+        description: '결재 단계를 반려합니다. 반려 사유는 필수입니다.\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 결재 반려 (사유 포함)\n' +
+            '- ❌ 실패: 필수 필드 누락 (comment)',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 반려 성공', type: dtos_1.ApprovalActionResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.RejectStepDto]),
+    __metadata("design:returntype", Promise)
+], ApprovalProcessController.prototype, "rejectStep", null);
+__decorate([
     (0, common_1.Post)('cancel'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
-        summary: '결재 취소 (대리취소 지원)',
+        summary: '결재 취소, 문서 취소 (대리취소 지원)',
         description: '결재 진행 중인 문서를 취소합니다.\n\n' +
             '**취소 가능 대상:**\n' +
             '- 기안자: 항상 취소 가능\n' +
@@ -209,10 +239,18 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
         summary: '통합 결재 액션 처리',
-        description: '승인, 반려, 협의 완료, 시행 완료, 취소를 하나의 API로 처리합니다. type 값에 따라 적절한 액션이 수행됩니다.\n\n' +
+        description: '승인, 반려, 협의 완료, 시행 완료, 참조 열람, 취소를 하나의 API로 처리합니다. type 값에 따라 적절한 액션이 수행됩니다.\n\n' +
+            '**지원 액션 타입:**\n' +
+            '- approve: 결재 승인\n' +
+            '- reject: 결재 반려\n' +
+            '- complete-agreement: 협의 완료\n' +
+            '- complete-implementation: 시행 완료\n' +
+            '- mark-reference-read: 참조 열람 확인\n' +
+            '- cancel: 결재 취소\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 승인 액션 처리\n' +
             '- ✅ 정상: 반려 액션 처리\n' +
+            '- ✅ 정상: 참조 열람 액션 처리\n' +
             '- ✅ 정상: 취소 액션 처리\n' +
             '- ❌ 실패: 잘못된 액션 타입\n' +
             '- ❌ 실패: 필수 필드 누락 (stepSnapshotId for approve)\n' +

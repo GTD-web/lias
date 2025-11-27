@@ -26,6 +26,66 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
         this.documentService = documentService;
         this.logger = new common_1.Logger(ApprovalProcessContext_1.name);
     }
+    async completeAgreement(dto, externalQueryRunner) {
+        this.logger.log(`협의 완료 시작: ${dto.stepSnapshotId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const step = await this.approvalStepSnapshotService.findOne({
+                where: { id: dto.stepSnapshotId },
+                queryRunner,
+            });
+            if (!step) {
+                throw new common_1.NotFoundException(`협의 단계를 찾을 수 없습니다: ${dto.stepSnapshotId}`);
+            }
+            if (step.approverId !== dto.agreerId) {
+                throw new common_1.ForbiddenException('해당 협의를 완료할 권한이 없습니다.');
+            }
+            if (step.stepType !== approval_enum_1.ApprovalStepType.AGREEMENT) {
+                throw new common_1.BadRequestException('협의 단계만 처리할 수 있습니다.');
+            }
+            if (step.status !== approval_enum_1.ApprovalStatus.PENDING) {
+                throw new common_1.BadRequestException('대기 중인 협의만 완료할 수 있습니다.');
+            }
+            const completedStep = await this.approvalStepSnapshotService.update(dto.stepSnapshotId, {
+                status: approval_enum_1.ApprovalStatus.APPROVED,
+                comment: dto.comment,
+                approvedAt: new Date(),
+            }, { queryRunner, relations: ['approver'] });
+            this.logger.log(`협의 완료: ${dto.stepSnapshotId}`);
+            return completedStep;
+        }, externalQueryRunner);
+    }
+    async markReferenceRead(dto, externalQueryRunner) {
+        this.logger.log(`참조 열람 확인 시작: ${dto.stepSnapshotId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const step = await this.approvalStepSnapshotService.findOne({
+                where: { id: dto.stepSnapshotId },
+                queryRunner,
+            });
+            if (!step) {
+                throw new common_1.NotFoundException(`참조 단계를 찾을 수 없습니다: ${dto.stepSnapshotId}`);
+            }
+            if (step.approverId !== dto.referenceUserId) {
+                throw new common_1.ForbiddenException('해당 참조 문서를 열람 확인할 권한이 없습니다.');
+            }
+            if (step.stepType !== approval_enum_1.ApprovalStepType.REFERENCE) {
+                throw new common_1.BadRequestException('참조 단계만 열람 확인할 수 있습니다.');
+            }
+            if (step.status === approval_enum_1.ApprovalStatus.APPROVED) {
+                this.logger.warn(`이미 열람 확인된 참조 단계입니다: ${dto.stepSnapshotId}`);
+                return step;
+            }
+            if (step.status !== approval_enum_1.ApprovalStatus.PENDING) {
+                throw new common_1.BadRequestException('대기 중인 참조만 열람 확인할 수 있습니다.');
+            }
+            const readStep = await this.approvalStepSnapshotService.update(dto.stepSnapshotId, {
+                status: approval_enum_1.ApprovalStatus.APPROVED,
+                comment: dto.comment,
+                approvedAt: new Date(),
+            }, { queryRunner, relations: ['approver'] });
+            this.logger.log(`참조 열람 확인 완료: ${dto.stepSnapshotId}`);
+            return readStep;
+        }, externalQueryRunner);
+    }
     async approveStep(dto, externalQueryRunner) {
         this.logger.log(`결재 승인 시작: ${dto.stepSnapshotId}`);
         return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
@@ -54,67 +114,6 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             await this.checkAndUpdateDocumentStatus(step.documentId, queryRunner);
             this.logger.log(`결재 승인 완료: ${dto.stepSnapshotId}`);
             return approvedStep;
-        }, externalQueryRunner);
-    }
-    async rejectStep(dto, externalQueryRunner) {
-        this.logger.log(`결재 반려 시작: ${dto.stepSnapshotId}`);
-        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
-            const step = await this.approvalStepSnapshotService.findOne({
-                where: { id: dto.stepSnapshotId },
-                queryRunner,
-            });
-            if (!step) {
-                throw new common_1.NotFoundException(`결재 단계를 찾을 수 없습니다: ${dto.stepSnapshotId}`);
-            }
-            if (step.approverId !== dto.approverId) {
-                throw new common_1.ForbiddenException('해당 결재를 반려할 권한이 없습니다.');
-            }
-            if (step.status !== approval_enum_1.ApprovalStatus.PENDING) {
-                throw new common_1.BadRequestException('대기 중인 결재만 반려할 수 있습니다.');
-            }
-            if (!dto.comment || dto.comment.trim().length === 0) {
-                throw new common_1.BadRequestException('반려 사유를 입력해야 합니다.');
-            }
-            if (step.stepType !== approval_enum_1.ApprovalStepType.APPROVAL) {
-                throw new common_1.BadRequestException('결재 단계만 반려할 수 있습니다.');
-            }
-            await this.validateApprovalOrder(step, queryRunner);
-            const rejectedStep = await this.approvalStepSnapshotService.update(dto.stepSnapshotId, {
-                status: approval_enum_1.ApprovalStatus.REJECTED,
-                comment: dto.comment,
-                approvedAt: new Date(),
-            }, { queryRunner, relations: ['approver'] });
-            await this.documentService.update(step.documentId, { status: approval_enum_1.DocumentStatus.REJECTED, rejectedAt: new Date() }, { queryRunner });
-            this.logger.log(`결재 반려 완료: ${dto.stepSnapshotId}`);
-            return rejectedStep;
-        }, externalQueryRunner);
-    }
-    async completeAgreement(dto, externalQueryRunner) {
-        this.logger.log(`협의 완료 시작: ${dto.stepSnapshotId}`);
-        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
-            const step = await this.approvalStepSnapshotService.findOne({
-                where: { id: dto.stepSnapshotId },
-                queryRunner,
-            });
-            if (!step) {
-                throw new common_1.NotFoundException(`협의 단계를 찾을 수 없습니다: ${dto.stepSnapshotId}`);
-            }
-            if (step.approverId !== dto.agreerId) {
-                throw new common_1.ForbiddenException('해당 협의를 완료할 권한이 없습니다.');
-            }
-            if (step.stepType !== approval_enum_1.ApprovalStepType.AGREEMENT) {
-                throw new common_1.BadRequestException('협의 단계만 처리할 수 있습니다.');
-            }
-            if (step.status !== approval_enum_1.ApprovalStatus.PENDING) {
-                throw new common_1.BadRequestException('대기 중인 협의만 완료할 수 있습니다.');
-            }
-            const completedStep = await this.approvalStepSnapshotService.update(dto.stepSnapshotId, {
-                status: approval_enum_1.ApprovalStatus.APPROVED,
-                comment: dto.comment,
-                approvedAt: new Date(),
-            }, { queryRunner, relations: ['approver'] });
-            this.logger.log(`협의 완료: ${dto.stepSnapshotId}`);
-            return completedStep;
         }, externalQueryRunner);
     }
     async completeImplementation(dto, externalQueryRunner) {
@@ -148,6 +147,39 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             }, { queryRunner });
             this.logger.log(`시행 완료: ${dto.stepSnapshotId}`);
             return completedStep;
+        }, externalQueryRunner);
+    }
+    async rejectStep(dto, externalQueryRunner) {
+        this.logger.log(`결재 반려 시작: ${dto.stepSnapshotId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const step = await this.approvalStepSnapshotService.findOne({
+                where: { id: dto.stepSnapshotId },
+                queryRunner,
+            });
+            if (!step) {
+                throw new common_1.NotFoundException(`결재 단계를 찾을 수 없습니다: ${dto.stepSnapshotId}`);
+            }
+            if (step.approverId !== dto.approverId) {
+                throw new common_1.ForbiddenException('해당 결재를 반려할 권한이 없습니다.');
+            }
+            if (step.status !== approval_enum_1.ApprovalStatus.PENDING) {
+                throw new common_1.BadRequestException('대기 중인 결재만 반려할 수 있습니다.');
+            }
+            if (!dto.comment || dto.comment.trim().length === 0) {
+                throw new common_1.BadRequestException('반려 사유를 입력해야 합니다.');
+            }
+            if (step.stepType !== approval_enum_1.ApprovalStepType.APPROVAL) {
+                throw new common_1.BadRequestException('결재 단계만 반려할 수 있습니다.');
+            }
+            await this.validateApprovalOrder(step, queryRunner);
+            const rejectedStep = await this.approvalStepSnapshotService.update(dto.stepSnapshotId, {
+                status: approval_enum_1.ApprovalStatus.REJECTED,
+                comment: dto.comment,
+                approvedAt: new Date(),
+            }, { queryRunner, relations: ['approver'] });
+            await this.documentService.update(step.documentId, { status: approval_enum_1.DocumentStatus.REJECTED, rejectedAt: new Date() }, { queryRunner });
+            this.logger.log(`결재 반려 완료: ${dto.stepSnapshotId}`);
+            return rejectedStep;
         }, externalQueryRunner);
     }
     async cancelApproval(dto, externalQueryRunner) {
@@ -323,17 +355,8 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             this.logger.log('결재가 아직 완료되지 않았습니다.');
             return;
         }
-        const implementationSteps = allSteps.filter((s) => s.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION);
-        if (implementationSteps.length > 0) {
-            const allImplementationsCompleted = implementationSteps.every((s) => s.status === approval_enum_1.ApprovalStatus.APPROVED);
-            if (!allImplementationsCompleted) {
-                this.logger.log('시행이 아직 완료되지 않았습니다.');
-                return;
-            }
-        }
-        const finalStatus = implementationSteps.length > 0 ? approval_enum_1.DocumentStatus.IMPLEMENTED : approval_enum_1.DocumentStatus.APPROVED;
-        await this.documentService.update(documentId, { status: finalStatus, approvedAt: new Date() }, { queryRunner });
-        this.logger.log(`문서 상태 업데이트: ${documentId} -> ${finalStatus}`);
+        await this.documentService.update(documentId, { status: approval_enum_1.DocumentStatus.APPROVED, approvedAt: new Date() }, { queryRunner });
+        this.logger.log(`문서 상태 업데이트: ${documentId} -> ${approval_enum_1.DocumentStatus.APPROVED}`);
     }
     async validateApprovalOrder(currentStep, queryRunner) {
         const allSteps = await this.approvalStepSnapshotService.findAll({

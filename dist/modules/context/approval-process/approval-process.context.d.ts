@@ -11,10 +11,15 @@ export declare class ApprovalProcessContext {
     private readonly documentService;
     private readonly logger;
     constructor(dataSource: DataSource, approvalStepSnapshotService: DomainApprovalStepSnapshotService, documentService: DomainDocumentService);
-    approveStep(dto: ApproveStepDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
-    rejectStep(dto: RejectStepDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
     completeAgreement(dto: CompleteAgreementDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    markReferenceRead(dto: {
+        stepSnapshotId: string;
+        referenceUserId: string;
+        comment?: string;
+    }, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    approveStep(dto: ApproveStepDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
     completeImplementation(dto: CompleteImplementationDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    rejectStep(dto: RejectStepDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
     cancelApproval(dto: CancelApprovalDto, externalQueryRunner?: QueryRunner): Promise<Document>;
     getMyPendingApprovals(userId: string, type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL', page?: number, limit?: number, queryRunner?: QueryRunner): Promise<{
         data: {
