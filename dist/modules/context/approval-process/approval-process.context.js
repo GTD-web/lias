@@ -171,7 +171,6 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             if (step.stepType !== approval_enum_1.ApprovalStepType.APPROVAL) {
                 throw new common_1.BadRequestException('결재 단계만 반려할 수 있습니다.');
             }
-            await this.validateApprovalOrder(step, queryRunner);
             const rejectedStep = await this.approvalStepSnapshotService.update(dto.stepSnapshotId, {
                 status: approval_enum_1.ApprovalStatus.REJECTED,
                 comment: dto.comment,
