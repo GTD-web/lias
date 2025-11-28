@@ -95,8 +95,7 @@ export enum SortOrder {
  * - UNREAD: 미열람 (status = PENDING)
  *
  * ▣ 추가 필터링 옵션
- * - searchKeyword: 제목 검색
- * - categoryId: 카테고리 구분
+ * - searchKeyword: 문서 제목 또는 템플릿 이름 검색
  * - startDate, endDate: 제출일 구분
  * - sortOrder: 정렬 순서 (LATEST: 최신순, OLDEST: 오래된순)
  */
@@ -157,20 +156,12 @@ export class QueryMyAllDocumentsDto {
     referenceReadStatus?: ReferenceReadStatus;
 
     @ApiPropertyOptional({
-        description: '제목 검색어',
+        description: '검색어 (문서 제목 또는 템플릿 이름)',
         example: '휴가',
     })
     @IsOptional()
     @IsString()
     searchKeyword?: string;
-
-    @ApiPropertyOptional({
-        description: '카테고리 ID',
-        example: 'uuid',
-    })
-    @IsOptional()
-    @IsUUID()
-    categoryId?: string;
 
     @ApiPropertyOptional({
         description: '제출 시작 날짜 (YYYY-MM-DD)',

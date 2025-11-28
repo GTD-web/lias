@@ -156,8 +156,7 @@ export class DocumentController {
             '- UNREAD: 열람하지 않은 문서\n' +
             '- 미지정: 모든 참조 문서\n\n' +
             '**추가 필터링:**\n' +
-            '- searchKeyword: 제목 검색\n' +
-            '- categoryId: 카테고리 구분\n' +
+            '- searchKeyword: 문서 제목 또는 템플릿 이름 검색\n' +
             '- startDate, endDate: 제출일 구분\n' +
             '- sortOrder: 정렬 순서 (LATEST: 최신순, OLDEST: 오래된순)\n' +
             '- page, limit: 페이징\n\n' +
@@ -177,8 +176,7 @@ export class DocumentController {
             '- ✅ 정상: APPROVED 필터링\n' +
             '- ✅ 정상: REJECTED 필터링\n' +
             '- ✅ 정상: RECEIVED_REFERENCE 필터링\n' +
-            '- ✅ 정상: 제목 검색\n' +
-            '- ✅ 정상: 카테고리별 필터링\n' +
+            '- ✅ 정상: 검색어로 문서 제목 또는 템플릿 이름 검색\n' +
             '- ✅ 정상: 제출일 범위 필터링',
     })
     @ApiResponse({
@@ -198,7 +196,6 @@ export class DocumentController {
             drafterFilter: query.drafterFilter,
             referenceReadStatus: query.referenceReadStatus,
             searchKeyword: query.searchKeyword,
-            categoryId: query.categoryId,
             startDate: query.startDate ? new Date(query.startDate) : undefined,
             endDate: query.endDate ? new Date(query.endDate) : undefined,
             sortOrder: query.sortOrder,

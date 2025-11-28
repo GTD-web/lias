@@ -110,22 +110,13 @@ __decorate([
 ], QueryMyAllDocumentsDto.prototype, "referenceReadStatus", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '제목 검색어',
+        description: '검색어 (문서 제목 또는 템플릿 이름)',
         example: '휴가',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], QueryMyAllDocumentsDto.prototype, "searchKeyword", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: '카테고리 ID',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], QueryMyAllDocumentsDto.prototype, "categoryId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '제출 시작 날짜 (YYYY-MM-DD)',
