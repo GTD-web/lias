@@ -377,20 +377,54 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
             return emp.departmentPositions?.some((dp) => dp.departmentId === departmentId);
         });
     }
-    async getDocumentTemplates(categoryId, status) {
-        this.logger.debug(`문서 템플릿 목록 조회: categoryId=${categoryId}, status=${status}`);
-        const where = {};
+    async getDocumentTemplates(query) {
+        this.logger.debug(`문서 템플릿 목록 조회: ${JSON.stringify(query)}`);
+        const { searchKeyword, categoryId, status, sortOrder = 'LATEST', page = 1, limit = 20 } = query;
+        const skip = (page - 1) * limit;
+        const baseQb = this.documentTemplateService.createQueryBuilder('template');
+        if (searchKeyword) {
+            baseQb.andWhere('(template.name LIKE :keyword OR template.description LIKE :keyword)', {
+                keyword: `%${searchKeyword}%`,
+            });
+        }
         if (categoryId) {
-            where.categoryId = categoryId;
+            baseQb.andWhere('template.categoryId = :categoryId', { categoryId });
         }
         if (status) {
-            where.status = status;
+            baseQb.andWhere('template.status = :status', { status });
         }
-        return await this.documentTemplateService.findAll({
-            where,
-            relations: ['category'],
-            order: { createdAt: 'DESC' },
-        });
+        if (sortOrder === 'LATEST') {
+            baseQb.orderBy('template.createdAt', 'DESC');
+        }
+        else {
+            baseQb.orderBy('template.createdAt', 'ASC');
+        }
+        const totalItems = await baseQb.getCount();
+        const templateIds = await baseQb.clone().select('template.id').skip(skip).take(limit).getRawMany();
+        this.logger.debug(`페이지네이션 적용: skip=${skip}, limit=${limit}, 조회된 ID 개수=${templateIds.length}, 전체=${totalItems}`);
+        let templates = [];
+        if (templateIds.length > 0) {
+            const ids = templateIds.map((item) => item.template_id);
+            const templatesMap = await this.documentTemplateService
+                .createQueryBuilder('template')
+                .leftJoinAndSelect('template.category', 'category')
+                .leftJoinAndSelect('template.approvalStepTemplates', 'approvalSteps')
+                .whereInIds(ids)
+                .orderBy('approvalSteps.stepOrder', 'ASC')
+                .getMany();
+            const templateMap = new Map(templatesMap.map((tmpl) => [tmpl.id, tmpl]));
+            templates = ids.map((id) => templateMap.get(id)).filter((tmpl) => tmpl !== undefined);
+        }
+        const totalPages = Math.ceil(totalItems / limit);
+        return {
+            data: templates,
+            pagination: {
+                page,
+                limit,
+                totalItems,
+                totalPages,
+            },
+        };
     }
     async createApprovalStepTemplate(dto, externalQueryRunner) {
         this.logger.log(`결재단계 템플릿 생성 시작: documentTemplateId=${dto.documentTemplateId}`);

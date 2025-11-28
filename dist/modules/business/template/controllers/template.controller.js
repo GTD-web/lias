@@ -19,7 +19,7 @@ const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const template_service_1 = require("../services/template.service");
 const create_template_dto_1 = require("../dtos/create-template.dto");
 const update_template_dto_1 = require("../dtos/update-template.dto");
-const approval_enum_1 = require("../../../../common/enums/approval.enum");
+const query_templates_dto_1 = require("../dtos/query-templates.dto");
 const template_response_dto_1 = require("../dtos/template-response.dto");
 let TemplateController = class TemplateController {
     constructor(templateService) {
@@ -28,8 +28,15 @@ let TemplateController = class TemplateController {
     async createTemplate(dto) {
         return await this.templateService.createTemplateWithApprovalSteps(dto);
     }
-    async getTemplates(categoryId, status) {
-        return await this.templateService.getTemplates(categoryId, status);
+    async getTemplates(query) {
+        return await this.templateService.getTemplates({
+            searchKeyword: query.searchKeyword,
+            categoryId: query.categoryId,
+            status: query.status,
+            sortOrder: query.sortOrder,
+            page: query.page,
+            limit: query.limit,
+        });
     }
     async getTemplate(templateId) {
         return await this.templateService.getTemplate(templateId);
@@ -79,36 +86,64 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({
         summary: '문서 템플릿 목록 조회',
-        description: '문서 템플릿 목록을 조회합니다. 카테고리 또는 상태로 필터링 가능합니다.\n\n' +
+        description: '문서 템플릿 목록을 조회합니다. 검색, 카테고리 필터, 상태 필터, 정렬, 페이지네이션을 지원합니다.\n\n' +
+            '**필터 및 검색:**\n' +
+            '- searchKeyword: 템플릿 이름 또는 설명에서 검색\n' +
+            '- categoryId: 특정 카테고리로 필터링\n' +
+            '- status: 템플릿 상태로 필터링 (DRAFT, ACTIVE, DEPRECATED)\n\n' +
+            '**정렬:**\n' +
+            '- sortOrder: LATEST (최신순, 기본값), OLDEST (오래된순)\n\n' +
+            '**페이지네이션:**\n' +
+            '- page: 페이지 번호 (1부터 시작, 기본값: 1)\n' +
+            '- limit: 페이지당 항목 수 (기본값: 20, 최대: 100)\n\n' +
+            '**응답 형식:**\n' +
+            '```json\n' +
+            '{\n' +
+            '  "data": [...],\n' +
+            '  "pagination": {\n' +
+            '    "page": 1,\n' +
+            '    "limit": 20,\n' +
+            '    "totalItems": 100,\n' +
+            '    "totalPages": 5\n' +
+            '  }\n' +
+            '}\n' +
+            '```\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 전체 템플릿 목록 조회\n' +
+            '- ✅ 정상: 전체 템플릿 목록 조회 (페이지네이션 포함)\n' +
+            '- ✅ 정상: 검색어로 템플릿 검색\n' +
             '- ✅ 정상: 카테고리별 필터링 조회\n' +
-            '- ✅ 정상: 상태별 필터링 조회',
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: 'categoryId',
-        required: false,
-        description: '카테고리 ID',
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: 'status',
-        required: false,
-        enum: approval_enum_1.DocumentTemplateStatus,
-        description: '템플릿 상태',
+            '- ✅ 정상: 상태별 필터링 조회\n' +
+            '- ✅ 정상: 최신순/오래된순 정렬\n' +
+            '- ✅ 정상: 페이지네이션 적용',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: '문서 템플릿 목록 조회 성공',
-        type: [template_response_dto_1.DocumentTemplateResponseDto],
+        schema: {
+            properties: {
+                data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/DocumentTemplateResponseDto' },
+                },
+                pagination: {
+                    type: 'object',
+                    properties: {
+                        page: { type: 'number', example: 1 },
+                        limit: { type: 'number', example: 20 },
+                        totalItems: { type: 'number', example: 100 },
+                        totalPages: { type: 'number', example: 5 },
+                    },
+                },
+            },
+        },
     }),
     (0, swagger_1.ApiResponse)({
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Query)('categoryId')),
-    __param(1, (0, common_1.Query)('status')),
+    __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [query_templates_dto_1.QueryTemplatesDto]),
     __metadata("design:returntype", Promise)
 ], TemplateController.prototype, "getTemplates", null);
 __decorate([

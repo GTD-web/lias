@@ -1,7 +1,7 @@
 import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto } from '../dtos/create-template.dto';
 import { UpdateTemplateDto } from '../dtos/update-template.dto';
-import { DocumentTemplateStatus } from '../../../../common/enums/approval.enum';
+import { QueryTemplatesDto } from '../dtos/query-templates.dto';
 export declare class TemplateController {
     private readonly templateService;
     constructor(templateService: TemplateService);
@@ -9,7 +9,15 @@ export declare class TemplateController {
         documentTemplate: import("../../../domain").DocumentTemplate;
         approvalSteps: any[];
     }>;
-    getTemplates(categoryId?: string, status?: DocumentTemplateStatus): Promise<import("../../../domain").DocumentTemplate[]>;
+    getTemplates(query: QueryTemplatesDto): Promise<{
+        data: any[];
+        pagination: {
+            page: number;
+            limit: number;
+            totalItems: number;
+            totalPages: number;
+        };
+    }>;
     getTemplate(templateId: string): Promise<import("../../../domain").DocumentTemplate>;
     updateTemplate(templateId: string, dto: UpdateTemplateDto): Promise<import("../../../domain").DocumentTemplate>;
     deleteTemplate(templateId: string): Promise<void>;

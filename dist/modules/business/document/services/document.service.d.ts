@@ -66,12 +66,14 @@ export declare class DocumentService {
     getMyAllDocuments(params: {
         userId: string;
         filterType?: string;
-        approvalStatus?: string;
+        receivedStepType?: string;
+        drafterFilter?: string;
         referenceReadStatus?: string;
         searchKeyword?: string;
         categoryId?: string;
         startDate?: Date;
         endDate?: Date;
+        sortOrder?: string;
         page?: number;
         limit?: number;
     }): Promise<{

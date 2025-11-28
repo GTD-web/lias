@@ -27,15 +27,23 @@ export enum MyAllDocumentFilterType {
 }
 
 /**
- * 승인 상태 필터 Enum (합의함, 결재함에만 적용)
+ * 수신함 단계 타입 필터 Enum (RECEIVED에만 적용)
  */
-export enum ApprovalFilterStatus {
-    /** 승인 예정 (아직 내 차례가 아님, 내 앞에 PENDING 단계가 있음) */
-    SCHEDULED = 'SCHEDULED',
-    /** 승인할 차례 (현재 내 차례, 내가 현재 PENDING 단계) */
-    CURRENT = 'CURRENT',
-    /** 승인 완료 (내가 이미 승인함, 내 단계가 APPROVED) */
-    COMPLETED = 'COMPLETED',
+export enum ReceivedStepType {
+    /** 합의 단계 */
+    AGREEMENT = 'AGREEMENT',
+    /** 결재 단계 */
+    APPROVAL = 'APPROVAL',
+}
+
+/**
+ * 기안자 필터 Enum (APPROVED, REJECTED에만 적용)
+ */
+export enum DrafterFilter {
+    /** 내가 기안한 문서만 */
+    MY_DRAFT = 'MY_DRAFT',
+    /** 내가 참여한 문서만 (기안자가 아닌 경우) */
+    PARTICIPATED = 'PARTICIPATED',
 }
 
 /**
@@ -46,6 +54,16 @@ export enum ReferenceReadStatus {
     READ = 'READ',
     /** 미열람 (status = PENDING) */
     UNREAD = 'UNREAD',
+}
+
+/**
+ * 정렬 순서 Enum
+ */
+export enum SortOrder {
+    /** 최신순 (createdAt DESC) */
+    LATEST = 'LATEST',
+    /** 오래된순 (createdAt ASC) */
+    OLDEST = 'OLDEST',
 }
 
 /**
@@ -64,10 +82,13 @@ export enum ReferenceReadStatus {
  * - REJECTED: 반려함
  * - RECEIVED_REFERENCE: 수신참조함 (IMPLEMENTED 상태만)
  *
- * ▣ 승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용
- * - SCHEDULED: 승인 예정 (아직 내 차례가 아님)
- * - CURRENT: 승인할 차례 (현재 내 차례)
- * - COMPLETED: 승인 완료 (내가 이미 승인함)
+ * ▣ 수신함 단계 타입 필터 (receivedStepType) - RECEIVED에만 적용
+ * - AGREEMENT: 합의 단계로 수신한 문서만
+ * - APPROVAL: 결재 단계로 수신한 문서만
+ *
+ * ▣ 기안자 필터 (drafterFilter) - APPROVED, REJECTED에만 적용
+ * - MY_DRAFT: 내가 기안한 문서만
+ * - PARTICIPATED: 내가 참여한 문서만 (기안자가 아닌 경우)
  *
  * ▣ 참조 문서 열람 여부 필터 (referenceReadStatus) - RECEIVED_REFERENCE에만 적용
  * - READ: 열람함 (status = APPROVED)
@@ -77,6 +98,7 @@ export enum ReferenceReadStatus {
  * - searchKeyword: 제목 검색
  * - categoryId: 카테고리 구분
  * - startDate, endDate: 제출일 구분
+ * - sortOrder: 정렬 순서 (LATEST: 최신순, OLDEST: 오래된순)
  */
 export class QueryMyAllDocumentsDto {
     @ApiPropertyOptional({
@@ -100,16 +122,27 @@ export class QueryMyAllDocumentsDto {
 
     @ApiPropertyOptional({
         description:
-            '승인 상태 필터 (PENDING_AGREEMENT, PENDING_APPROVAL에만 적용)\n' +
-            '- SCHEDULED: 승인 예정 (아직 내 차례가 아님)\n' +
-            '- CURRENT: 승인할 차례 (현재 내 차례)\n' +
-            '- COMPLETED: 승인 완료 (내가 이미 승인함)',
-        enum: ApprovalFilterStatus,
-        example: ApprovalFilterStatus.CURRENT,
+            '수신함 단계 타입 필터 (RECEIVED에만 적용)\n' +
+            '- AGREEMENT: 합의 단계로 수신한 문서만\n' +
+            '- APPROVAL: 결재 단계로 수신한 문서만',
+        enum: ReceivedStepType,
+        example: ReceivedStepType.APPROVAL,
     })
     @IsOptional()
-    @IsEnum(ApprovalFilterStatus)
-    approvalStatus?: ApprovalFilterStatus;
+    @IsEnum(ReceivedStepType)
+    receivedStepType?: ReceivedStepType;
+
+    @ApiPropertyOptional({
+        description:
+            '기안자 필터 (APPROVED, REJECTED에만 적용)\n' +
+            '- MY_DRAFT: 내가 기안한 문서만\n' +
+            '- PARTICIPATED: 내가 참여한 문서만 (기안자가 아닌 경우)',
+        enum: DrafterFilter,
+        example: DrafterFilter.MY_DRAFT,
+    })
+    @IsOptional()
+    @IsEnum(DrafterFilter)
+    drafterFilter?: DrafterFilter;
 
     @ApiPropertyOptional({
         description:
@@ -154,6 +187,16 @@ export class QueryMyAllDocumentsDto {
     @IsOptional()
     @IsString()
     endDate?: string;
+
+    @ApiPropertyOptional({
+        description: '정렬 순서\n- LATEST: 최신순 (기본값)\n- OLDEST: 오래된순',
+        enum: SortOrder,
+        example: SortOrder.LATEST,
+        default: SortOrder.LATEST,
+    })
+    @IsOptional()
+    @IsEnum(SortOrder)
+    sortOrder?: SortOrder = SortOrder.LATEST;
 
     @ApiPropertyOptional({
         description: '페이지 번호 (1부터 시작)',

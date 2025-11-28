@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto } from '../dtos/create-template.dto';
 import { UpdateTemplateDto } from '../dtos/update-template.dto';
+import { QueryTemplatesDto } from '../dtos/query-templates.dto';
 import { DocumentTemplateStatus } from '../../../../common/enums/approval.enum';
 import { CreateTemplateResponseDto, DocumentTemplateResponseDto } from '../dtos/template-response.dto';
 
@@ -65,34 +66,70 @@ export class TemplateController {
     @ApiOperation({
         summary: '문서 템플릿 목록 조회',
         description:
-            '문서 템플릿 목록을 조회합니다. 카테고리 또는 상태로 필터링 가능합니다.\n\n' +
+            '문서 템플릿 목록을 조회합니다. 검색, 카테고리 필터, 상태 필터, 정렬, 페이지네이션을 지원합니다.\n\n' +
+            '**필터 및 검색:**\n' +
+            '- searchKeyword: 템플릿 이름 또는 설명에서 검색\n' +
+            '- categoryId: 특정 카테고리로 필터링\n' +
+            '- status: 템플릿 상태로 필터링 (DRAFT, ACTIVE, DEPRECATED)\n\n' +
+            '**정렬:**\n' +
+            '- sortOrder: LATEST (최신순, 기본값), OLDEST (오래된순)\n\n' +
+            '**페이지네이션:**\n' +
+            '- page: 페이지 번호 (1부터 시작, 기본값: 1)\n' +
+            '- limit: 페이지당 항목 수 (기본값: 20, 최대: 100)\n\n' +
+            '**응답 형식:**\n' +
+            '```json\n' +
+            '{\n' +
+            '  "data": [...],\n' +
+            '  "pagination": {\n' +
+            '    "page": 1,\n' +
+            '    "limit": 20,\n' +
+            '    "totalItems": 100,\n' +
+            '    "totalPages": 5\n' +
+            '  }\n' +
+            '}\n' +
+            '```\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 전체 템플릿 목록 조회\n' +
+            '- ✅ 정상: 전체 템플릿 목록 조회 (페이지네이션 포함)\n' +
+            '- ✅ 정상: 검색어로 템플릿 검색\n' +
             '- ✅ 정상: 카테고리별 필터링 조회\n' +
-            '- ✅ 정상: 상태별 필터링 조회',
-    })
-    @ApiQuery({
-        name: 'categoryId',
-        required: false,
-        description: '카테고리 ID',
-    })
-    @ApiQuery({
-        name: 'status',
-        required: false,
-        enum: DocumentTemplateStatus,
-        description: '템플릿 상태',
+            '- ✅ 정상: 상태별 필터링 조회\n' +
+            '- ✅ 정상: 최신순/오래된순 정렬\n' +
+            '- ✅ 정상: 페이지네이션 적용',
     })
     @ApiResponse({
         status: 200,
         description: '문서 템플릿 목록 조회 성공',
-        type: [DocumentTemplateResponseDto],
+        schema: {
+            properties: {
+                data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/DocumentTemplateResponseDto' },
+                },
+                pagination: {
+                    type: 'object',
+                    properties: {
+                        page: { type: 'number', example: 1 },
+                        limit: { type: 'number', example: 20 },
+                        totalItems: { type: 'number', example: 100 },
+                        totalPages: { type: 'number', example: 5 },
+                    },
+                },
+            },
+        },
     })
     @ApiResponse({
         status: 401,
         description: '인증 실패',
     })
-    async getTemplates(@Query('categoryId') categoryId?: string, @Query('status') status?: DocumentTemplateStatus) {
-        return await this.templateService.getTemplates(categoryId, status);
+    async getTemplates(@Query() query: QueryTemplatesDto) {
+        return await this.templateService.getTemplates({
+            searchKeyword: query.searchKeyword,
+            categoryId: query.categoryId,
+            status: query.status,
+            sortOrder: query.sortOrder,
+            page: query.page,
+            limit: query.limit,
+        });
     }
 
     @Get(':templateId')

@@ -62,12 +62,14 @@ export declare class DocumentContext {
     getMyAllDocuments(params: {
         userId: string;
         filterType?: string;
-        approvalStatus?: string;
+        receivedStepType?: string;
+        drafterFilter?: string;
         referenceReadStatus?: string;
         searchKeyword?: string;
         categoryId?: string;
         startDate?: Date;
         endDate?: Date;
+        sortOrder?: string;
         page?: number;
         limit?: number;
     }): Promise<{
@@ -82,7 +84,6 @@ export declare class DocumentContext {
         };
     }>;
     private applyFilterTypeCondition;
-    private applyApprovalStatusFilter;
     getMyDrafts(drafterId: string, page?: number, limit?: number): Promise<{
         data: Document[];
         meta: {

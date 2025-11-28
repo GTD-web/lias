@@ -42,7 +42,22 @@ export declare class TemplateContext {
     private getDepartmentPathToRoot;
     private findEmployeesByDepartmentAndPosition;
     private findDepartmentEmployees;
-    getDocumentTemplates(categoryId?: string, status?: DocumentTemplateStatus): Promise<import("../../domain").DocumentTemplate[]>;
+    getDocumentTemplates(query: {
+        searchKeyword?: string;
+        categoryId?: string;
+        status?: DocumentTemplateStatus;
+        sortOrder?: 'LATEST' | 'OLDEST';
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        data: any[];
+        pagination: {
+            page: number;
+            limit: number;
+            totalItems: number;
+            totalPages: number;
+        };
+    }>;
     createApprovalStepTemplate(dto: CreateApprovalStepTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalStepTemplate>;
     updateApprovalStepTemplate(stepId: string, dto: UpdateApprovalStepTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalStepTemplate>;
     deleteApprovalStepTemplate(stepId: string, externalQueryRunner?: QueryRunner): Promise<void>;
