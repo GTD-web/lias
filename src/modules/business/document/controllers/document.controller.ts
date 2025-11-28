@@ -133,11 +133,7 @@ export class DocumentController {
             '  * 아직 내 차례가 아닌 것 (앞에 PENDING 단계 있음)\n' +
             '  * 이미 내가 처리한 것 (내 단계가 APPROVED)\n' +
             '- PENDING_AGREEMENT: 합의함 (현재 내가 협의해야 하는 문서)\n' +
-            '  * 기본: CURRENT만 (내 차례인 것만)\n' +
-            '  * approvalStatus로 SCHEDULED, COMPLETED 조회 가능\n' +
             '- PENDING_APPROVAL: 결재함 (현재 내가 결재해야 하는 문서)\n' +
-            '  * 기본: CURRENT만 (내 차례인 것만)\n' +
-            '  * approvalStatus로 SCHEDULED, COMPLETED 조회 가능\n' +
             '- IMPLEMENTATION: 시행함 (현재 내가 시행해야 하는 문서, 시행 단계가 PENDING)\n' +
             '- APPROVED: 기결함 (내가 관련된 모든 결재 완료 문서, APPROVED/IMPLEMENTED)\n' +
             '  * 내가 기안한 결재 완료 문서\n' +
@@ -147,11 +143,14 @@ export class DocumentController {
             '  * 내가 결재라인에 속했지만 반려된 문서\n' +
             '- RECEIVED_REFERENCE: 수신참조함 (내가 참조자로 있는 문서, IMPLEMENTED 상태만)\n' +
             '- 미지정: 내가 기안한 문서 + 내가 참여하는 문서 전체\n\n' +
-            '**승인 상태 필터 (approvalStatus) - PENDING_AGREEMENT, PENDING_APPROVAL에만 적용:**\n' +
-            '- SCHEDULED: 승인 예정 (아직 내 차례가 아님, 내 앞에 PENDING 단계가 있음)\n' +
-            '- CURRENT: 승인할 차례 (현재 내 차례, 내 앞에 PENDING 단계 없음)\n' +
-            '- COMPLETED: 승인 완료 (내가 이미 승인함, 내 단계가 APPROVED)\n' +
-            '- 미지정: CURRENT만 조회 (기본 동작)\n\n' +
+            '**수신함 단계 타입 필터 (receivedStepType) - RECEIVED에만 적용:**\n' +
+            '- AGREEMENT: 합의 단계로 수신한 문서만\n' +
+            '- APPROVAL: 결재 단계로 수신한 문서만\n' +
+            '- 미지정: 모든 수신 문서 (합의 + 결재)\n\n' +
+            '**기안자 필터 (drafterFilter) - APPROVED, REJECTED에만 적용:**\n' +
+            '- MY_DRAFT: 내가 기안한 문서만\n' +
+            '- PARTICIPATED: 내가 참여한 문서만 (기안자가 아닌 경우)\n' +
+            '- 미지정: 모든 문서 (기안 + 참여)\n\n' +
             '**열람 상태 필터 (referenceReadStatus) - RECEIVED_REFERENCE에만 적용:**\n' +
             '- READ: 열람한 문서\n' +
             '- UNREAD: 열람하지 않은 문서\n' +
@@ -160,16 +159,20 @@ export class DocumentController {
             '- searchKeyword: 제목 검색\n' +
             '- categoryId: 카테고리 구분\n' +
             '- startDate, endDate: 제출일 구분\n' +
+            '- sortOrder: 정렬 순서 (LATEST: 최신순, OLDEST: 오래된순)\n' +
             '- page, limit: 페이징\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 전체 문서 목록 조회 (filterType 없음)\n' +
             '- ✅ 정상: DRAFT 필터링\n' +
             '- ✅ 정상: PENDING 필터링\n' +
             '- ✅ 정상: RECEIVED 필터링\n' +
-            '- ✅ 정상: PENDING_APPROVAL 필터링 (CURRENT)\n' +
-            '- ✅ 정상: PENDING_APPROVAL + SCHEDULED 필터링\n' +
-            '- ✅ 정상: PENDING_AGREEMENT 필터링 (CURRENT)\n' +
-            '- ✅ 정상: PENDING_AGREEMENT + COMPLETED 필터링\n' +
+            '- ✅ 정상: PENDING_APPROVAL 필터링\n' +
+            '- ✅ 정상: PENDING_AGREEMENT 필터링\n' +
+            '- ✅ 정상: RECEIVED + AGREEMENT 필터링\n' +
+            '- ✅ 정상: RECEIVED + APPROVAL 필터링\n' +
+            '- ✅ 정상: APPROVED + MY_DRAFT 필터링\n' +
+            '- ✅ 정상: APPROVED + PARTICIPATED 필터링\n' +
+            '- ✅ 정상: REJECTED + MY_DRAFT 필터링\n' +
             '- ✅ 정상: IMPLEMENTATION 필터링\n' +
             '- ✅ 정상: APPROVED 필터링\n' +
             '- ✅ 정상: REJECTED 필터링\n' +
@@ -191,12 +194,14 @@ export class DocumentController {
         return await this.documentService.getMyAllDocuments({
             userId: user.id,
             filterType: query.filterType,
-            approvalStatus: query.approvalStatus,
+            receivedStepType: query.receivedStepType,
+            drafterFilter: query.drafterFilter,
             referenceReadStatus: query.referenceReadStatus,
             searchKeyword: query.searchKeyword,
             categoryId: query.categoryId,
             startDate: query.startDate ? new Date(query.startDate) : undefined,
             endDate: query.endDate ? new Date(query.endDate) : undefined,
+            sortOrder: query.sortOrder,
             page: query.page,
             limit: query.limit,
         });

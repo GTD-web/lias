@@ -75,9 +75,9 @@ let TemplateService = TemplateService_1 = class TemplateService {
         this.logger.log(`카테고리 삭제: ${categoryId}`);
         return await this.templateContext.deleteCategory(categoryId);
     }
-    async getTemplates(categoryId, status) {
-        this.logger.debug(`템플릿 목록 조회: categoryId=${categoryId}, status=${status}`);
-        return await this.templateContext.getDocumentTemplates(categoryId, status);
+    async getTemplates(query) {
+        this.logger.debug(`템플릿 목록 조회: ${JSON.stringify(query)}`);
+        return await this.templateContext.getDocumentTemplates(query);
     }
     async getTemplate(templateId) {
         this.logger.debug(`템플릿 조회: ${templateId}`);

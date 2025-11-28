@@ -18,4 +18,5 @@ __exportStar(require("./create-template.dto"), exports);
 __exportStar(require("./update-template.dto"), exports);
 __exportStar(require("./category.dto"), exports);
 __exportStar(require("./template-response.dto"), exports);
+__exportStar(require("./query-templates.dto"), exports);
 //# sourceMappingURL=index.js.map

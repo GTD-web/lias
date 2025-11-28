@@ -570,24 +570,90 @@ export class TemplateContext {
     }
 
     /**
-     * 5. 문서 템플릿 목록 조회
+     * 5. 문서 템플릿 목록 조회 (검색, 페이지네이션, 정렬 포함)
      */
-    async getDocumentTemplates(categoryId?: string, status?: DocumentTemplateStatus) {
-        this.logger.debug(`문서 템플릿 목록 조회: categoryId=${categoryId}, status=${status}`);
+    async getDocumentTemplates(query: {
+        searchKeyword?: string;
+        categoryId?: string;
+        status?: DocumentTemplateStatus;
+        sortOrder?: 'LATEST' | 'OLDEST';
+        page?: number;
+        limit?: number;
+    }) {
+        this.logger.debug(`문서 템플릿 목록 조회: ${JSON.stringify(query)}`);
 
-        const where: any = {};
+        const { searchKeyword, categoryId, status, sortOrder = 'LATEST', page = 1, limit = 20 } = query;
+
+        // 페이지네이션 계산
+        const skip = (page - 1) * limit;
+
+        // 기본 QueryBuilder 생성 (join 없이)
+        const baseQb = this.documentTemplateService.createQueryBuilder('template');
+
+        // 검색어 필터
+        if (searchKeyword) {
+            baseQb.andWhere('(template.name LIKE :keyword OR template.description LIKE :keyword)', {
+                keyword: `%${searchKeyword}%`,
+            });
+        }
+
+        // 카테고리 필터
         if (categoryId) {
-            where.categoryId = categoryId;
-        }
-        if (status) {
-            where.status = status;
+            baseQb.andWhere('template.categoryId = :categoryId', { categoryId });
         }
 
-        return await this.documentTemplateService.findAll({
-            where,
-            relations: ['category'],
-            order: { createdAt: 'DESC' },
-        });
+        // 상태 필터
+        if (status) {
+            baseQb.andWhere('template.status = :status', { status });
+        }
+
+        // 정렬
+        if (sortOrder === 'LATEST') {
+            baseQb.orderBy('template.createdAt', 'DESC');
+        } else {
+            baseQb.orderBy('template.createdAt', 'ASC');
+        }
+
+        // 1단계: 전체 개수 조회
+        const totalItems = await baseQb.getCount();
+
+        // 2단계: 페이지네이션 적용하여 template ID만 조회 (중복 없이)
+        const templateIds = await baseQb.clone().select('template.id').skip(skip).take(limit).getRawMany();
+
+        this.logger.debug(
+            `페이지네이션 적용: skip=${skip}, limit=${limit}, 조회된 ID 개수=${templateIds.length}, 전체=${totalItems}`,
+        );
+
+        // 3단계: ID 기준으로 전체 데이터 조회 (category, approvalSteps 포함)
+        let templates = [];
+        if (templateIds.length > 0) {
+            const ids = templateIds.map((item) => item.template_id);
+
+            const templatesMap = await this.documentTemplateService
+                .createQueryBuilder('template')
+                .leftJoinAndSelect('template.category', 'category')
+                .leftJoinAndSelect('template.approvalStepTemplates', 'approvalSteps')
+                .whereInIds(ids)
+                .orderBy('approvalSteps.stepOrder', 'ASC')
+                .getMany();
+
+            // ID 순서대로 정렬 (페이지네이션 순서 유지)
+            const templateMap = new Map(templatesMap.map((tmpl) => [tmpl.id, tmpl]));
+            templates = ids.map((id) => templateMap.get(id)).filter((tmpl) => tmpl !== undefined);
+        }
+
+        // 페이징 메타데이터 계산
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            data: templates,
+            pagination: {
+                page,
+                limit,
+                totalItems,
+                totalPages,
+            },
+        };
     }
 
     /**

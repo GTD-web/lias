@@ -18,7 +18,22 @@ export declare class TemplateService {
     getCategory(categoryId: string): Promise<import("../../../domain").Category>;
     updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<import("../../../domain").Category>;
     deleteCategory(categoryId: string): Promise<void>;
-    getTemplates(categoryId?: string, status?: DocumentTemplateStatus): Promise<import("../../../domain").DocumentTemplate[]>;
+    getTemplates(query: {
+        searchKeyword?: string;
+        categoryId?: string;
+        status?: DocumentTemplateStatus;
+        sortOrder?: 'LATEST' | 'OLDEST';
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        data: any[];
+        pagination: {
+            page: number;
+            limit: number;
+            totalItems: number;
+            totalPages: number;
+        };
+    }>;
     getTemplate(templateId: string): Promise<import("../../../domain").DocumentTemplate>;
     updateTemplate(templateId: string, dto: UpdateTemplateDto): Promise<import("../../../domain").DocumentTemplate>;
     deleteTemplate(templateId: string): Promise<void>;

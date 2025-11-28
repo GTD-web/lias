@@ -120,11 +120,18 @@ export class TemplateService {
     }
 
     /**
-     * 문서 템플릿 목록 조회
+     * 문서 템플릿 목록 조회 (검색, 페이지네이션, 정렬 포함)
      */
-    async getTemplates(categoryId?: string, status?: DocumentTemplateStatus) {
-        this.logger.debug(`템플릿 목록 조회: categoryId=${categoryId}, status=${status}`);
-        return await this.templateContext.getDocumentTemplates(categoryId, status);
+    async getTemplates(query: {
+        searchKeyword?: string;
+        categoryId?: string;
+        status?: DocumentTemplateStatus;
+        sortOrder?: 'LATEST' | 'OLDEST';
+        page?: number;
+        limit?: number;
+    }) {
+        this.logger.debug(`템플릿 목록 조회: ${JSON.stringify(query)}`);
+        return await this.templateContext.getDocumentTemplates(query);
     }
 
     /**
