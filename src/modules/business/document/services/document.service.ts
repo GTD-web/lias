@@ -229,7 +229,6 @@ export class DocumentService {
         drafterFilter?: string;
         referenceReadStatus?: string;
         searchKeyword?: string;
-        categoryId?: string;
         startDate?: Date;
         endDate?: Date;
         sortOrder?: string;

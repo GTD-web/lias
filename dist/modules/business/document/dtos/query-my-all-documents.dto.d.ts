@@ -31,7 +31,6 @@ export declare class QueryMyAllDocumentsDto {
     drafterFilter?: DrafterFilter;
     referenceReadStatus?: ReferenceReadStatus;
     searchKeyword?: string;
-    categoryId?: string;
     startDate?: string;
     endDate?: string;
     sortOrder?: SortOrder;

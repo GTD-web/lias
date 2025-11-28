@@ -784,7 +784,6 @@ export class DocumentContext {
         drafterFilter?: string;
         referenceReadStatus?: string;
         searchKeyword?: string;
-        categoryId?: string;
         startDate?: Date;
         endDate?: Date;
         sortOrder?: string;
@@ -818,12 +817,11 @@ export class DocumentContext {
 
         // 추가 필터링 조건
         if (params.searchKeyword) {
-            baseQb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
-        }
-
-        if (params.categoryId) {
+            // 문서 제목 또는 템플릿 이름으로 검색
             baseQb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
-            baseQb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
+            baseQb.andWhere('(document.title LIKE :keyword OR template.name LIKE :keyword)', {
+                keyword: `%${params.searchKeyword}%`,
+            });
         }
 
         if (params.startDate) {

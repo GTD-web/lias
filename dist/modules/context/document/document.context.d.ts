@@ -66,7 +66,6 @@ export declare class DocumentContext {
         drafterFilter?: string;
         referenceReadStatus?: string;
         searchKeyword?: string;
-        categoryId?: string;
         startDate?: Date;
         endDate?: Date;
         sortOrder?: string;

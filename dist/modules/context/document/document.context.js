@@ -490,11 +490,10 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         }
         this.applyFilterTypeCondition(baseQb, params.filterType || 'ALL', params.userId, params.receivedStepType, params.drafterFilter, params.referenceReadStatus);
         if (params.searchKeyword) {
-            baseQb.andWhere('document.title LIKE :keyword', { keyword: `%${params.searchKeyword}%` });
-        }
-        if (params.categoryId) {
             baseQb.leftJoin('document_templates', 'template', 'document.documentTemplateId = template.id');
-            baseQb.andWhere('template.categoryId = :categoryId', { categoryId: params.categoryId });
+            baseQb.andWhere('(document.title LIKE :keyword OR template.name LIKE :keyword)', {
+                keyword: `%${params.searchKeyword}%`,
+            });
         }
         if (params.startDate) {
             baseQb.andWhere('document.submittedAt >= :startDate', { startDate: params.startDate });
