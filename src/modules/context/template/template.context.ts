@@ -619,10 +619,10 @@ export class TemplateContext {
             baseQb.andWhere('template.categoryId = :categoryId', { categoryId });
         }
 
-        // 상태 필터
-        if (status) {
-            baseQb.andWhere('template.status = :status', { status });
-        }
+        // // 상태 필터
+        // if (status) {
+        //     baseQb.andWhere('template.status = :status', { status });
+        // }
 
         // 정렬
         if (sortOrder === 'LATEST') {

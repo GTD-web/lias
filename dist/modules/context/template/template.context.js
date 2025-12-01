@@ -407,9 +407,6 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
         if (categoryId) {
             baseQb.andWhere('template.categoryId = :categoryId', { categoryId });
         }
-        if (status) {
-            baseQb.andWhere('template.status = :status', { status });
-        }
         if (sortOrder === 'LATEST') {
             baseQb.orderBy('template.createdAt', 'DESC');
         }

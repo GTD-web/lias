@@ -13,7 +13,6 @@ exports.QueryTemplatesDto = exports.SortOrder = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
-const approval_enum_1 = require("../../../../common/enums/approval.enum");
 var SortOrder;
 (function (SortOrder) {
     SortOrder["LATEST"] = "LATEST";
@@ -45,16 +44,6 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], QueryTemplatesDto.prototype, "categoryId", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: '템플릿 상태',
-        enum: approval_enum_1.DocumentTemplateStatus,
-        example: approval_enum_1.DocumentTemplateStatus.ACTIVE,
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(approval_enum_1.DocumentTemplateStatus),
-    __metadata("design:type", String)
-], QueryTemplatesDto.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '정렬 순서\n- LATEST: 최신순 (기본값)\n- OLDEST: 오래된순',

@@ -47,14 +47,14 @@ export class QueryTemplatesDto {
     @IsUUID()
     categoryId?: string;
 
-    @ApiPropertyOptional({
-        description: '템플릿 상태',
-        enum: DocumentTemplateStatus,
-        example: DocumentTemplateStatus.ACTIVE,
-    })
-    @IsOptional()
-    @IsEnum(DocumentTemplateStatus)
-    status?: DocumentTemplateStatus;
+    // @ApiPropertyOptional({
+    //     description: '템플릿 상태',
+    //     enum: DocumentTemplateStatus,
+    //     example: DocumentTemplateStatus.ACTIVE,
+    // })
+    // @IsOptional()
+    // @IsEnum(DocumentTemplateStatus)
+    // status?: DocumentTemplateStatus;
 
     @ApiPropertyOptional({
         description: '정렬 순서\n- LATEST: 최신순 (기본값)\n- OLDEST: 오래된순',
@@ -91,4 +91,3 @@ export class QueryTemplatesDto {
     @Max(100)
     limit?: number = 20;
 }
-

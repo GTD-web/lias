@@ -40,7 +40,7 @@ export class TemplateService {
                 code: dto.code,
                 description: dto.description,
                 template: dto.template,
-                status: dto.status,
+                status: DocumentTemplateStatus.ACTIVE,
                 categoryId: dto.categoryId,
             };
 
@@ -125,7 +125,7 @@ export class TemplateService {
     async getTemplates(query: {
         searchKeyword?: string;
         categoryId?: string;
-        status?: DocumentTemplateStatus;
+        // status?: DocumentTemplateStatus;
         sortOrder?: 'LATEST' | 'OLDEST';
         page?: number;
         limit?: number;
@@ -155,7 +155,7 @@ export class TemplateService {
                 name: dto.name,
                 description: dto.description,
                 template: dto.template,
-                status: dto.status,
+                // status: DocumentTemplateStatus.ACTIVE,
                 categoryId: dto.categoryId,
             };
             await this.templateContext.updateDocumentTemplate(templateId, updateDto, queryRunner);

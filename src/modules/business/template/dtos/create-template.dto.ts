@@ -88,14 +88,14 @@ export class CreateTemplateDto {
     @IsString()
     template: string;
 
-    @ApiPropertyOptional({
-        description: '문서 템플릿 상태',
-        enum: DocumentTemplateStatus,
-        default: DocumentTemplateStatus.DRAFT,
-    })
-    @IsOptional()
-    @IsEnum(DocumentTemplateStatus)
-    status?: DocumentTemplateStatus;
+    // @ApiPropertyOptional({
+    //     description: '문서 템플릿 상태',
+    //     enum: DocumentTemplateStatus,
+    //     default: DocumentTemplateStatus.DRAFT,
+    // })
+    // @IsOptional()
+    // @IsEnum(DocumentTemplateStatus)
+    // status?: DocumentTemplateStatus;
 
     @ApiPropertyOptional({
         description: '카테고리 ID',
@@ -114,4 +114,3 @@ export class CreateTemplateDto {
     @Type(() => ApprovalStepTemplateItemDto)
     approvalSteps: ApprovalStepTemplateItemDto[];
 }
-

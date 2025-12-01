@@ -13,7 +13,6 @@ exports.UpdateTemplateDto = exports.UpdateApprovalStepTemplateItemDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
-const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const create_template_dto_1 = require("./create-template.dto");
 class UpdateApprovalStepTemplateItemDto extends create_template_dto_1.ApprovalStepTemplateItemDto {
 }
@@ -57,15 +56,6 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UpdateTemplateDto.prototype, "template", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: '문서 템플릿 상태',
-        enum: approval_enum_1.DocumentTemplateStatus,
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(approval_enum_1.DocumentTemplateStatus),
-    __metadata("design:type", String)
-], UpdateTemplateDto.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '카테고리 ID (null로 설정하면 카테고리 제거)',

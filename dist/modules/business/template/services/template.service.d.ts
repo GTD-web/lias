@@ -3,7 +3,6 @@ import { TemplateContext } from '../../../context/template/template.context';
 import { CreateTemplateDto } from '../dtos/create-template.dto';
 import { UpdateTemplateDto } from '../dtos/update-template.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
-import { DocumentTemplateStatus } from '../../../../common/enums/approval.enum';
 export declare class TemplateService {
     private readonly dataSource;
     private readonly templateContext;
@@ -21,7 +20,6 @@ export declare class TemplateService {
     getTemplates(query: {
         searchKeyword?: string;
         categoryId?: string;
-        status?: DocumentTemplateStatus;
         sortOrder?: 'LATEST' | 'OLDEST';
         page?: number;
         limit?: number;

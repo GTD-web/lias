@@ -32,7 +32,6 @@ let TemplateController = class TemplateController {
         return await this.templateService.getTemplates({
             searchKeyword: query.searchKeyword,
             categoryId: query.categoryId,
-            status: query.status,
             sortOrder: query.sortOrder,
             page: query.page,
             limit: query.limit,

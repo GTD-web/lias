@@ -14,6 +14,7 @@ exports.TemplateService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("typeorm");
 const template_context_1 = require("../../../context/template/template.context");
+const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const transaction_util_1 = require("../../../../common/utils/transaction.util");
 let TemplateService = TemplateService_1 = class TemplateService {
     constructor(dataSource, templateContext) {
@@ -29,7 +30,7 @@ let TemplateService = TemplateService_1 = class TemplateService {
                 code: dto.code,
                 description: dto.description,
                 template: dto.template,
-                status: dto.status,
+                status: approval_enum_1.DocumentTemplateStatus.ACTIVE,
                 categoryId: dto.categoryId,
             };
             const documentTemplate = await this.templateContext.createDocumentTemplate(documentTemplateDto, queryRunner);
@@ -90,7 +91,6 @@ let TemplateService = TemplateService_1 = class TemplateService {
                 name: dto.name,
                 description: dto.description,
                 template: dto.template,
-                status: dto.status,
                 categoryId: dto.categoryId,
             };
             await this.templateContext.updateDocumentTemplate(templateId, updateDto, queryRunner);

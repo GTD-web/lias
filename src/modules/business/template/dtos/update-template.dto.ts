@@ -45,13 +45,13 @@ export class UpdateTemplateDto {
     @IsString()
     template?: string;
 
-    @ApiPropertyOptional({
-        description: '문서 템플릿 상태',
-        enum: DocumentTemplateStatus,
-    })
-    @IsOptional()
-    @IsEnum(DocumentTemplateStatus)
-    status?: DocumentTemplateStatus;
+    // @ApiPropertyOptional({
+    //     description: '문서 템플릿 상태',
+    //     enum: DocumentTemplateStatus,
+    // })
+    // @IsOptional()
+    // @IsEnum(DocumentTemplateStatus)
+    // status?: DocumentTemplateStatus;
 
     @ApiPropertyOptional({
         description: '카테고리 ID (null로 설정하면 카테고리 제거)',
@@ -71,4 +71,3 @@ export class UpdateTemplateDto {
     @Type(() => UpdateApprovalStepTemplateItemDto)
     approvalSteps?: UpdateApprovalStepTemplateItemDto[];
 }
-
