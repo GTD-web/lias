@@ -16,6 +16,8 @@ export declare class MetadataSyncContext {
     syncDepartments(departments: any[]): Promise<void>;
     syncEmployees(employees: any[]): Promise<void>;
     syncEmployeeDepartmentPositions(employeeDepartmentPositions: any[]): Promise<void>;
+    private deleteDepartmentsRecursively;
+    clearAllMetadata(): Promise<void>;
     syncAllMetadata(data: {
         positions: any[];
         ranks: any[];

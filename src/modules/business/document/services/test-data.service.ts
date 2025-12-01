@@ -247,7 +247,7 @@ export class TestDataService {
         this.logger.log('테스트 문서 생성 시작');
 
         const template = await this.getDocumentTemplate(options?.templateCodeOrName);
-        const employees = await this.getRandomEmployees(10); // 최대 10명
+        const employees = await this.getRandomEmployees(8); // 최대 10명
 
         // 기안자
         const drafter = employees[0];

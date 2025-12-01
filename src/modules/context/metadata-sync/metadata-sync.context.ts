@@ -283,6 +283,97 @@ export class MetadataSyncContext {
     }
 
     /**
+     * Department 재귀적 삭제 (자식부터 삭제)
+     */
+    private async deleteDepartmentsRecursively(): Promise<void> {
+        const allDepartments = await this.departmentService.findAll();
+
+        if (allDepartments.length === 0) {
+            return;
+        }
+
+        // 자식이 없는 리프 노드부터 삭제
+        const departmentIds = new Set(allDepartments.map((d) => d.id));
+        let deletedCount = 0;
+
+        while (departmentIds.size > 0) {
+            const currentBatch: string[] = [];
+
+            // 현재 남은 부서 중에서 자식이 없는 부서들을 찾음
+            for (const department of allDepartments) {
+                if (!departmentIds.has(department.id)) {
+                    continue; // 이미 삭제된 부서
+                }
+
+                // 이 부서를 부모로 가진 부서가 남아있는지 확인
+                const hasChildren = allDepartments.some(
+                    (d) => departmentIds.has(d.id) && d.parentDepartmentId === department.id,
+                );
+
+                if (!hasChildren) {
+                    currentBatch.push(department.id);
+                }
+            }
+
+            // 삭제할 부서가 없으면 순환 참조
+            if (currentBatch.length === 0) {
+                this.logger.error(
+                    `순환 참조 감지: ${Array.from(departmentIds)
+                        .map((id) => {
+                            const dept = allDepartments.find((d) => d.id === id);
+                            return `${dept?.departmentName}(부모: ${dept?.parentDepartmentId})`;
+                        })
+                        .join(', ')}`,
+                );
+                throw new Error('Department 삭제 실패: 순환 참조 감지');
+            }
+
+            // 현재 배치 삭제
+            for (const departmentId of currentBatch) {
+                await this.departmentService.delete(departmentId);
+                departmentIds.delete(departmentId);
+                deletedCount++;
+            }
+
+            this.logger.debug(`Department ${currentBatch.length}개 삭제 (총 ${deletedCount}/${allDepartments.length})`);
+        }
+    }
+
+    /**
+     * 모든 메타데이터 삭제 (외래키 순서 고려)
+     */
+    async clearAllMetadata(): Promise<void> {
+        this.logger.log('전체 메타데이터 삭제 시작');
+
+        try {
+            // 1. EmployeeDepartmentPosition 삭제 (Employee, Department, Position 참조)
+            const edpResult = await this.employeeDepartmentPositionService.createQueryBuilder('edp').delete().execute();
+            this.logger.log(`EmployeeDepartmentPosition 삭제 완료 (${edpResult.affected || 0}개)`);
+
+            // 2. Employee 삭제 (Rank 참조)
+            const employeeResult = await this.employeeService.createQueryBuilder('employee').delete().execute();
+            this.logger.log(`Employee 삭제 완료 (${employeeResult.affected || 0}개)`);
+
+            // 3. Department 삭제 (자기 참조가 있으므로 자식부터 삭제)
+            await this.deleteDepartmentsRecursively();
+            this.logger.log('Department 삭제 완료');
+
+            // 4. Rank 삭제
+            const rankResult = await this.rankService.createQueryBuilder('rank').delete().execute();
+            this.logger.log(`Rank 삭제 완료 (${rankResult.affected || 0}개)`);
+
+            // 5. Position 삭제
+            const positionResult = await this.positionService.createQueryBuilder('position').delete().execute();
+            this.logger.log(`Position 삭제 완료 (${positionResult.affected || 0}개)`);
+
+            this.logger.log('전체 메타데이터 삭제 완료');
+        } catch (error) {
+            this.logger.error('전체 메타데이터 삭제 실패', error);
+            throw error;
+        }
+    }
+
+    /**
      * 모든 메타데이터 동기화 (순서 보장)
      */
     async syncAllMetadata(data: {
@@ -295,6 +386,7 @@ export class MetadataSyncContext {
         this.logger.log('전체 메타데이터 동기화 시작');
 
         try {
+            // await this.clearAllMetadata();
             // 1. Position 동기화 (다른 엔티티에서 참조하지 않음)
             await this.syncPositions(data.positions);
 
