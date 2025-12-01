@@ -4,6 +4,7 @@ export declare class UpdateApprovalStepTemplateItemDto extends ApprovalStepTempl
 }
 export declare class UpdateTemplateDto {
     name?: string;
+    code?: string;
     description?: string;
     template?: string;
     categoryId?: string | null;

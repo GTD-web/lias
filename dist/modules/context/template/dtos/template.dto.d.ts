@@ -9,6 +9,7 @@ export declare class CreateDocumentTemplateDto {
 }
 export declare class UpdateDocumentTemplateDto {
     name?: string;
+    code?: string;
     description?: string;
     template?: string;
     status?: DocumentTemplateStatus;

@@ -30,6 +30,14 @@ export class UpdateTemplateDto {
     name?: string;
 
     @ApiPropertyOptional({
+        description: '문서 템플릿 코드',
+        example: 'VAC',
+    })
+    @IsOptional()
+    @IsString()
+    code?: string;
+
+    @ApiPropertyOptional({
         description: '문서 템플릿 설명',
         example: '연차/반차 신청을 위한 문서 템플릿',
     })

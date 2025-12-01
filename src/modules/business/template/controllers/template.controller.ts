@@ -168,9 +168,17 @@ export class TemplateController {
         summary: '문서 템플릿 수정',
         description:
             '문서 템플릿 정보를 수정합니다.\n\n' +
+            '**수정 가능한 필드:**\n' +
+            '- name: 템플릿 이름\n' +
+            '- code: 템플릿 코드\n' +
+            '- description: 템플릿 설명\n' +
+            '- template: HTML 템플릿\n' +
+            '- categoryId: 카테고리 ID\n' +
+            '- approvalSteps: 결재단계 목록\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 템플릿 수정\n' +
             '- ✅ 정상: 부분 수정 (name만)\n' +
+            '- ✅ 정상: code 수정\n' +
             '- ✅ 정상: 결재단계 수정\n' +
             '- ❌ 실패: 존재하지 않는 템플릿 ID',
     })

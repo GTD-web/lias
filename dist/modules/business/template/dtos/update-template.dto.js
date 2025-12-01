@@ -40,6 +40,15 @@ __decorate([
 ], UpdateTemplateDto.prototype, "name", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
+        description: '문서 템플릿 코드',
+        example: 'VAC',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateTemplateDto.prototype, "code", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
         description: '문서 템플릿 설명',
         example: '연차/반차 신청을 위한 문서 템플릿',
     }),

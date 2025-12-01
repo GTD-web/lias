@@ -153,6 +153,7 @@ export class TemplateService {
             // 1. 문서 템플릿 수정
             const updateDto: UpdateDocumentTemplateDto = {
                 name: dto.name,
+                code: dto.code,
                 description: dto.description,
                 template: dto.template,
                 // status: DocumentTemplateStatus.ACTIVE,

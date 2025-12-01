@@ -81,6 +81,7 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
             }
             const updated = await this.documentTemplateService.update(templateId, {
                 ...(dto.name && { name: dto.name }),
+                ...(dto.code && { code: dto.code }),
                 ...(dto.description !== undefined && { description: dto.description }),
                 ...(dto.template !== undefined && { template: dto.template }),
                 ...(dto.status && { status: dto.status }),

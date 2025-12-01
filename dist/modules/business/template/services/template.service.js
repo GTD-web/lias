@@ -89,6 +89,7 @@ let TemplateService = TemplateService_1 = class TemplateService {
         return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
             const updateDto = {
                 name: dto.name,
+                code: dto.code,
                 description: dto.description,
                 template: dto.template,
                 categoryId: dto.categoryId,
