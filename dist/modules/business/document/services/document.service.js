@@ -121,12 +121,14 @@ let DocumentService = DocumentService_1 = class DocumentService {
             title: dto.title,
             content: dto.content,
             metadata: dto.metadata,
+            approvalSteps: dto.approvalSteps,
         };
         const draftDocument = await this.createDocument(createDto, drafterId);
         this.logger.debug(`임시저장 완료: ${draftDocument.id}`);
         const submitDto = {
             documentId: draftDocument.id,
             documentTemplateId: dto.documentTemplateId,
+            approvalSteps: dto.approvalSteps,
         };
         return await this.submitDocument(submitDto);
     }

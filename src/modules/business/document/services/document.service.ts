@@ -181,6 +181,7 @@ export class DocumentService {
             title: dto.title,
             content: dto.content,
             metadata: dto.metadata,
+            approvalSteps: dto.approvalSteps,
         };
 
         const draftDocument = await this.createDocument(createDto, drafterId);
@@ -190,6 +191,7 @@ export class DocumentService {
         const submitDto: SubmitDocumentDto = {
             documentId: draftDocument.id,
             documentTemplateId: dto.documentTemplateId,
+            approvalSteps: dto.approvalSteps,
         };
 
         return await this.submitDocument(submitDto);
