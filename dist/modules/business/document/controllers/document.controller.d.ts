@@ -81,7 +81,7 @@ export declare class DocumentController {
     deleteDocument(documentId: string): Promise<void>;
     submitDocument(documentId: string, dto: SubmitDocumentBodyDto): Promise<import("../../../domain").Document>;
     submitDocumentDirect(user: Employee, dto: SubmitDocumentDirectDto): Promise<import("../../../domain").Document>;
-    getTemplateForNewDocument(templateId: string, drafterId: string): Promise<{
+    getTemplateForNewDocument(templateId: string, user: Employee): Promise<{
         drafter: {
             id: string;
             employeeNumber: string;

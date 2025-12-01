@@ -67,8 +67,8 @@ let DocumentController = class DocumentController {
     async submitDocumentDirect(user, dto) {
         return await this.documentService.submitDocumentDirect(dto, user.id);
     }
-    async getTemplateForNewDocument(templateId, drafterId) {
-        return await this.documentService.getTemplateForNewDocument(templateId, drafterId);
+    async getTemplateForNewDocument(templateId, user) {
+        return await this.documentService.getTemplateForNewDocument(templateId, user.id);
     }
     async getDocumentStatistics(userId) {
         return await this.documentService.getDocumentStatistics(userId);
@@ -458,19 +458,15 @@ __decorate([
     (0, swagger_1.ApiOperation)({
         summary: '새 문서 작성용 템플릿 상세 조회',
         description: '새 문서 작성 시 사용할 템플릿의 상세 정보를 조회합니다. AssigneeRule을 기반으로 실제 적용될 결재자 정보가 맵핑되어 반환됩니다.\n\n' +
+            '현재 로그인한 사용자를 기안자로 하여 결재자 정보를 맵핑합니다.\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 템플릿 상세 조회\n' +
-            '- ✅ 정상 또는 실패: drafterId 없이 조회\n' +
-            '- ❌ 실패: 존재하지 않는 템플릿 ID',
+            '- ❌ 실패: 존재하지 않는 템플릿 ID\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     }),
     (0, swagger_1.ApiParam)({
         name: 'templateId',
         description: '문서 템플릿 ID',
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: 'drafterId',
-        required: true,
-        description: '기안자 ID (결재자 정보 맵핑을 위해 필요)',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -490,9 +486,9 @@ __decorate([
         description: '인증 실패',
     }),
     __param(0, (0, common_1.Param)('templateId')),
-    __param(1, (0, common_1.Query)('drafterId')),
+    __param(1, (0, user_decorator_1.User)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, employee_entity_1.Employee]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getTemplateForNewDocument", null);
 __decorate([

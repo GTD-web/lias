@@ -415,19 +415,15 @@ export class DocumentController {
         summary: '새 문서 작성용 템플릿 상세 조회',
         description:
             '새 문서 작성 시 사용할 템플릿의 상세 정보를 조회합니다. AssigneeRule을 기반으로 실제 적용될 결재자 정보가 맵핑되어 반환됩니다.\n\n' +
+            '현재 로그인한 사용자를 기안자로 하여 결재자 정보를 맵핑합니다.\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 템플릿 상세 조회\n' +
-            '- ✅ 정상 또는 실패: drafterId 없이 조회\n' +
-            '- ❌ 실패: 존재하지 않는 템플릿 ID',
+            '- ❌ 실패: 존재하지 않는 템플릿 ID\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)',
     })
     @ApiParam({
         name: 'templateId',
         description: '문서 템플릿 ID',
-    })
-    @ApiQuery({
-        name: 'drafterId',
-        required: true,
-        description: '기안자 ID (결재자 정보 맵핑을 위해 필요)',
     })
     @ApiResponse({
         status: 200,
@@ -446,8 +442,8 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async getTemplateForNewDocument(@Param('templateId') templateId: string, @Query('drafterId') drafterId: string) {
-        return await this.documentService.getTemplateForNewDocument(templateId, drafterId);
+    async getTemplateForNewDocument(@Param('templateId') templateId: string, @User() user: Employee) {
+        return await this.documentService.getTemplateForNewDocument(templateId, user.id);
     }
 
     @Get('statistics/:userId')
