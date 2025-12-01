@@ -1,6 +1,7 @@
 import { DocumentService } from '../services/document.service';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto } from '../dtos';
 import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
+import { DocumentStatus } from '../../../../common/enums/approval.enum';
 import { Employee } from '../../../domain/employee/employee.entity';
 export declare class DocumentController {
     private readonly documentService;
@@ -19,7 +20,53 @@ export declare class DocumentController {
         };
     }>;
     getMyDrafts(user: Employee, page?: number, limit?: number): Promise<{
-        data: import("../../../domain").Document[];
+        data: (import("../../../domain").Document | {
+            drafter: {
+                id: string;
+                employeeNumber: string;
+                name: string;
+                email: string;
+                department: {
+                    id: string;
+                    departmentName: string;
+                    departmentCode: string;
+                };
+                position: {
+                    id: string;
+                    positionTitle: string;
+                    positionCode: string;
+                    level: number;
+                };
+                rank: {
+                    id: string;
+                    rankTitle: string;
+                    rankCode: string;
+                };
+            };
+            id: string;
+            documentNumber?: string;
+            title: string;
+            content: string;
+            status: DocumentStatus;
+            comment?: string;
+            metadata?: Record<string, any>;
+            drafterId: string;
+            documentTemplateId?: string;
+            retentionPeriod?: string;
+            retentionPeriodUnit?: string;
+            retentionStartDate?: Date;
+            retentionEndDate?: Date;
+            submittedAt?: Date;
+            cancelReason?: string;
+            cancelledAt?: Date;
+            approvedAt?: Date;
+            rejectedAt?: Date;
+            createdAt: Date;
+            updatedAt: Date;
+            approvalSteps: import("../../../domain").ApprovalStepSnapshot[];
+            revisions: import("../../../domain").DocumentRevision[];
+            comments: import("../../../domain").Comment[];
+        })[];
         meta: {
             currentPage: number;
             itemsPerPage: number;
@@ -35,6 +82,23 @@ export declare class DocumentController {
     submitDocument(documentId: string, dto: SubmitDocumentBodyDto): Promise<import("../../../domain").Document>;
     submitDocumentDirect(user: Employee, dto: SubmitDocumentDirectDto): Promise<import("../../../domain").Document>;
     getTemplateForNewDocument(templateId: string, drafterId: string): Promise<{
+        drafter: {
+            id: string;
+            employeeNumber: string;
+            name: string;
+            email: string;
+            department: {
+                id: string;
+                departmentName: string;
+                departmentCode: string;
+            };
+            position: {
+                id: string;
+                positionTitle: string;
+                positionCode: string;
+                level: number;
+            };
+        };
         approvalStepTemplates: any[];
         id: string;
         name: string;

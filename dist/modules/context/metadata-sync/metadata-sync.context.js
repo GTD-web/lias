@@ -229,6 +229,61 @@ let MetadataSyncContext = MetadataSyncContext_1 = class MetadataSyncContext {
         }
         this.logger.log('EmployeeDepartmentPosition 동기화 완료');
     }
+    async deleteDepartmentsRecursively() {
+        const allDepartments = await this.departmentService.findAll();
+        if (allDepartments.length === 0) {
+            return;
+        }
+        const departmentIds = new Set(allDepartments.map((d) => d.id));
+        let deletedCount = 0;
+        while (departmentIds.size > 0) {
+            const currentBatch = [];
+            for (const department of allDepartments) {
+                if (!departmentIds.has(department.id)) {
+                    continue;
+                }
+                const hasChildren = allDepartments.some((d) => departmentIds.has(d.id) && d.parentDepartmentId === department.id);
+                if (!hasChildren) {
+                    currentBatch.push(department.id);
+                }
+            }
+            if (currentBatch.length === 0) {
+                this.logger.error(`순환 참조 감지: ${Array.from(departmentIds)
+                    .map((id) => {
+                    const dept = allDepartments.find((d) => d.id === id);
+                    return `${dept?.departmentName}(부모: ${dept?.parentDepartmentId})`;
+                })
+                    .join(', ')}`);
+                throw new Error('Department 삭제 실패: 순환 참조 감지');
+            }
+            for (const departmentId of currentBatch) {
+                await this.departmentService.delete(departmentId);
+                departmentIds.delete(departmentId);
+                deletedCount++;
+            }
+            this.logger.debug(`Department ${currentBatch.length}개 삭제 (총 ${deletedCount}/${allDepartments.length})`);
+        }
+    }
+    async clearAllMetadata() {
+        this.logger.log('전체 메타데이터 삭제 시작');
+        try {
+            const edpResult = await this.employeeDepartmentPositionService.createQueryBuilder('edp').delete().execute();
+            this.logger.log(`EmployeeDepartmentPosition 삭제 완료 (${edpResult.affected || 0}개)`);
+            const employeeResult = await this.employeeService.createQueryBuilder('employee').delete().execute();
+            this.logger.log(`Employee 삭제 완료 (${employeeResult.affected || 0}개)`);
+            await this.deleteDepartmentsRecursively();
+            this.logger.log('Department 삭제 완료');
+            const rankResult = await this.rankService.createQueryBuilder('rank').delete().execute();
+            this.logger.log(`Rank 삭제 완료 (${rankResult.affected || 0}개)`);
+            const positionResult = await this.positionService.createQueryBuilder('position').delete().execute();
+            this.logger.log(`Position 삭제 완료 (${positionResult.affected || 0}개)`);
+            this.logger.log('전체 메타데이터 삭제 완료');
+        }
+        catch (error) {
+            this.logger.error('전체 메타데이터 삭제 실패', error);
+            throw error;
+        }
+    }
     async syncAllMetadata(data) {
         this.logger.log('전체 메타데이터 동기화 시작');
         try {

@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubmitDocumentDirectDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const approval_step_snapshot_dto_1 = require("./approval-step-snapshot.dto");
+const class_transformer_1 = require("class-transformer");
 class SubmitDocumentDirectDto {
 }
 exports.SubmitDocumentDirectDto = SubmitDocumentDirectDto;
@@ -49,4 +51,15 @@ __decorate([
     (0, class_validator_1.IsObject)(),
     __metadata("design:type", Object)
 ], SubmitDocumentDirectDto.prototype, "metadata", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '결재단계 스냅샷 목록 (기안 시 결재선 설정, 없으면 기존 스냅샷 사용)',
+        type: [approval_step_snapshot_dto_1.ApprovalStepSnapshotItemDto],
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => approval_step_snapshot_dto_1.ApprovalStepSnapshotItemDto),
+    __metadata("design:type", Array)
+], SubmitDocumentDirectDto.prototype, "approvalSteps", void 0);
 //# sourceMappingURL=submit-document-direct.dto.js.map

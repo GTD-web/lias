@@ -192,6 +192,128 @@ export class DocumentTemplateSimpleResponseDto {
 }
 
 /**
+ * 부서 정보 DTO (간단 버전)
+ */
+export class DepartmentSimpleDto {
+    @ApiProperty({
+        description: '부서 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '부서명',
+        example: '개발팀',
+    })
+    departmentName: string;
+
+    @ApiProperty({
+        description: '부서 코드',
+        example: 'DEV',
+    })
+    departmentCode: string;
+}
+
+/**
+ * 직책 정보 DTO (간단 버전)
+ */
+export class PositionSimpleDto {
+    @ApiProperty({
+        description: '직책 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '직책명',
+        example: '팀장',
+    })
+    positionTitle: string;
+
+    @ApiProperty({
+        description: '직책 코드',
+        example: 'MANAGER',
+    })
+    positionCode: string;
+
+    @ApiProperty({
+        description: '직책 레벨',
+        example: 3,
+    })
+    level: number;
+}
+
+/**
+ * 직급 정보 DTO (간단 버전)
+ */
+export class RankSimpleDto {
+    @ApiProperty({
+        description: '직급 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '직급명',
+        example: '과장',
+    })
+    rankTitle: string;
+
+    @ApiProperty({
+        description: '직급 코드',
+        example: 'MANAGER',
+    })
+    rankCode: string;
+}
+
+/**
+ * 기안자 정보 DTO
+ */
+export class DrafterSimpleDto {
+    @ApiProperty({
+        description: '기안자 ID',
+        example: 'uuid',
+    })
+    id: string;
+
+    @ApiProperty({
+        description: '기안자 사번',
+        example: 'EMP001',
+    })
+    employeeNumber: string;
+
+    @ApiProperty({
+        description: '기안자 이름',
+        example: '홍길동',
+    })
+    name: string;
+
+    @ApiProperty({
+        description: '기안자 이메일',
+        example: 'hong@example.com',
+    })
+    email: string;
+
+    @ApiPropertyOptional({
+        description: '기안자 부서 정보',
+        type: DepartmentSimpleDto,
+    })
+    department?: DepartmentSimpleDto;
+
+    @ApiPropertyOptional({
+        description: '기안자 직책 정보',
+        type: PositionSimpleDto,
+    })
+    position?: PositionSimpleDto;
+
+    @ApiPropertyOptional({
+        description: '기안자 직급 정보',
+        type: RankSimpleDto,
+    })
+    rank?: RankSimpleDto;
+}
+
+/**
  * 문서 응답 DTO
  */
 export class DocumentResponseDto {
@@ -243,6 +365,12 @@ export class DocumentResponseDto {
         example: 'uuid',
     })
     drafterId: string;
+
+    @ApiPropertyOptional({
+        description: '기안자 정보',
+        type: DrafterSimpleDto,
+    })
+    drafter?: DrafterSimpleDto;
 
     @ApiPropertyOptional({
         description: '문서 템플릿 ID',

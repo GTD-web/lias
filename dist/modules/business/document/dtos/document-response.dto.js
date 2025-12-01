@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginatedDocumentsResponseDto = exports.PaginationMetaDto = exports.SubmitDocumentResponseDto = exports.DocumentResponseDto = exports.DocumentTemplateSimpleResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.ApproverSnapshotMetadataDto = void 0;
+exports.PaginatedDocumentsResponseDto = exports.PaginationMetaDto = exports.SubmitDocumentResponseDto = exports.DocumentResponseDto = exports.DrafterSimpleDto = exports.RankSimpleDto = exports.PositionSimpleDto = exports.DepartmentSimpleDto = exports.DocumentTemplateSimpleResponseDto = exports.ApprovalStepSnapshotResponseDto = exports.ApproverSnapshotMetadataDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 class ApproverSnapshotMetadataDto {
@@ -221,6 +221,137 @@ __decorate([
     }),
     __metadata("design:type", CategorySimpleDto)
 ], DocumentTemplateSimpleResponseDto.prototype, "category", void 0);
+class DepartmentSimpleDto {
+}
+exports.DepartmentSimpleDto = DepartmentSimpleDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], DepartmentSimpleDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서명',
+        example: '개발팀',
+    }),
+    __metadata("design:type", String)
+], DepartmentSimpleDto.prototype, "departmentName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '부서 코드',
+        example: 'DEV',
+    }),
+    __metadata("design:type", String)
+], DepartmentSimpleDto.prototype, "departmentCode", void 0);
+class PositionSimpleDto {
+}
+exports.PositionSimpleDto = PositionSimpleDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직책 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], PositionSimpleDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직책명',
+        example: '팀장',
+    }),
+    __metadata("design:type", String)
+], PositionSimpleDto.prototype, "positionTitle", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직책 코드',
+        example: 'MANAGER',
+    }),
+    __metadata("design:type", String)
+], PositionSimpleDto.prototype, "positionCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직책 레벨',
+        example: 3,
+    }),
+    __metadata("design:type", Number)
+], PositionSimpleDto.prototype, "level", void 0);
+class RankSimpleDto {
+}
+exports.RankSimpleDto = RankSimpleDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직급 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], RankSimpleDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직급명',
+        example: '과장',
+    }),
+    __metadata("design:type", String)
+], RankSimpleDto.prototype, "rankTitle", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '직급 코드',
+        example: 'MANAGER',
+    }),
+    __metadata("design:type", String)
+], RankSimpleDto.prototype, "rankCode", void 0);
+class DrafterSimpleDto {
+}
+exports.DrafterSimpleDto = DrafterSimpleDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '기안자 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], DrafterSimpleDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '기안자 사번',
+        example: 'EMP001',
+    }),
+    __metadata("design:type", String)
+], DrafterSimpleDto.prototype, "employeeNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '기안자 이름',
+        example: '홍길동',
+    }),
+    __metadata("design:type", String)
+], DrafterSimpleDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '기안자 이메일',
+        example: 'hong@example.com',
+    }),
+    __metadata("design:type", String)
+], DrafterSimpleDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '기안자 부서 정보',
+        type: DepartmentSimpleDto,
+    }),
+    __metadata("design:type", DepartmentSimpleDto)
+], DrafterSimpleDto.prototype, "department", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '기안자 직책 정보',
+        type: PositionSimpleDto,
+    }),
+    __metadata("design:type", PositionSimpleDto)
+], DrafterSimpleDto.prototype, "position", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '기안자 직급 정보',
+        type: RankSimpleDto,
+    }),
+    __metadata("design:type", RankSimpleDto)
+], DrafterSimpleDto.prototype, "rank", void 0);
 class DocumentResponseDto {
 }
 exports.DocumentResponseDto = DocumentResponseDto;
@@ -281,6 +412,13 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], DocumentResponseDto.prototype, "drafterId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '기안자 정보',
+        type: DrafterSimpleDto,
+    }),
+    __metadata("design:type", DrafterSimpleDto)
+], DocumentResponseDto.prototype, "drafter", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: '문서 템플릿 ID',

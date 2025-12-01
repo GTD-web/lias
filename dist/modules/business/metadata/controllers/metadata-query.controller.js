@@ -18,6 +18,8 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const metadata_context_1 = require("../../../context/metadata/metadata.context");
 const uuid_1 = require("uuid");
+const user_decorator_1 = require("../../../../common/decorators/user.decorator");
+const employee_entity_1 = require("../../../domain/employee/employee.entity");
 let MetadataQueryController = class MetadataQueryController {
     constructor(metadataContext) {
         this.metadataContext = metadataContext;
@@ -41,6 +43,9 @@ let MetadataQueryController = class MetadataQueryController {
             throw new common_1.BadRequestException('departmentId는 유효한 UUID 형식이어야 합니다');
         }
         return await this.metadataContext.searchEmployees(search, departmentId);
+    }
+    async getMyInfo(user) {
+        return await this.metadataContext.getEmployeeById(user.id);
     }
     async getEmployee(employeeId) {
         return await this.metadataContext.getEmployeeById(employeeId);
@@ -175,6 +180,24 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MetadataQueryController.prototype, "getEmployees", null);
+__decorate([
+    (0, common_1.Get)('employees/me'),
+    (0, swagger_1.ApiOperation)({
+        summary: '현재 로그인한 직원 정보 조회',
+        description: '헤더의 토큰 값으로 현재 로그인한 직원의 상세 정보를 조회합니다\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 현재 로그인한 직원 정보 조회\n' +
+            '- ✅ 정상: 부서 및 직책 정보 포함 조회\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)\n' +
+            '- ❌ 실패: 유효하지 않은 토큰 (401 반환)',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '직원 조회 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: '인증 실패' }),
+    __param(0, (0, user_decorator_1.User)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_entity_1.Employee]),
+    __metadata("design:returntype", Promise)
+], MetadataQueryController.prototype, "getMyInfo", null);
 __decorate([
     (0, common_1.Get)('employees/:employeeId'),
     (0, swagger_1.ApiOperation)({

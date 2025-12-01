@@ -222,6 +222,23 @@ let TemplateContext = TemplateContext_1 = class TemplateContext {
         }));
         return {
             ...template,
+            drafter: {
+                id: drafter.id,
+                employeeNumber: drafter.employeeNumber,
+                name: drafter.name,
+                email: drafter.email,
+                department: {
+                    id: drafterDepartment.id,
+                    departmentName: drafterDepartment.departmentName,
+                    departmentCode: drafterDepartment.departmentCode,
+                },
+                position: {
+                    id: drafterPosition.id,
+                    positionTitle: drafterPosition.positionTitle,
+                    positionCode: drafterPosition.positionCode,
+                    level: drafterPosition.level,
+                },
+            },
             approvalStepTemplates: mappedSteps.sort((a, b) => a.stepOrder - b.stepOrder),
         };
     }

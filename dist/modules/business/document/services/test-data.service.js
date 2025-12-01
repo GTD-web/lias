@@ -177,7 +177,7 @@ let TestDataService = TestDataService_1 = class TestDataService {
     async createTestDocument(options) {
         this.logger.log('테스트 문서 생성 시작');
         const template = await this.getDocumentTemplate(options?.templateCodeOrName);
-        const employees = await this.getRandomEmployees(10);
+        const employees = await this.getRandomEmployees(8);
         const drafter = employees[0];
         const approvalSteps = [];
         const stepEmployees = [];

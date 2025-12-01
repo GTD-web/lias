@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsUUID, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsUUID, IsObject, ValidateNested, IsArray } from 'class-validator';
+import { ApprovalStepSnapshotItemDto } from './approval-step-snapshot.dto';
+import { Type } from 'class-transformer';
 
 /**
  * 바로 기안 DTO (임시저장 없이 바로 기안)
@@ -42,4 +44,14 @@ export class SubmitDocumentDirectDto {
     @IsOptional()
     @IsObject()
     metadata?: Record<string, any>;
+
+    @ApiPropertyOptional({
+        description: '결재단계 스냅샷 목록 (기안 시 결재선 설정, 없으면 기존 스냅샷 사용)',
+        type: [ApprovalStepSnapshotItemDto],
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ApprovalStepSnapshotItemDto)
+    approvalSteps?: ApprovalStepSnapshotItemDto[];
 }
