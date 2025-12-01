@@ -1,4 +1,5 @@
 import { MetadataContext } from '../../../context/metadata/metadata.context';
+import { Employee } from '../../../domain/employee/employee.entity';
 export declare class MetadataQueryController {
     private readonly metadataContext;
     constructor(metadataContext: MetadataContext);
@@ -7,6 +8,29 @@ export declare class MetadataQueryController {
     getDepartmentHierarchyWithEmployees(activeOnly?: string): Promise<any[]>;
     getPositions(): Promise<import("../../../domain").Position[]>;
     getEmployees(search?: string, departmentId?: string): Promise<any[]>;
+    getMyInfo(user: Employee): Promise<{
+        id: string;
+        employeeNumber: string;
+        name: string;
+        email: string;
+        phoneNumber: string;
+        status: import("../../../../common/enums").EmployeeStatus;
+        hireDate: Date;
+        departments: {
+            department: {
+                id: string;
+                departmentCode: string;
+                departmentName: string;
+            };
+            position: {
+                id: string;
+                positionCode: string;
+                positionTitle: string;
+                level: number;
+                hasManagementAuthority: boolean;
+            };
+        }[];
+    }>;
     getEmployee(employeeId: string): Promise<{
         id: string;
         employeeNumber: string;

@@ -1244,6 +1244,10 @@ export class DocumentContext {
         const qb = this.documentService
             .createQueryBuilder('document')
             .leftJoinAndSelect('document.drafter', 'drafter')
+            .leftJoinAndSelect('drafter.departmentPositions', 'drafterDepartmentPositions')
+            .leftJoinAndSelect('drafterDepartmentPositions.department', 'drafterDepartment')
+            .leftJoinAndSelect('drafterDepartmentPositions.position', 'drafterPosition')
+            .leftJoinAndSelect('drafter.currentRank', 'drafterRank')
             .leftJoinAndSelect('document.approvalSteps', 'approvalSteps')
             .where('document.drafterId = :drafterId', { drafterId })
             .orderBy('document.createdAt', 'DESC')
@@ -1255,11 +1259,52 @@ export class DocumentContext {
         // 데이터 조회
         const documents = await qb.skip(skip).take(limit).getMany();
 
+        // 기안자 정보 평탄화 (department, position, rank를 drafter 바로 아래로 이동)
+        const mappedDocuments = documents.map((doc) => {
+            if (doc.drafter && doc.drafter.departmentPositions && doc.drafter.departmentPositions.length > 0) {
+                const currentDepartmentPosition =
+                    doc.drafter.departmentPositions.find((dp) => dp.isManager) || doc.drafter.departmentPositions[0];
+
+                return {
+                    ...doc,
+                    drafter: {
+                        id: doc.drafter.id,
+                        employeeNumber: doc.drafter.employeeNumber,
+                        name: doc.drafter.name,
+                        email: doc.drafter.email,
+                        department: currentDepartmentPosition.department
+                            ? {
+                                  id: currentDepartmentPosition.department.id,
+                                  departmentName: currentDepartmentPosition.department.departmentName,
+                                  departmentCode: currentDepartmentPosition.department.departmentCode,
+                              }
+                            : undefined,
+                        position: currentDepartmentPosition.position
+                            ? {
+                                  id: currentDepartmentPosition.position.id,
+                                  positionTitle: currentDepartmentPosition.position.positionTitle,
+                                  positionCode: currentDepartmentPosition.position.positionCode,
+                                  level: currentDepartmentPosition.position.level,
+                              }
+                            : undefined,
+                        rank: doc.drafter.currentRank
+                            ? {
+                                  id: doc.drafter.currentRank.id,
+                                  rankTitle: doc.drafter.currentRank.rankTitle,
+                                  rankCode: doc.drafter.currentRank.rankCode,
+                              }
+                            : undefined,
+                    },
+                };
+            }
+            return doc;
+        });
+
         // 페이징 메타데이터 계산
         const totalPages = Math.ceil(totalItems / limit);
 
         return {
-            data: documents,
+            data: mappedDocuments,
             meta: {
                 currentPage: page,
                 itemsPerPage: limit,

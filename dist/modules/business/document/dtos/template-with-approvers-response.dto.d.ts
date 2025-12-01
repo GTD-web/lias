@@ -37,6 +37,25 @@ export declare class CategoryResponseDto {
     code: string;
     description?: string;
 }
+export declare class PositionDto {
+    id: string;
+    positionTitle: string;
+    positionCode: string;
+    level: number;
+}
+export declare class DrafterDepartmentDto {
+    id: string;
+    departmentName: string;
+    departmentCode: string;
+}
+export declare class DrafterDto {
+    id: string;
+    employeeNumber: string;
+    name: string;
+    email: string;
+    department: DrafterDepartmentDto;
+    position: PositionDto;
+}
 export declare class DocumentTemplateWithApproversResponseDto {
     id: string;
     name: string;
@@ -46,6 +65,7 @@ export declare class DocumentTemplateWithApproversResponseDto {
     template: string;
     categoryId?: string;
     category?: CategoryResponseDto;
+    drafter: DrafterDto;
     approvalStepTemplates: ApprovalStepTemplateWithApproversDto[];
     createdAt: Date;
     updatedAt: Date;

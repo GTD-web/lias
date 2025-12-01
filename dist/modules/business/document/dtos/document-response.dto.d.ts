@@ -35,6 +35,31 @@ export declare class DocumentTemplateSimpleResponseDto {
     code: string;
     category?: CategorySimpleDto;
 }
+export declare class DepartmentSimpleDto {
+    id: string;
+    departmentName: string;
+    departmentCode: string;
+}
+export declare class PositionSimpleDto {
+    id: string;
+    positionTitle: string;
+    positionCode: string;
+    level: number;
+}
+export declare class RankSimpleDto {
+    id: string;
+    rankTitle: string;
+    rankCode: string;
+}
+export declare class DrafterSimpleDto {
+    id: string;
+    employeeNumber: string;
+    name: string;
+    email: string;
+    department?: DepartmentSimpleDto;
+    position?: PositionSimpleDto;
+    rank?: RankSimpleDto;
+}
 export declare class DocumentResponseDto {
     id: string;
     documentNumber?: string;
@@ -44,6 +69,7 @@ export declare class DocumentResponseDto {
     comment?: string;
     metadata?: Record<string, any>;
     drafterId: string;
+    drafter?: DrafterSimpleDto;
     documentTemplateId?: string;
     documentTemplate?: DocumentTemplateSimpleResponseDto;
     retentionPeriod?: string;

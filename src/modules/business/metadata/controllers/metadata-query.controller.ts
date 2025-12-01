@@ -3,6 +3,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBearerAuth }
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { MetadataContext } from '../../../context/metadata/metadata.context';
 import { validate as isUUID } from 'uuid';
+import { User } from '../../../../common/decorators/user.decorator';
+import { Employee } from '../../../domain/employee/employee.entity';
 
 /**
  * 메타데이터 조회 컨트롤러
@@ -152,6 +154,23 @@ export class MetadataQueryController {
             throw new BadRequestException('departmentId는 유효한 UUID 형식이어야 합니다');
         }
         return await this.metadataContext.searchEmployees(search, departmentId);
+    }
+
+    @Get('employees/me')
+    @ApiOperation({
+        summary: '현재 로그인한 직원 정보 조회',
+        description:
+            '헤더의 토큰 값으로 현재 로그인한 직원의 상세 정보를 조회합니다\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 현재 로그인한 직원 정보 조회\n' +
+            '- ✅ 정상: 부서 및 직책 정보 포함 조회\n' +
+            '- ❌ 실패: 인증 토큰 없음 (401 반환)\n' +
+            '- ❌ 실패: 유효하지 않은 토큰 (401 반환)',
+    })
+    @ApiResponse({ status: 200, description: '직원 조회 성공' })
+    @ApiResponse({ status: 401, description: '인증 실패' })
+    async getMyInfo(@User() user: Employee) {
+        return await this.metadataContext.getEmployeeById(user.id);
     }
 
     @Get('employees/:employeeId')

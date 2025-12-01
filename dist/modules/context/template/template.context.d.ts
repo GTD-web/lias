@@ -23,6 +23,23 @@ export declare class TemplateContext {
     deleteDocumentTemplate(templateId: string, externalQueryRunner?: QueryRunner): Promise<void>;
     getDocumentTemplate(templateId: string): Promise<import("../../domain").DocumentTemplate>;
     getDocumentTemplateWithMappedApprovers(templateId: string, drafterId: string): Promise<{
+        drafter: {
+            id: string;
+            employeeNumber: string;
+            name: string;
+            email: string;
+            department: {
+                id: string;
+                departmentName: string;
+                departmentCode: string;
+            };
+            position: {
+                id: string;
+                positionTitle: string;
+                positionCode: string;
+                level: number;
+            };
+        };
         approvalStepTemplates: any[];
         id: string;
         name: string;
