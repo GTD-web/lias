@@ -40,7 +40,7 @@ export class TemplateService {
                 code: dto.code,
                 description: dto.description,
                 template: dto.template,
-                status: dto.status,
+                status: DocumentTemplateStatus.ACTIVE,
                 categoryId: dto.categoryId,
             };
 
@@ -125,7 +125,7 @@ export class TemplateService {
     async getTemplates(query: {
         searchKeyword?: string;
         categoryId?: string;
-        status?: DocumentTemplateStatus;
+        // status?: DocumentTemplateStatus;
         sortOrder?: 'LATEST' | 'OLDEST';
         page?: number;
         limit?: number;
@@ -153,9 +153,10 @@ export class TemplateService {
             // 1. 문서 템플릿 수정
             const updateDto: UpdateDocumentTemplateDto = {
                 name: dto.name,
+                code: dto.code,
                 description: dto.description,
                 template: dto.template,
-                status: dto.status,
+                // status: DocumentTemplateStatus.ACTIVE,
                 categoryId: dto.categoryId,
             };
             await this.templateContext.updateDocumentTemplate(templateId, updateDto, queryRunner);

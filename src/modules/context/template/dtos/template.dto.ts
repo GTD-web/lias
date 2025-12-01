@@ -17,6 +17,7 @@ export class CreateDocumentTemplateDto {
  */
 export class UpdateDocumentTemplateDto {
     name?: string;
+    code?: string;
     description?: string;
     template?: string;
     status?: DocumentTemplateStatus;
@@ -47,4 +48,3 @@ export class UpdateApprovalStepTemplateDto {
     targetDepartmentId?: string | null;
     targetPositionId?: string | null;
 }
-

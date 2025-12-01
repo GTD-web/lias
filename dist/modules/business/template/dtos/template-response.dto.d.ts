@@ -1,10 +1,9 @@
-import { DocumentTemplateStatus, ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
+import { ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
 export declare class CategoryDocumentTemplateDto {
     id: string;
     name: string;
     code: string;
     description?: string;
-    status: DocumentTemplateStatus;
 }
 export declare class CategoryResponseDto {
     id: string;
@@ -31,7 +30,6 @@ export declare class DocumentTemplateResponseDto {
     name: string;
     code: string;
     description?: string;
-    status: DocumentTemplateStatus;
     template: string;
     categoryId?: string;
     category?: CategoryResponseDto;

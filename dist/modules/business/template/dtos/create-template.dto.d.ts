@@ -1,4 +1,4 @@
-import { DocumentTemplateStatus, ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
+import { ApprovalStepType, AssigneeRule } from '../../../../common/enums/approval.enum';
 export declare class ApprovalStepTemplateItemDto {
     stepOrder?: number;
     stepType: ApprovalStepType;
@@ -12,7 +12,6 @@ export declare class CreateTemplateDto {
     code: string;
     description?: string;
     template: string;
-    status?: DocumentTemplateStatus;
     categoryId?: string;
     approvalSteps: ApprovalStepTemplateItemDto[];
 }

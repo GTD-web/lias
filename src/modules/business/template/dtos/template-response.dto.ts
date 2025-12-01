@@ -29,12 +29,12 @@ export class CategoryDocumentTemplateDto {
     })
     description?: string;
 
-    @ApiProperty({
-        description: '문서 템플릿 상태',
-        enum: DocumentTemplateStatus,
-        example: DocumentTemplateStatus.ACTIVE,
-    })
-    status: DocumentTemplateStatus;
+    // @ApiProperty({
+    //     description: '문서 템플릿 상태',
+    //     enum: DocumentTemplateStatus,
+    //     example: DocumentTemplateStatus.ACTIVE,
+    // })
+    // status: DocumentTemplateStatus;
 }
 
 /**
@@ -173,12 +173,12 @@ export class DocumentTemplateResponseDto {
     })
     description?: string;
 
-    @ApiProperty({
-        description: '문서 템플릿 상태',
-        enum: DocumentTemplateStatus,
-        example: DocumentTemplateStatus.ACTIVE,
-    })
-    status: DocumentTemplateStatus;
+    // @ApiProperty({
+    //     description: '문서 템플릿 상태',
+    //     enum: DocumentTemplateStatus,
+    //     example: DocumentTemplateStatus.ACTIVE,
+    // })
+    // status: DocumentTemplateStatus;
 
     @ApiProperty({
         description: '문서 HTML 템플릿',

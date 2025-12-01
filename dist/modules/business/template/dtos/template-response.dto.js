@@ -43,14 +43,6 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CategoryDocumentTemplateDto.prototype, "description", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '문서 템플릿 상태',
-        enum: approval_enum_1.DocumentTemplateStatus,
-        example: approval_enum_1.DocumentTemplateStatus.ACTIVE,
-    }),
-    __metadata("design:type", String)
-], CategoryDocumentTemplateDto.prototype, "status", void 0);
 class CategoryResponseDto {
 }
 exports.CategoryResponseDto = CategoryResponseDto;
@@ -202,14 +194,6 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], DocumentTemplateResponseDto.prototype, "description", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '문서 템플릿 상태',
-        enum: approval_enum_1.DocumentTemplateStatus,
-        example: approval_enum_1.DocumentTemplateStatus.ACTIVE,
-    }),
-    __metadata("design:type", String)
-], DocumentTemplateResponseDto.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '문서 HTML 템플릿',

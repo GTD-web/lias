@@ -108,16 +108,6 @@ __decorate([
 ], CreateTemplateDto.prototype, "template", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '문서 템플릿 상태',
-        enum: approval_enum_1.DocumentTemplateStatus,
-        default: approval_enum_1.DocumentTemplateStatus.DRAFT,
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(approval_enum_1.DocumentTemplateStatus),
-    __metadata("design:type", String)
-], CreateTemplateDto.prototype, "status", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
         description: '카테고리 ID',
         example: 'uuid',
     }),
