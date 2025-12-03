@@ -72,15 +72,6 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
                     break;
                 case approval_enum_1.AssigneeRule.HIERARCHY_TO_SUPERIOR:
                     const superior = await this.findDirectSuperior(drafter, drafterDepartment, drafterPosition);
-                    mappedStep.mappedApprovers = [
-                        {
-                            employeeId: drafter.id,
-                            employeeNumber: drafter.employeeNumber,
-                            name: drafter.name,
-                            email: drafter.email,
-                            type: 'DRAFTER',
-                        },
-                    ];
                     if (superior) {
                         mappedStep.mappedApprovers.push({
                             employeeId: superior.id,
