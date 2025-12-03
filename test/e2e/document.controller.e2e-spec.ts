@@ -67,22 +67,24 @@ describe('DocumentController (e2e)', () => {
 
     /**
      * 테스트용 직원 설정
+     * Web파트(지상-Web) 직원들만 사용
      */
     async function setupTestEmployees() {
         const employeeRepo = dataSource.getRepository('Employee');
 
-        // 테스트에 사용할 직원들 조회 (최소 3명 필요: 기안자, 결재자, 시행자)
+        // 지상-Web 부서 직원들만 조회 (최소 3명 필요: 기안자, 결재자, 시행자)
         const employees = await employeeRepo
             .createQueryBuilder('employee')
             .leftJoinAndSelect('employee.departmentPositions', 'dp')
             .leftJoinAndSelect('dp.department', 'dept')
             .leftJoinAndSelect('dp.position', 'pos')
+            .where('dept.departmentCode = :deptCode', { deptCode: '지상-Web' })
             .orderBy('employee.createdAt', 'ASC')
             .take(3)
             .getMany();
 
         if (employees.length < 3) {
-            throw new Error('테스트를 위해 최소 3명의 직원이 필요합니다.');
+            throw new Error('테스트를 위해 지상-Web 부서에 최소 3명의 직원이 필요합니다.');
         }
 
         employeeId = employees[0].id;

@@ -94,17 +94,17 @@ export class ApproverMappingService {
                         break;
 
                     case AssigneeRule.HIERARCHY_TO_SUPERIOR:
-                        // 기안자와 기안자의 직속 상급자
+                        // 기안자의 직속 상급자, 기안자까지 포함하는 부분은 일단 주석처리 2025-12-03 김규현
                         const superior = await this.findDirectSuperior(drafter, drafterDepartment, drafterPosition);
-                        mappedStep.mappedApprovers = [
-                            {
-                                employeeId: drafter.id,
-                                employeeNumber: drafter.employeeNumber,
-                                name: drafter.name,
-                                email: drafter.email,
-                                type: 'DRAFTER',
-                            },
-                        ];
+                        // mappedStep.mappedApprovers = [
+                        //     {
+                        //         employeeId: drafter.id,
+                        //         employeeNumber: drafter.employeeNumber,
+                        //         name: drafter.name,
+                        //         email: drafter.email,
+                        //         type: 'DRAFTER',
+                        //     },
+                        // ];
                         if (superior) {
                             mappedStep.mappedApprovers.push({
                                 employeeId: superior.id,
@@ -373,4 +373,3 @@ export class ApproverMappingService {
         });
     }
 }
-

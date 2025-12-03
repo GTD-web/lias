@@ -51,17 +51,22 @@ describe('CategoryController (e2e)', () => {
 
     /**
      * 테스트용 직원 설정
+     * Web파트(지상-Web) 직원들만 사용
      */
     async function setupTestEmployee() {
         const employeeRepo = dataSource.getRepository('Employee');
 
+        // 지상-Web 부서 직원만 조회
         const employee = await employeeRepo
             .createQueryBuilder('employee')
+            .leftJoinAndSelect('employee.departmentPositions', 'dp')
+            .leftJoinAndSelect('dp.department', 'dept')
+            .where('dept.departmentCode = :deptCode', { deptCode: '지상-Web' })
             .orderBy('employee.createdAt', 'ASC')
             .getOne();
 
         if (!employee) {
-            throw new Error('테스트를 위한 직원이 필요합니다.');
+            throw new Error('테스트를 위해 지상-Web 부서에 직원이 필요합니다.');
         }
 
         employeeId = employee.id;
@@ -319,9 +324,15 @@ describe('CategoryController (e2e)', () => {
 
             categoryIdWithTemplate = categoryResponse.body.id;
 
-            // 해당 카테고리에 템플릿 연결
+            // 해당 카테고리에 템플릿 연결 (지상-Web 부서 직원 사용)
             const employeeRepo = dataSource.getRepository('Employee');
-            const employees = await employeeRepo.createQueryBuilder('e').take(2).getMany();
+            const employees = await employeeRepo
+                .createQueryBuilder('e')
+                .leftJoinAndSelect('e.departmentPositions', 'dp')
+                .leftJoinAndSelect('dp.department', 'dept')
+                .where('dept.departmentCode = :deptCode', { deptCode: '지상-Web' })
+                .take(2)
+                .getMany();
 
             await request(app.getHttpServer())
                 .post('/templates')

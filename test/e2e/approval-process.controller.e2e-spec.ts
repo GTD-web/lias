@@ -67,19 +67,23 @@ describe('ApprovalProcessController (e2e)', () => {
 
     /**
      * 테스트용 직원 설정 (최소 4명 필요: 기안자, 결재자, 시행자, 참조자)
+     * Web파트(지상-Web) 직원들만 사용
      */
     async function setupTestEmployees() {
         const employeeRepo = dataSource.getRepository('Employee');
 
+        // 지상-Web 부서 직원들만 조회
         const employees = await employeeRepo
             .createQueryBuilder('employee')
             .leftJoinAndSelect('employee.departmentPositions', 'dp')
+            .leftJoinAndSelect('dp.department', 'dept')
+            .where('dept.departmentCode = :deptCode', { deptCode: '지상-Web' })
             .orderBy('employee.createdAt', 'ASC')
             .take(4)
             .getMany();
 
         if (employees.length < 4) {
-            throw new Error('테스트를 위해 최소 4명의 직원이 필요합니다.');
+            throw new Error('테스트를 위해 지상-Web 부서에 최소 4명의 직원이 필요합니다.');
         }
 
         drafterId = employees[0].id;
@@ -713,4 +717,3 @@ describe('ApprovalProcessController (e2e)', () => {
         });
     });
 });
-
