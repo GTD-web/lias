@@ -38,7 +38,7 @@ export declare class TestDataService {
         hasReference?: boolean;
         referenceCount?: number;
     }): Promise<{
-        document: Document;
+        document: void;
         drafter: Employee;
         approvalSteps: {
             step: CreateDocumentDto["approvalSteps"][0];

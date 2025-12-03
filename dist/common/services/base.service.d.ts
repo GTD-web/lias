@@ -14,4 +14,6 @@ export declare abstract class BaseService<T extends ObjectLiteral> implements IS
     findAndCount(options?: IRepositoryOptions<T>): Promise<[T[], number]>;
     update(entityId: string, entity: Partial<T>, options?: IRepositoryOptions<T>): Promise<T>;
     delete(entityId: string, options?: IRepositoryOptions<T>): Promise<void>;
+    findOneWithError(options: IRepositoryOptions<T>): Promise<T>;
+    findAllWithError(options: IRepositoryOptions<T>): Promise<T[]>;
 }

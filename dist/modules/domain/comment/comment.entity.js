@@ -14,6 +14,21 @@ const typeorm_1 = require("typeorm");
 const document_entity_1 = require("../document/document.entity");
 const employee_entity_1 = require("../employee/employee.entity");
 let Comment = class Comment {
+    문서를설정한다(documentId) {
+        this.documentId = documentId;
+    }
+    작성자를설정한다(authorId) {
+        this.authorId = authorId;
+    }
+    내용을설정한다(content) {
+        this.content = content;
+    }
+    부모코멘트를설정한다(parentCommentId) {
+        this.parentCommentId = parentCommentId;
+    }
+    삭제한다() {
+        this.deletedAt = new Date();
+    }
 };
 exports.Comment = Comment;
 __decorate([

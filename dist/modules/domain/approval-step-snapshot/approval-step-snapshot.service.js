@@ -13,10 +13,64 @@ exports.DomainApprovalStepSnapshotService = void 0;
 const common_1 = require("@nestjs/common");
 const approval_step_snapshot_repository_1 = require("./approval-step-snapshot.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const approval_step_snapshot_entity_1 = require("./approval-step-snapshot.entity");
 let DomainApprovalStepSnapshotService = class DomainApprovalStepSnapshotService extends base_service_1.BaseService {
     constructor(approvalStepSnapshotRepository) {
         super(approvalStepSnapshotRepository);
         this.approvalStepSnapshotRepository = approvalStepSnapshotRepository;
+    }
+    async createApprovalStepSnapshot(dto, queryRunner) {
+        const snapshot = new approval_step_snapshot_entity_1.ApprovalStepSnapshot();
+        if (dto.documentId) {
+            snapshot.문서를설정한다(dto.documentId);
+        }
+        if (dto.stepOrder !== undefined) {
+            snapshot.결재단계순서를설정한다(dto.stepOrder);
+        }
+        if (dto.stepType) {
+            snapshot.결재단계타입을설정한다(dto.stepType);
+        }
+        if (dto.approverId) {
+            snapshot.결재자를설정한다(dto.approverId);
+        }
+        if (dto.approverSnapshot) {
+            snapshot.결재자스냅샷을설정한다(dto.approverSnapshot);
+        }
+        if (dto.comment) {
+            snapshot.의견을설정한다(dto.comment);
+        }
+        snapshot.대기한다();
+        return await this.approvalStepSnapshotRepository.save(snapshot, { queryRunner });
+    }
+    async updateApprovalStepSnapshot(snapshot, dto, queryRunner) {
+        if (dto.stepOrder !== undefined) {
+            snapshot.결재단계순서를설정한다(dto.stepOrder);
+        }
+        if (dto.stepType) {
+            snapshot.결재단계타입을설정한다(dto.stepType);
+        }
+        if (dto.approverId) {
+            snapshot.결재자를설정한다(dto.approverId);
+        }
+        if (dto.approverSnapshot) {
+            snapshot.결재자스냅샷을설정한다(dto.approverSnapshot);
+        }
+        if (dto.comment) {
+            snapshot.의견을설정한다(dto.comment);
+        }
+        return await this.approvalStepSnapshotRepository.save(snapshot, { queryRunner });
+    }
+    async approveApprovalStepSnapshot(snapshot, queryRunner) {
+        snapshot.승인한다();
+        return await this.approvalStepSnapshotRepository.save(snapshot, { queryRunner });
+    }
+    async rejectApprovalStepSnapshot(snapshot, queryRunner) {
+        snapshot.반려한다();
+        return await this.approvalStepSnapshotRepository.save(snapshot, { queryRunner });
+    }
+    async cancelApprovalStepSnapshot(snapshot, queryRunner) {
+        snapshot.취소한다();
+        return await this.approvalStepSnapshotRepository.save(snapshot, { queryRunner });
     }
 };
 exports.DomainApprovalStepSnapshotService = DomainApprovalStepSnapshotService;

@@ -1,6 +1,7 @@
 import { DataSource, QueryRunner } from 'typeorm';
 import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
 import { DomainDocumentService } from '../../domain/document/document.service';
+import { DomainCommentService } from '../../domain/comment/comment.service';
 import { Document } from '../../domain/document/document.entity';
 import { ApprovalStepSnapshot } from '../../domain/approval-step-snapshot/approval-step-snapshot.entity';
 import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto } from './dtos/approval-action.dto';
@@ -9,18 +10,19 @@ export declare class ApprovalProcessContext {
     private readonly dataSource;
     private readonly approvalStepSnapshotService;
     private readonly documentService;
+    private readonly commentService;
     private readonly logger;
-    constructor(dataSource: DataSource, approvalStepSnapshotService: DomainApprovalStepSnapshotService, documentService: DomainDocumentService);
-    completeAgreement(dto: CompleteAgreementDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    constructor(dataSource: DataSource, approvalStepSnapshotService: DomainApprovalStepSnapshotService, documentService: DomainDocumentService, commentService: DomainCommentService);
+    completeAgreement(dto: CompleteAgreementDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
     markReferenceRead(dto: {
         stepSnapshotId: string;
         referenceUserId: string;
         comment?: string;
-    }, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
-    approveStep(dto: ApproveStepDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
-    completeImplementation(dto: CompleteImplementationDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
-    rejectStep(dto: RejectStepDto, externalQueryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
-    cancelApproval(dto: CancelApprovalDto, externalQueryRunner?: QueryRunner): Promise<Document>;
+    }, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    approveStep(dto: ApproveStepDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    completeImplementation(dto: CompleteImplementationDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    rejectStep(dto: RejectStepDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    cancelApproval(dto: CancelApprovalDto, queryRunner?: QueryRunner): Promise<Document>;
     getMyPendingApprovals(userId: string, type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL', page?: number, limit?: number, queryRunner?: QueryRunner): Promise<{
         data: {
             documentId: string;
@@ -64,7 +66,6 @@ export declare class ApprovalProcessContext {
     getApprovalStepsByDocumentId(documentId: string, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot[]>;
     private checkAndUpdateDocumentStatus;
     private validateApprovalOrder;
-    private validateImplementationPrecondition;
     autoApproveIfDrafterIsFirstApprover(documentId: string, drafterId: string, queryRunner?: QueryRunner): Promise<void>;
     private canProcessStepOptimized;
     private canProcessStep;

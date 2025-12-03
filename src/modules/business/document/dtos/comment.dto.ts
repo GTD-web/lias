@@ -43,14 +43,6 @@ export class CreateCommentDto {
  */
 export class UpdateCommentDto {
     @ApiProperty({
-        description: '작성자 ID (본인 확인용)',
-        example: '550e8400-e29b-41d4-a716-446655440001',
-    })
-    @IsUUID()
-    @IsNotEmpty()
-    authorId: string;
-
-    @ApiProperty({
         description: '코멘트 내용',
         example: '수정된 코멘트 내용입니다.',
     })

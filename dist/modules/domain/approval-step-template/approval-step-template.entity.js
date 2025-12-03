@@ -17,6 +17,27 @@ const employee_entity_1 = require("../employee/employee.entity");
 const department_entity_1 = require("../department/department.entity");
 const position_entity_1 = require("../position/position.entity");
 let ApprovalStepTemplate = class ApprovalStepTemplate {
+    문서템플릿을설정한다(documentTemplateId) {
+        this.documentTemplateId = documentTemplateId;
+    }
+    결재단계순서를설정한다(stepOrder) {
+        this.stepOrder = stepOrder;
+    }
+    결재단계타입을설정한다(stepType) {
+        this.stepType = stepType;
+    }
+    결재자할당규칙을설정한다(assigneeRule) {
+        this.assigneeRule = assigneeRule;
+    }
+    대상직원을설정한다(targetEmployeeId) {
+        this.targetEmployeeId = targetEmployeeId;
+    }
+    대상부서를설정한다(targetDepartmentId) {
+        this.targetDepartmentId = targetDepartmentId;
+    }
+    대상직책을설정한다(targetPositionId) {
+        this.targetPositionId = targetPositionId;
+    }
 };
 exports.ApprovalStepTemplate = ApprovalStepTemplate;
 __decorate([

@@ -43,7 +43,7 @@ export class TemplateController {
             '- ❌ 실패: 필수 필드 누락 (name)\n' +
             '- ❌ 실패: 필수 필드 누락 (code)\n' +
             '- ❌ 실패: 필수 필드 누락 (template)\n' +
-            '- ❌ 실패: 필수 필드 누락 (approvalSteps)',
+            '- ❌ 실패: 인증 토큰 없이 요청',
     })
     @ApiResponse({
         status: 201,
@@ -176,10 +176,9 @@ export class TemplateController {
             '- categoryId: 카테고리 ID\n' +
             '- approvalSteps: 결재단계 목록\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 문서 템플릿 수정\n' +
-            '- ✅ 정상: 부분 수정 (name만)\n' +
-            '- ✅ 정상: code 수정\n' +
-            '- ✅ 정상: 결재단계 수정\n' +
+            '- ✅ 정상: 템플릿 수정 (이름 변경)\n' +
+            '- ✅ 정상: 부분 수정 (설명만)\n' +
+            '- ✅ 정상: 템플릿 HTML 수정\n' +
             '- ❌ 실패: 존재하지 않는 템플릿 ID',
     })
     @ApiParam({

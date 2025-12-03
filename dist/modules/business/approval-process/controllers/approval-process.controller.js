@@ -77,8 +77,8 @@ __decorate([
         summary: '결재 승인',
         description: '결재 단계를 승인합니다.\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 결재 승인\n' +
-            '- ❌ 실패: 필수 필드 누락 (stepSnapshotId)\n' +
+            '- ✅ 정상: 결재 승인 성공\n' +
+            '- ❌ 실패: 권한 없는 사용자의 승인 시도\n' +
             '- ❌ 실패: 존재하지 않는 stepSnapshotId',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '결재 승인 성공', type: dtos_1.ApprovalActionResponseDto }),
@@ -98,7 +98,8 @@ __decorate([
         summary: '시행 완료',
         description: '시행 단계를 완료 처리합니다. 모든 결재가 완료되어야 시행 가능합니다.\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 시행 완료',
+            '- ✅ 정상: 시행 완료\n' +
+            '- ❌ 실패: 결재 완료되지 않은 문서의 시행 시도',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '시행 완료 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 시행만 완료 가능, 모든 결재 미완료 등)' }),
@@ -145,7 +146,7 @@ __decorate([
         description: '결재 단계를 반려합니다. 반려 사유는 필수입니다.\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 결재 반려 (사유 포함)\n' +
-            '- ❌ 실패: 필수 필드 누락 (comment)',
+            '- ❌ 실패: 반려 사유 누락',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '결재 반려 성공', type: dtos_1.ApprovalActionResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (대기 중인 결재만 반려 가능, 반려 사유 누락 등)' }),
@@ -164,19 +165,18 @@ __decorate([
         summary: '결재 취소, 문서 취소 (대리취소 지원)',
         description: '결재 진행 중인 문서를 취소합니다.\n\n' +
             '**취소 가능 대상:**\n' +
-            '- 기안자: 항상 취소 가능\n' +
-            '- 결재자: 자신이 가장 최근에 APPROVAL 결재를 완료한 경우에만 취소 가능 (대리취소)\n' +
+            '- 기안자 상신취소: 결재자가 아직 처리하지 않은 상태에서만 가능\n' +
+            '- 결재자 결재취소: 본인이 승인한 결재 단계만 취소 가능, 다음 단계가 처리되지 않은 경우에만\n' +
             '  - ⚠️ APPROVAL 타입의 결재만 취소 대상 (AGREEMENT, REFERENCE, IMPLEMENTATION 제외)\n\n' +
             '**예시:**\n' +
-            '- 협의(AGREEMENT) → 1번 결재자(APPROVAL) 완료 → 1번 결재자 취소 가능, 기안자도 취소 가능\n' +
-            '- 1번 결재자(APPROVAL) → 2번 결재자(APPROVAL) 완료 → 1번 취소 불가, 2번 취소 가능, 기안자도 가능\n' +
-            '- 협의자나 참조자는 취소 권한 없음\n\n' +
+            '- 결재자가 아직 처리하기 전 → 기안자 상신취소 가능\n' +
+            '- 1번 결재자 승인 후 → 기안자 상신취소 불가, 1번 결재자 결재취소 가능\n' +
+            '- 2번 결재자까지 승인 후 → 1번 취소 불가, 2번 취소 가능\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 기안자가 결재 취소\n' +
-            '- ✅ 정상: 가장 최근에 APPROVAL 결재를 완료한 결재자가 취소\n' +
-            '- ❌ 실패: 이전에 결재를 완료한 결재자가 취소 시도\n' +
-            '- ❌ 실패: AGREEMENT, REFERENCE 단계의 사람이 취소 시도\n' +
-            '- ❌ 실패: 필수 필드 누락 (reason)',
+            '- ✅ 정상: 기안자가 결재자 처리 전 상신취소\n' +
+            '- ✅ 정상: 본인이 승인한 결재 취소 (다음 결재자 대기 중)\n' +
+            '- ❌ 실패: 결재자가 처리한 후 기안자 상신취소 시도\n' +
+            '- ❌ 실패: 취소 사유 누락',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '결재 취소 성공', type: dtos_1.CancelApprovalResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능)' }),

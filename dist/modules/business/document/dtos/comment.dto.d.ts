@@ -3,7 +3,6 @@ export declare class CreateCommentDto {
     parentCommentId?: string;
 }
 export declare class UpdateCommentDto {
-    authorId: string;
     content: string;
 }
 export declare class DeleteCommentDto {

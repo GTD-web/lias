@@ -60,4 +60,69 @@ export class DocumentTemplate {
 
     @OneToMany(() => ApprovalStepTemplate, (step) => step.documentTemplate, { cascade: true })
     approvalStepTemplates: ApprovalStepTemplate[];
+
+    // ==================== Setter 메서드 ====================
+
+    /**
+     * 이름을 설정한다
+     */
+    이름을설정한다(name: string): void {
+        this.name = name;
+    }
+
+    /**
+     * 코드를 설정한다
+     */
+    코드를설정한다(code: string): void {
+        this.code = code;
+    }
+
+    /**
+     * 설명을 설정한다
+     */
+    설명을설정한다(description?: string): void {
+        this.description = description;
+    }
+
+    /**
+     * 템플릿을 설정한다
+     */
+    템플릿을설정한다(template: string): void {
+        this.template = template;
+    }
+
+    /**
+     * 카테고리를 설정한다
+     */
+    카테고리를설정한다(categoryId?: string): void {
+        this.categoryId = categoryId;
+    }
+
+    /**
+     * 상태를 설정한다
+     */
+    상태를설정한다(status: DocumentTemplateStatus): void {
+        this.status = status;
+    }
+
+    /**
+     * 활성화한다
+     */
+    활성화한다(): void {
+        this.status = DocumentTemplateStatus.ACTIVE;
+    }
+
+    // /**
+    //  * 초안으로 설정한다
+    //  */
+    // 초안으로설정한다(): void {
+    //     this.status = DocumentTemplateStatus.DRAFT;
+    // }
+
+    // /**
+    //  * 비활성화한다
+    //  */
+    // 비활성화한다(): void {
+    //     this.status = DocumentTemplateStatus.INACTIVE;
+    // }
 }

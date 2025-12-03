@@ -32,6 +32,16 @@ let NotificationService = NotificationService_1 = class NotificationService {
         return headers;
     }
     async sendNotification(dto, authorization) {
+        const isLocal = process.env.NODE_ENV === 'local';
+        if (isLocal) {
+            return {
+                success: true,
+                message: '알림 미전송 (로컬 환경)',
+                notificationIds: [],
+                successCount: dto.recipients.length,
+                failureCount: 0,
+            };
+        }
         this.validateRequest(dto);
         const url = `${this.baseUrl}${notification_constants_1.NOTIFICATION_ENDPOINTS.SEND}`;
         console.log(url);

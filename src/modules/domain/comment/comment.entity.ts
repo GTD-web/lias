@@ -68,4 +68,41 @@ export class Comment {
 
     @OneToMany(() => Comment, (comment) => comment.parentComment)
     replies: Comment[];
+
+    // ==================== Setter 메서드 ====================
+
+    /**
+     * 문서를 설정한다
+     */
+    문서를설정한다(documentId: string): void {
+        this.documentId = documentId;
+    }
+
+    /**
+     * 작성자를 설정한다
+     */
+    작성자를설정한다(authorId: string): void {
+        this.authorId = authorId;
+    }
+
+    /**
+     * 내용을 설정한다
+     */
+    내용을설정한다(content: string): void {
+        this.content = content;
+    }
+
+    /**
+     * 부모 코멘트를 설정한다
+     */
+    부모코멘트를설정한다(parentCommentId?: string): void {
+        this.parentCommentId = parentCommentId;
+    }
+
+    /**
+     * 삭제한다 (소프트 삭제)
+     */
+    삭제한다(): void {
+        this.deletedAt = new Date();
+    }
 }

@@ -42,6 +42,20 @@ let BaseService = class BaseService {
     async delete(entityId, options) {
         return this.repository.delete(entityId, options);
     }
+    async findOneWithError(options) {
+        const entity = await this.findOne(options);
+        if (!entity) {
+            throw new common_1.NotFoundException(`${this.repository.constructor.name}를 찾을 수 없습니다.`);
+        }
+        return entity;
+    }
+    async findAllWithError(options) {
+        const entities = await this.findAll(options);
+        if (entities.length === 0) {
+            throw new common_1.NotFoundException(`${this.repository.constructor.name} 목록을 찾을 수 없습니다.`);
+        }
+        return entities;
+    }
 };
 exports.BaseService = BaseService;
 exports.BaseService = BaseService = __decorate([

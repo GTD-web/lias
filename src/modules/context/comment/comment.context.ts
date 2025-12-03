@@ -32,32 +32,20 @@ export class CommentContext {
         this.logger.log(`코멘트 작성 시작: 문서 ${params.documentId}`);
 
         // 1. 문서 존재 확인
-        const document = await this.documentService.findOne({
+        await this.documentService.findOneWithError({
             where: { id: params.documentId },
         });
 
-        if (!document) {
-            throw new NotFoundException(`문서를 찾을 수 없습니다: ${params.documentId}`);
-        }
-
         // 2. 작성자 확인
-        const author = await this.employeeService.findOne({
+        await this.employeeService.findOneWithError({
             where: { id: params.authorId },
         });
 
-        if (!author) {
-            throw new NotFoundException(`작성자를 찾을 수 없습니다: ${params.authorId}`);
-        }
-
         // 3. 부모 코멘트 확인 (대댓글인 경우)
         if (params.parentCommentId) {
-            const parentComment = await this.commentService.findOne({
+            const parentComment = await this.commentService.findOneWithError({
                 where: { id: params.parentCommentId },
             });
-
-            if (!parentComment) {
-                throw new NotFoundException(`부모 코멘트를 찾을 수 없습니다: ${params.parentCommentId}`);
-            }
 
             // 부모 코멘트가 같은 문서에 속하는지 확인
             if (parentComment.documentId !== params.documentId) {
@@ -65,15 +53,8 @@ export class CommentContext {
             }
         }
 
-        // 4. 코멘트 생성
-        const comment = await this.commentService.create({
-            documentId: params.documentId,
-            authorId: params.authorId,
-            content: params.content,
-            parentCommentId: params.parentCommentId,
-        });
-
-        const savedComment = await this.commentService.save(comment);
+        // 4. 코멘트 생성 (도메인 서비스 사용)
+        const savedComment = await this.commentService.createComment(params);
 
         this.logger.log(`코멘트 작성 완료: ${savedComment.id}`);
         return savedComment;
@@ -86,23 +67,17 @@ export class CommentContext {
         this.logger.log(`코멘트 수정 시작: ${params.commentId}`);
 
         // 1. 코멘트 조회
-        const comment = await this.commentService.findOne({
+        const comment = await this.commentService.findOneWithError({
             where: { id: params.commentId },
         });
-
-        if (!comment) {
-            throw new NotFoundException(`코멘트를 찾을 수 없습니다: ${params.commentId}`);
-        }
 
         // 2. 작성자 확인 (본인만 수정 가능)
         if (comment.authorId !== params.authorId) {
             throw new BadRequestException('본인의 코멘트만 수정할 수 있습니다');
         }
 
-        // 3. 코멘트 수정
-        const updatedComment = await this.commentService.update(params.commentId, {
-            content: params.content,
-        });
+        // 3. 코멘트 수정 (도메인 서비스 사용)
+        const updatedComment = await this.commentService.updateComment(comment, params.content);
 
         this.logger.log(`코멘트 수정 완료: ${params.commentId}`);
         return updatedComment;
@@ -115,26 +90,20 @@ export class CommentContext {
         this.logger.log(`코멘트 삭제 시작: ${commentId}`);
 
         // 1. 코멘트 조회
-        const comment = await this.commentService.findOne({
+        const comment = await this.commentService.findOneWithError({
             where: { id: commentId },
         });
-
-        if (!comment) {
-            throw new NotFoundException(`코멘트를 찾을 수 없습니다: ${commentId}`);
-        }
 
         // 2. 작성자 확인 (본인만 삭제 가능)
         if (comment.authorId !== authorId) {
             throw new BadRequestException('본인의 코멘트만 삭제할 수 있습니다');
         }
 
-        // 3. 소프트 삭제
-        const updatedComment = await this.commentService.update(commentId, {
-            deletedAt: new Date(),
-        });
+        // 3. 소프트 삭제 (도메인 서비스 사용)
+        const deletedComment = await this.commentService.deleteComment(comment);
 
         this.logger.log(`코멘트 삭제 완료: ${commentId}`);
-        return updatedComment;
+        return deletedComment;
     }
 
     /**
@@ -144,13 +113,9 @@ export class CommentContext {
         this.logger.debug(`문서 코멘트 조회: ${documentId}`);
 
         // 1. 문서 존재 확인
-        const document = await this.documentService.findOne({
+        await this.documentService.findOneWithError({
             where: { id: documentId },
         });
-
-        if (!document) {
-            throw new NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
-        }
 
         // 2. 코멘트 조회 (삭제되지 않은 것만, 작성자 및 대댓글 포함)
         const comments = await this.commentService.findAll({
@@ -176,14 +141,10 @@ export class CommentContext {
     async 코멘트를조회한다(commentId: string) {
         this.logger.debug(`코멘트 조회: ${commentId}`);
 
-        const comment = await this.commentService.findOne({
+        const comment = await this.commentService.findOneWithError({
             where: { id: commentId },
             relations: ['author', 'document', 'parentComment', 'replies'],
         });
-
-        if (!comment) {
-            throw new NotFoundException(`코멘트를 찾을 수 없습니다: ${commentId}`);
-        }
 
         return comment;
     }

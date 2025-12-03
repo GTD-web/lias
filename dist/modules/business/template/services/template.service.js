@@ -14,12 +14,16 @@ exports.TemplateService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("typeorm");
 const template_context_1 = require("../../../context/template/template.context");
+const template_query_service_1 = require("../../../context/template/template-query.service");
+const approver_mapping_service_1 = require("../../../context/template/approver-mapping.service");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const transaction_util_1 = require("../../../../common/utils/transaction.util");
 let TemplateService = TemplateService_1 = class TemplateService {
-    constructor(dataSource, templateContext) {
+    constructor(dataSource, templateContext, templateQueryService, approverMappingService) {
         this.dataSource = dataSource;
         this.templateContext = templateContext;
+        this.templateQueryService = templateQueryService;
+        this.approverMappingService = approverMappingService;
         this.logger = new common_1.Logger(TemplateService_1.name);
     }
     async createTemplateWithApprovalSteps(dto) {
@@ -56,34 +60,6 @@ let TemplateService = TemplateService_1 = class TemplateService {
             };
         });
     }
-    async createCategory(dto) {
-        this.logger.log(`카테고리 생성: ${dto.name}`);
-        return await this.templateContext.createCategory(dto);
-    }
-    async getCategories() {
-        this.logger.debug('카테고리 목록 조회');
-        return await this.templateContext.getCategories();
-    }
-    async getCategory(categoryId) {
-        this.logger.debug(`카테고리 조회: ${categoryId}`);
-        return await this.templateContext.getCategory(categoryId);
-    }
-    async updateCategory(categoryId, dto) {
-        this.logger.log(`카테고리 수정: ${categoryId}`);
-        return await this.templateContext.updateCategory(categoryId, dto);
-    }
-    async deleteCategory(categoryId) {
-        this.logger.log(`카테고리 삭제: ${categoryId}`);
-        return await this.templateContext.deleteCategory(categoryId);
-    }
-    async getTemplates(query) {
-        this.logger.debug(`템플릿 목록 조회: ${JSON.stringify(query)}`);
-        return await this.templateContext.getDocumentTemplates(query);
-    }
-    async getTemplate(templateId) {
-        this.logger.debug(`템플릿 조회: ${templateId}`);
-        return await this.templateContext.getDocumentTemplate(templateId);
-    }
     async updateTemplate(templateId, dto) {
         this.logger.log(`템플릿 수정 시작: ${templateId}`);
         return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
@@ -96,7 +72,7 @@ let TemplateService = TemplateService_1 = class TemplateService {
             };
             await this.templateContext.updateDocumentTemplate(templateId, updateDto, queryRunner);
             if (dto.approvalSteps !== undefined) {
-                const existingSteps = await this.templateContext.getApprovalStepTemplatesByDocumentTemplate(templateId);
+                const existingSteps = await this.templateQueryService.getApprovalStepTemplatesByDocumentTemplate(templateId);
                 const existingStepIds = new Set(existingSteps.map((step) => step.id));
                 const requestedStepIds = new Set(dto.approvalSteps.filter((step) => step.id).map((step) => step.id));
                 const stepsToDelete = existingSteps.filter((step) => !requestedStepIds.has(step.id));
@@ -134,18 +110,60 @@ let TemplateService = TemplateService_1 = class TemplateService {
             else {
                 this.logger.log(`템플릿 수정 완료: ${templateId}`);
             }
-            return await this.templateContext.getDocumentTemplate(templateId);
+            return await this.templateQueryService.getDocumentTemplate(templateId);
         });
     }
     async deleteTemplate(templateId) {
         this.logger.log(`템플릿 삭제: ${templateId}`);
-        return await this.templateContext.deleteDocumentTemplate(templateId);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            await this.templateContext.deleteDocumentTemplate(templateId, queryRunner);
+        });
+    }
+    async getTemplates(query) {
+        this.logger.debug(`템플릿 목록 조회: ${JSON.stringify(query)}`);
+        return await this.templateQueryService.getDocumentTemplates(query);
+    }
+    async getTemplate(templateId) {
+        this.logger.debug(`템플릿 조회: ${templateId}`);
+        return await this.templateQueryService.getDocumentTemplate(templateId);
+    }
+    async getTemplateWithMappedApprovers(templateId, drafterId) {
+        this.logger.debug(`템플릿 조회 (결재자 매핑): ${templateId}, 기안자: ${drafterId}`);
+        return await this.approverMappingService.getDocumentTemplateWithMappedApprovers(templateId, drafterId);
+    }
+    async createCategory(dto) {
+        this.logger.log(`카테고리 생성: ${dto.name}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.templateContext.createCategory(dto, queryRunner);
+        });
+    }
+    async updateCategory(categoryId, dto) {
+        this.logger.log(`카테고리 수정: ${categoryId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.templateContext.updateCategory(categoryId, dto, queryRunner);
+        });
+    }
+    async deleteCategory(categoryId) {
+        this.logger.log(`카테고리 삭제: ${categoryId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.templateContext.deleteCategory(categoryId, queryRunner);
+        });
+    }
+    async getCategories() {
+        this.logger.debug('카테고리 목록 조회');
+        return await this.templateQueryService.getCategories();
+    }
+    async getCategory(categoryId) {
+        this.logger.debug(`카테고리 조회: ${categoryId}`);
+        return await this.templateQueryService.getCategory(categoryId);
     }
 };
 exports.TemplateService = TemplateService;
 exports.TemplateService = TemplateService = TemplateService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [typeorm_1.DataSource,
-        template_context_1.TemplateContext])
+        template_context_1.TemplateContext,
+        template_query_service_1.TemplateQueryService,
+        approver_mapping_service_1.ApproverMappingService])
 ], TemplateService);
 //# sourceMappingURL=template.service.js.map

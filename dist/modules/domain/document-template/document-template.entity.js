@@ -15,6 +15,27 @@ const approval_enum_1 = require("../../../common/enums/approval.enum");
 const approval_step_template_entity_1 = require("../approval-step-template/approval-step-template.entity");
 const category_entity_1 = require("../category/category.entity");
 let DocumentTemplate = class DocumentTemplate {
+    이름을설정한다(name) {
+        this.name = name;
+    }
+    코드를설정한다(code) {
+        this.code = code;
+    }
+    설명을설정한다(description) {
+        this.description = description;
+    }
+    템플릿을설정한다(template) {
+        this.template = template;
+    }
+    카테고리를설정한다(categoryId) {
+        this.categoryId = categoryId;
+    }
+    상태를설정한다(status) {
+        this.status = status;
+    }
+    활성화한다() {
+        this.status = approval_enum_1.DocumentTemplateStatus.ACTIVE;
+    }
 };
 exports.DocumentTemplate = DocumentTemplate;
 __decorate([

@@ -103,4 +103,79 @@ export class Document {
 
     @OneToMany(() => Comment, (comment) => comment.document)
     comments: Comment[];
+
+    // Setter 메서드들
+    문서번호를설정한다(documentNumber: string): void {
+        this.documentNumber = documentNumber;
+    }
+
+    제목을설정한다(title: string): void {
+        this.title = title;
+    }
+
+    내용을설정한다(content: string): void {
+        this.content = content;
+    }
+
+    비고를설정한다(comment: string): void {
+        this.comment = comment;
+    }
+
+    메타데이터를설정한다(metadata: Record<string, any>): void {
+        this.metadata = metadata;
+    }
+
+    기안자를설정한다(drafterId: string): void {
+        this.drafterId = drafterId;
+    }
+
+    문서템플릿을설정한다(documentTemplateId: string): void {
+        this.documentTemplateId = documentTemplateId;
+    }
+
+    보존연한을설정한다(retentionPeriod: string): void {
+        this.retentionPeriod = retentionPeriod;
+    }
+
+    보존연한단위를설정한다(retentionPeriodUnit: string): void {
+        this.retentionPeriodUnit = retentionPeriodUnit;
+    }
+
+    보존연한시작일을설정한다(retentionStartDate: Date): void {
+        this.retentionStartDate = retentionStartDate;
+    }
+
+    보존연한종료일을설정한다(retentionEndDate: Date): void {
+        this.retentionEndDate = retentionEndDate;
+    }
+
+    // 상태 관련 메서드들
+    임시저장한다(): void {
+        this.status = DocumentStatus.DRAFT;
+    }
+
+    상신한다(): void {
+        this.status = DocumentStatus.PENDING;
+        this.submittedAt = new Date();
+    }
+
+    승인완료한다(): void {
+        this.status = DocumentStatus.APPROVED;
+        this.approvedAt = new Date();
+    }
+
+    반려한다(): void {
+        this.status = DocumentStatus.REJECTED;
+        this.rejectedAt = new Date();
+    }
+
+    취소한다(reason?: string): void {
+        this.status = DocumentStatus.CANCELLED;
+        this.cancelReason = reason;
+        this.cancelledAt = new Date();
+    }
+
+    시행완료한다(): void {
+        this.status = DocumentStatus.IMPLEMENTED;
+    }
 }

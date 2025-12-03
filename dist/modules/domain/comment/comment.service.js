@@ -13,10 +13,29 @@ exports.DomainCommentService = void 0;
 const common_1 = require("@nestjs/common");
 const comment_repository_1 = require("./comment.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const comment_entity_1 = require("./comment.entity");
 let DomainCommentService = class DomainCommentService extends base_service_1.BaseService {
     constructor(commentRepository) {
         super(commentRepository);
         this.commentRepository = commentRepository;
+    }
+    async createComment(params, queryRunner) {
+        const comment = new comment_entity_1.Comment();
+        comment.문서를설정한다(params.documentId);
+        comment.작성자를설정한다(params.authorId);
+        comment.내용을설정한다(params.content);
+        if (params.parentCommentId) {
+            comment.부모코멘트를설정한다(params.parentCommentId);
+        }
+        return await this.commentRepository.save(comment, { queryRunner });
+    }
+    async updateComment(comment, content, queryRunner) {
+        comment.내용을설정한다(content);
+        return await this.commentRepository.save(comment, { queryRunner });
+    }
+    async deleteComment(comment, queryRunner) {
+        comment.삭제한다();
+        return await this.commentRepository.save(comment, { queryRunner });
     }
 };
 exports.DomainCommentService = DomainCommentService;

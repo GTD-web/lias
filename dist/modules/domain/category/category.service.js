@@ -13,10 +13,38 @@ exports.DomainCategoryService = void 0;
 const common_1 = require("@nestjs/common");
 const category_repository_1 = require("./category.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const category_entity_1 = require("./category.entity");
 let DomainCategoryService = class DomainCategoryService extends base_service_1.BaseService {
     constructor(categoryRepository) {
         super(categoryRepository);
         this.categoryRepository = categoryRepository;
+    }
+    async createCategory(params, queryRunner) {
+        const category = new category_entity_1.Category();
+        category.이름을설정한다(params.name);
+        category.코드를설정한다(params.code);
+        if (params.description) {
+            category.설명을설정한다(params.description);
+        }
+        if (params.order !== undefined) {
+            category.정렬순서를설정한다(params.order);
+        }
+        return await this.categoryRepository.save(category, { queryRunner });
+    }
+    async updateCategory(category, params, queryRunner) {
+        if (params.name) {
+            category.이름을설정한다(params.name);
+        }
+        if (params.code) {
+            category.코드를설정한다(params.code);
+        }
+        if (params.description !== undefined) {
+            category.설명을설정한다(params.description);
+        }
+        if (params.order !== undefined) {
+            category.정렬순서를설정한다(params.order);
+        }
+        return await this.categoryRepository.save(category, { queryRunner });
     }
 };
 exports.DomainCategoryService = DomainCategoryService;

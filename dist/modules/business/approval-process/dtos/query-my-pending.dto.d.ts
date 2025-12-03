@@ -4,7 +4,6 @@ export declare enum MyPendingType {
     APPROVAL = "APPROVAL"
 }
 export declare class QueryMyPendingDto {
-    userId: string;
     type: MyPendingType;
     page?: number;
     limit?: number;

@@ -10,9 +10,7 @@ exports.DocumentBusinessModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const document_controller_1 = require("./controllers/document.controller");
-const test_data_controller_1 = require("./controllers/test-data.controller");
 const document_service_1 = require("./services/document.service");
-const test_data_service_1 = require("./services/test-data.service");
 const document_module_1 = require("../../context/document/document.module");
 const template_module_1 = require("../../context/template/template.module");
 const approval_process_module_1 = require("../../context/approval-process/approval-process.module");
@@ -48,8 +46,8 @@ exports.DocumentBusinessModule = DocumentBusinessModule = __decorate([
                 category_entity_1.Category,
             ]),
         ],
-        controllers: [document_controller_1.DocumentController, test_data_controller_1.TestDataController],
-        providers: [document_service_1.DocumentService, test_data_service_1.TestDataService],
+        controllers: [document_controller_1.DocumentController],
+        providers: [document_service_1.DocumentService],
     })
 ], DocumentBusinessModule);
 //# sourceMappingURL=document.module.js.map

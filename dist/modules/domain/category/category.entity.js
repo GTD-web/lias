@@ -13,6 +13,18 @@ exports.Category = void 0;
 const typeorm_1 = require("typeorm");
 const document_template_entity_1 = require("../document-template/document-template.entity");
 let Category = class Category {
+    이름을설정한다(name) {
+        this.name = name;
+    }
+    코드를설정한다(code) {
+        this.code = code;
+    }
+    설명을설정한다(description) {
+        this.description = description;
+    }
+    정렬순서를설정한다(order) {
+        this.order = order;
+    }
 };
 exports.Category = Category;
 __decorate([

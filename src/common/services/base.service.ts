@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IRepository } from '../interfaces/repository.interface';
 import { IService } from '../interfaces/service.interface';
 import { IRepositoryOptions } from '../interfaces/repository.interface';
@@ -45,5 +45,21 @@ export abstract class BaseService<T extends ObjectLiteral> implements IService<T
 
     async delete(entityId: string, options?: IRepositoryOptions<T>): Promise<void> {
         return this.repository.delete(entityId, options);
+    }
+
+    async findOneWithError(options: IRepositoryOptions<T>): Promise<T> {
+        const entity = await this.findOne(options);
+        if (!entity) {
+            throw new NotFoundException(`${this.repository.constructor.name}를 찾을 수 없습니다.`);
+        }
+        return entity;
+    }
+
+    async findAllWithError(options: IRepositoryOptions<T>): Promise<T[]> {
+        const entities = await this.findAll(options);
+        if (entities.length === 0) {
+            throw new NotFoundException(`${this.repository.constructor.name} 목록을 찾을 수 없습니다.`);
+        }
+        return entities;
     }
 }

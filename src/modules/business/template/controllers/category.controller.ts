@@ -26,7 +26,8 @@ export class CategoryController {
             '- ✅ 정상: 최소 필드만으로 카테고리 생성\n' +
             '- ❌ 실패: 필수 필드 누락 (name)\n' +
             '- ❌ 실패: 필수 필드 누락 (code)\n' +
-            '- ❌ 실패: 중복된 코드',
+            '- ❌ 실패: 중복된 코드\n' +
+            '- ❌ 실패: 인증 토큰 없이 요청',
     })
     @ApiResponse({
         status: 201,
@@ -51,7 +52,8 @@ export class CategoryController {
         description:
             '모든 카테고리 목록을 조회합니다. 정렬 순서대로 반환됩니다.\n\n' +
             '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 카테고리 목록 조회',
+            '- ✅ 정상: 카테고리 목록 조회\n' +
+            '- ✅ 정상: 정렬 순서대로 반환',
     })
     @ApiResponse({
         status: 200,
@@ -105,6 +107,7 @@ export class CategoryController {
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 카테고리 수정\n' +
             '- ✅ 정상: 부분 수정 (name만)\n' +
+            '- ✅ 정상: description 수정\n' +
             '- ❌ 실패: 존재하지 않는 카테고리 ID',
     })
     @ApiParam({
