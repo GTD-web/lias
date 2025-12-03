@@ -1,7 +1,10 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { DocumentContext } from '../../../context/document/document.context';
+import { DocumentQueryService } from '../../../context/document/document-query.service';
 import { NotificationContext } from '../../../context/notification/notification.context';
+import { withTransaction } from 'src/common/utils/transaction.util';
 import {
     ApproveStepDto,
     RejectStepDto,
@@ -21,8 +24,10 @@ export class ApprovalProcessService {
     private readonly logger = new Logger(ApprovalProcessService.name);
 
     constructor(
+        private readonly dataSource: DataSource,
         private readonly approvalProcessContext: ApprovalProcessContext,
         private readonly documentContext: DocumentContext,
+        private readonly documentQueryService: DocumentQueryService,
         private readonly notificationContext: NotificationContext,
     ) {}
 
@@ -31,9 +36,15 @@ export class ApprovalProcessService {
      */
     async approveStep(dto: ApproveStepDto, approverId: string) {
         this.logger.log(`결재 승인 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.approveStep({
-            ...dto,
-            approverId: approverId,
+
+        const result = await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.approveStep(
+                {
+                    ...dto,
+                    approverId: approverId,
+                },
+                queryRunner,
+            );
         });
 
         // 알림 전송 (비동기)
@@ -49,9 +60,15 @@ export class ApprovalProcessService {
      */
     async rejectStep(dto: RejectStepDto, rejecterId: string) {
         this.logger.log(`결재 반려 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.rejectStep({
-            ...dto,
-            approverId: rejecterId,
+
+        const result = await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.rejectStep(
+                {
+                    ...dto,
+                    approverId: rejecterId,
+                },
+                queryRunner,
+            );
         });
 
         // 알림 전송 (비동기)
@@ -67,9 +84,15 @@ export class ApprovalProcessService {
      */
     async completeAgreement(dto: CompleteAgreementDto, agreerId: string) {
         this.logger.log(`협의 완료 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.completeAgreement({
-            ...dto,
-            agreerId: agreerId,
+
+        const result = await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.completeAgreement(
+                {
+                    ...dto,
+                    agreerId: agreerId,
+                },
+                queryRunner,
+            );
         });
 
         // 알림 전송 (비동기)
@@ -85,9 +108,15 @@ export class ApprovalProcessService {
      */
     async completeImplementation(dto: CompleteImplementationDto, implementerId: string) {
         this.logger.log(`시행 완료 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.completeImplementation({
-            ...dto,
-            implementerId: implementerId,
+
+        const result = await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.completeImplementation(
+                {
+                    ...dto,
+                    implementerId: implementerId,
+                },
+                queryRunner,
+            );
         });
 
         // 알림 전송 (비동기)
@@ -105,10 +134,16 @@ export class ApprovalProcessService {
      */
     async markReferenceRead(dto: { stepSnapshotId: string; comment?: string }, referenceUserId: string) {
         this.logger.log(`참조 열람 확인 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.markReferenceRead({
-            stepSnapshotId: dto.stepSnapshotId,
-            referenceUserId: referenceUserId,
-            comment: dto.comment,
+
+        const result = await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.markReferenceRead(
+                {
+                    stepSnapshotId: dto.stepSnapshotId,
+                    referenceUserId: referenceUserId,
+                    comment: dto.comment,
+                },
+                queryRunner,
+            );
         });
 
         return result;
@@ -119,9 +154,15 @@ export class ApprovalProcessService {
      */
     async cancelApproval(dto: CancelApprovalDto, cancelerId: string) {
         this.logger.log(`결재 취소 요청: ${dto.documentId}`);
-        return await this.approvalProcessContext.cancelApproval({
-            ...dto,
-            requesterId: cancelerId,
+
+        return await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.cancelApproval(
+                {
+                    ...dto,
+                    requesterId: cancelerId,
+                },
+                queryRunner,
+            );
         });
     }
 
@@ -253,7 +294,7 @@ export class ApprovalProcessService {
         approverEmployeeNumber: string,
     ): Promise<void> {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
 
             await this.notificationContext.sendNotificationAfterApprove({
@@ -277,7 +318,7 @@ export class ApprovalProcessService {
         rejecterEmployeeNumber: string,
     ): Promise<void> {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
 
             await this.notificationContext.sendNotificationAfterReject({
                 document,
@@ -295,7 +336,7 @@ export class ApprovalProcessService {
      */
     private async sendCompleteAgreementNotification(documentId: string, agreerEmployeeNumber: string): Promise<void> {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
 
             await this.notificationContext.sendNotificationAfterCompleteAgreement({
@@ -317,7 +358,7 @@ export class ApprovalProcessService {
         implementerEmployeeNumber: string,
     ): Promise<void> {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
 
             await this.notificationContext.sendNotificationAfterCompleteImplementation({

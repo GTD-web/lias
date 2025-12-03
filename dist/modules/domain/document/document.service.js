@@ -13,10 +13,63 @@ exports.DomainDocumentService = void 0;
 const common_1 = require("@nestjs/common");
 const document_repository_1 = require("./document.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const document_entity_1 = require("./document.entity");
 let DomainDocumentService = class DomainDocumentService extends base_service_1.BaseService {
     constructor(documentRepository) {
         super(documentRepository);
         this.documentRepository = documentRepository;
+    }
+    async createDocument(dto, queryRunner) {
+        const document = new document_entity_1.Document();
+        if (dto.title) {
+            document.제목을설정한다(dto.title);
+        }
+        if (dto.content) {
+            document.내용을설정한다(dto.content);
+        }
+        if (dto.drafterId) {
+            document.기안자를설정한다(dto.drafterId);
+        }
+        if (dto.documentTemplateId) {
+            document.문서템플릿을설정한다(dto.documentTemplateId);
+        }
+        if (dto.metadata) {
+            document.메타데이터를설정한다(dto.metadata);
+        }
+        if (dto.comment) {
+            document.비고를설정한다(dto.comment);
+        }
+        document.임시저장한다();
+        return await this.documentRepository.save(document, { queryRunner });
+    }
+    async updateDocument(document, dto, queryRunner) {
+        if (dto.title) {
+            document.제목을설정한다(dto.title);
+        }
+        if (dto.content) {
+            document.내용을설정한다(dto.content);
+        }
+        if (dto.drafterId) {
+            document.기안자를설정한다(dto.drafterId);
+        }
+        if (dto.documentTemplateId) {
+            document.문서템플릿을설정한다(dto.documentTemplateId);
+        }
+        if (dto.metadata) {
+            document.메타데이터를설정한다(dto.metadata);
+        }
+        if (dto.comment) {
+            document.비고를설정한다(dto.comment);
+        }
+        return await this.documentRepository.save(document, { queryRunner });
+    }
+    async submitDocument(document, documentNumber, documentTemplateId, queryRunner) {
+        document.문서번호를설정한다(documentNumber);
+        if (documentTemplateId) {
+            document.문서템플릿을설정한다(documentTemplateId);
+        }
+        document.상신한다();
+        return await this.documentRepository.save(document, { queryRunner });
     }
 };
 exports.DomainDocumentService = DomainDocumentService;

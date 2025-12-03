@@ -17,6 +17,62 @@ const approval_step_snapshot_entity_1 = require("../approval-step-snapshot/appro
 const document_revision_entity_1 = require("../document-revision/document-revision.entity");
 const comment_entity_1 = require("../comment/comment.entity");
 let Document = class Document {
+    문서번호를설정한다(documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+    제목을설정한다(title) {
+        this.title = title;
+    }
+    내용을설정한다(content) {
+        this.content = content;
+    }
+    비고를설정한다(comment) {
+        this.comment = comment;
+    }
+    메타데이터를설정한다(metadata) {
+        this.metadata = metadata;
+    }
+    기안자를설정한다(drafterId) {
+        this.drafterId = drafterId;
+    }
+    문서템플릿을설정한다(documentTemplateId) {
+        this.documentTemplateId = documentTemplateId;
+    }
+    보존연한을설정한다(retentionPeriod) {
+        this.retentionPeriod = retentionPeriod;
+    }
+    보존연한단위를설정한다(retentionPeriodUnit) {
+        this.retentionPeriodUnit = retentionPeriodUnit;
+    }
+    보존연한시작일을설정한다(retentionStartDate) {
+        this.retentionStartDate = retentionStartDate;
+    }
+    보존연한종료일을설정한다(retentionEndDate) {
+        this.retentionEndDate = retentionEndDate;
+    }
+    임시저장한다() {
+        this.status = approval_enum_1.DocumentStatus.DRAFT;
+    }
+    상신한다() {
+        this.status = approval_enum_1.DocumentStatus.PENDING;
+        this.submittedAt = new Date();
+    }
+    승인완료한다() {
+        this.status = approval_enum_1.DocumentStatus.APPROVED;
+        this.approvedAt = new Date();
+    }
+    반려한다() {
+        this.status = approval_enum_1.DocumentStatus.REJECTED;
+        this.rejectedAt = new Date();
+    }
+    취소한다(reason) {
+        this.status = approval_enum_1.DocumentStatus.CANCELLED;
+        this.cancelReason = reason;
+        this.cancelledAt = new Date();
+    }
+    시행완료한다() {
+        this.status = approval_enum_1.DocumentStatus.IMPLEMENTED;
+    }
 };
 exports.Document = Document;
 __decorate([

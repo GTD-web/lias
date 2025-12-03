@@ -38,15 +38,6 @@ class UpdateCommentDto {
 exports.UpdateCommentDto = UpdateCommentDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '작성자 ID (본인 확인용)',
-        example: '550e8400-e29b-41d4-a716-446655440001',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], UpdateCommentDto.prototype, "authorId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
         description: '코멘트 내용',
         example: '수정된 코멘트 내용입니다.',
     }),

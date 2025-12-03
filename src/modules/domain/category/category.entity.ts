@@ -34,4 +34,34 @@ export class Category {
     // Relations
     @OneToMany(() => DocumentTemplate, (template) => template.category)
     documentTemplates: DocumentTemplate[];
+
+    // ==================== Setter 메서드 ====================
+
+    /**
+     * 이름을 설정한다
+     */
+    이름을설정한다(name: string): void {
+        this.name = name;
+    }
+
+    /**
+     * 코드를 설정한다
+     */
+    코드를설정한다(code: string): void {
+        this.code = code;
+    }
+
+    /**
+     * 설명을 설정한다
+     */
+    설명을설정한다(description?: string): void {
+        this.description = description;
+    }
+
+    /**
+     * 정렬 순서를 설정한다
+     */
+    정렬순서를설정한다(order: number): void {
+        this.order = order;
+    }
 }

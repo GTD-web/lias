@@ -1,87 +1,22 @@
-import { DataSource, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 import { DomainDocumentTemplateService } from '../../domain/document-template/document-template.service';
 import { DomainApprovalStepTemplateService } from '../../domain/approval-step-template/approval-step-template.service';
 import { DomainCategoryService } from '../../domain/category/category.service';
-import { DomainEmployeeService } from '../../domain/employee/employee.service';
-import { DomainDepartmentService } from '../../domain/department/department.service';
-import { DomainPositionService } from '../../domain/position/position.service';
-import { DocumentTemplateStatus } from '../../../common/enums/approval.enum';
 import { CreateDocumentTemplateDto, UpdateDocumentTemplateDto, CreateApprovalStepTemplateDto, UpdateApprovalStepTemplateDto } from './dtos/template.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dtos/category.dto';
 export declare class TemplateContext {
-    private readonly dataSource;
     private readonly documentTemplateService;
     private readonly approvalStepTemplateService;
     private readonly categoryService;
-    private readonly employeeService;
-    private readonly departmentService;
-    private readonly positionService;
     private readonly logger;
-    constructor(dataSource: DataSource, documentTemplateService: DomainDocumentTemplateService, approvalStepTemplateService: DomainApprovalStepTemplateService, categoryService: DomainCategoryService, employeeService: DomainEmployeeService, departmentService: DomainDepartmentService, positionService: DomainPositionService);
-    createDocumentTemplate(dto: CreateDocumentTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").DocumentTemplate>;
-    updateDocumentTemplate(templateId: string, dto: UpdateDocumentTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").DocumentTemplate>;
-    deleteDocumentTemplate(templateId: string, externalQueryRunner?: QueryRunner): Promise<void>;
-    getDocumentTemplate(templateId: string): Promise<import("../../domain").DocumentTemplate>;
-    getDocumentTemplateWithMappedApprovers(templateId: string, drafterId: string): Promise<{
-        drafter: {
-            id: string;
-            employeeNumber: string;
-            name: string;
-            email: string;
-            department: {
-                id: string;
-                departmentName: string;
-                departmentCode: string;
-            };
-            position: {
-                id: string;
-                positionTitle: string;
-                positionCode: string;
-                level: number;
-            };
-        };
-        approvalStepTemplates: any[];
-        id: string;
-        name: string;
-        code: string;
-        description?: string;
-        status: DocumentTemplateStatus;
-        template: string;
-        categoryId?: string;
-        createdAt: Date;
-        updatedAt: Date;
-        category?: import("../../domain").Category;
-    }>;
-    private findDirectSuperior;
-    private findHierarchyApprovers;
-    private isDepartmentHead;
-    private findDepartmentHead;
-    private getDepartmentPathToRoot;
-    private findEmployeesByDepartmentAndPosition;
-    private findDepartmentEmployees;
-    getDocumentTemplates(query: {
-        searchKeyword?: string;
-        categoryId?: string;
-        status?: DocumentTemplateStatus;
-        sortOrder?: 'LATEST' | 'OLDEST';
-        page?: number;
-        limit?: number;
-    }): Promise<{
-        data: any[];
-        pagination: {
-            page: number;
-            limit: number;
-            totalItems: number;
-            totalPages: number;
-        };
-    }>;
-    createApprovalStepTemplate(dto: CreateApprovalStepTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalStepTemplate>;
-    updateApprovalStepTemplate(stepId: string, dto: UpdateApprovalStepTemplateDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").ApprovalStepTemplate>;
-    deleteApprovalStepTemplate(stepId: string, externalQueryRunner?: QueryRunner): Promise<void>;
-    getApprovalStepTemplatesByDocumentTemplate(documentTemplateId: string): Promise<any[]>;
-    createCategory(dto: CreateCategoryDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").Category>;
-    updateCategory(categoryId: string, dto: UpdateCategoryDto, externalQueryRunner?: QueryRunner): Promise<import("../../domain").Category>;
-    deleteCategory(categoryId: string, externalQueryRunner?: QueryRunner): Promise<void>;
-    getCategory(categoryId: string): Promise<import("../../domain").Category>;
-    getCategories(): Promise<import("../../domain").Category[]>;
+    constructor(documentTemplateService: DomainDocumentTemplateService, approvalStepTemplateService: DomainApprovalStepTemplateService, categoryService: DomainCategoryService);
+    createDocumentTemplate(dto: CreateDocumentTemplateDto, queryRunner?: QueryRunner): Promise<import("../../domain").DocumentTemplate>;
+    updateDocumentTemplate(templateId: string, dto: UpdateDocumentTemplateDto, queryRunner?: QueryRunner): Promise<import("../../domain").DocumentTemplate>;
+    deleteDocumentTemplate(templateId: string, queryRunner?: QueryRunner): Promise<void>;
+    createApprovalStepTemplate(dto: CreateApprovalStepTemplateDto, queryRunner?: QueryRunner): Promise<import("../../domain").ApprovalStepTemplate>;
+    updateApprovalStepTemplate(stepId: string, dto: UpdateApprovalStepTemplateDto, queryRunner?: QueryRunner): Promise<import("../../domain").ApprovalStepTemplate>;
+    deleteApprovalStepTemplate(stepId: string, queryRunner?: QueryRunner): Promise<void>;
+    createCategory(dto: CreateCategoryDto, queryRunner?: QueryRunner): Promise<import("../../domain").Category>;
+    updateCategory(categoryId: string, dto: UpdateCategoryDto, queryRunner?: QueryRunner): Promise<import("../../domain").Category>;
+    deleteCategory(categoryId: string, queryRunner?: QueryRunner): Promise<void>;
 }

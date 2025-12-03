@@ -44,6 +44,17 @@ export class NotificationService {
      * @returns 알림 전송 결과
      */
     async sendNotification(dto: SendNotificationDto, authorization?: string): Promise<SendNotificationResponseDto> {
+        const isLocal = process.env.NODE_ENV === 'local';
+        if (isLocal) {
+            return {
+                success: true,
+                message: '알림 미전송 (로컬 환경)',
+                notificationIds: [],
+                successCount: dto.recipients.length,
+                failureCount: 0,
+            };
+        }
+
         // 유효성 검증
         this.validateRequest(dto);
 

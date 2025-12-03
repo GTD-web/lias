@@ -19,13 +19,6 @@ export enum MyPendingType {
  */
 export class QueryMyPendingDto {
     @ApiProperty({
-        description: '사용자 ID (기안자 또는 결재자)',
-        example: 'uuid',
-    })
-    @IsUUID()
-    userId: string;
-
-    @ApiProperty({
         description: '조회 타입 (상신/합의/미결)',
         enum: MyPendingType,
         example: MyPendingType.APPROVAL,

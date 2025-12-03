@@ -12,22 +12,29 @@ var ApprovalProcessService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApprovalProcessService = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("typeorm");
 const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
 const document_context_1 = require("../../../context/document/document.context");
+const document_query_service_1 = require("../../../context/document/document-query.service");
 const notification_context_1 = require("../../../context/notification/notification.context");
+const transaction_util_1 = require("../../../../common/utils/transaction.util");
 const dtos_1 = require("../dtos");
 let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessService {
-    constructor(approvalProcessContext, documentContext, notificationContext) {
+    constructor(dataSource, approvalProcessContext, documentContext, documentQueryService, notificationContext) {
+        this.dataSource = dataSource;
         this.approvalProcessContext = approvalProcessContext;
         this.documentContext = documentContext;
+        this.documentQueryService = documentQueryService;
         this.notificationContext = notificationContext;
         this.logger = new common_1.Logger(ApprovalProcessService_1.name);
     }
     async approveStep(dto, approverId) {
         this.logger.log(`결재 승인 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.approveStep({
-            ...dto,
-            approverId: approverId,
+        const result = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.approveStep({
+                ...dto,
+                approverId: approverId,
+            }, queryRunner);
         });
         this.sendApproveNotification(result.documentId, result.id, result.approver.employeeNumber).catch((error) => {
             this.logger.error('결재 승인 알림 전송 실패', error);
@@ -36,9 +43,11 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async rejectStep(dto, rejecterId) {
         this.logger.log(`결재 반려 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.rejectStep({
-            ...dto,
-            approverId: rejecterId,
+        const result = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.rejectStep({
+                ...dto,
+                approverId: rejecterId,
+            }, queryRunner);
         });
         this.sendRejectNotification(result.documentId, dto.comment, result.approver.employeeNumber).catch((error) => {
             this.logger.error('결재 반려 알림 전송 실패', error);
@@ -47,9 +56,11 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async completeAgreement(dto, agreerId) {
         this.logger.log(`협의 완료 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.completeAgreement({
-            ...dto,
-            agreerId: agreerId,
+        const result = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.completeAgreement({
+                ...dto,
+                agreerId: agreerId,
+            }, queryRunner);
         });
         this.sendCompleteAgreementNotification(result.documentId, result.approver.employeeNumber).catch((error) => {
             this.logger.error('협의 완료 알림 전송 실패', error);
@@ -58,9 +69,11 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async completeImplementation(dto, implementerId) {
         this.logger.log(`시행 완료 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.completeImplementation({
-            ...dto,
-            implementerId: implementerId,
+        const result = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.completeImplementation({
+                ...dto,
+                implementerId: implementerId,
+            }, queryRunner);
         });
         this.sendCompleteImplementationNotification(result.documentId, result.approver.employeeNumber).catch((error) => {
             this.logger.error('시행 완료 알림 전송 실패', error);
@@ -69,18 +82,22 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async markReferenceRead(dto, referenceUserId) {
         this.logger.log(`참조 열람 확인 요청: ${dto.stepSnapshotId}`);
-        const result = await this.approvalProcessContext.markReferenceRead({
-            stepSnapshotId: dto.stepSnapshotId,
-            referenceUserId: referenceUserId,
-            comment: dto.comment,
+        const result = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.markReferenceRead({
+                stepSnapshotId: dto.stepSnapshotId,
+                referenceUserId: referenceUserId,
+                comment: dto.comment,
+            }, queryRunner);
         });
         return result;
     }
     async cancelApproval(dto, cancelerId) {
         this.logger.log(`결재 취소 요청: ${dto.documentId}`);
-        return await this.approvalProcessContext.cancelApproval({
-            ...dto,
-            requesterId: cancelerId,
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.cancelApproval({
+                ...dto,
+                requesterId: cancelerId,
+            }, queryRunner);
         });
     }
     async getMyPendingApprovals(userId, type, page, limit) {
@@ -155,7 +172,7 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async sendApproveNotification(documentId, currentStepId, approverEmployeeNumber) {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
             await this.notificationContext.sendNotificationAfterApprove({
                 document,
@@ -171,7 +188,7 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async sendRejectNotification(documentId, rejectReason, rejecterEmployeeNumber) {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             await this.notificationContext.sendNotificationAfterReject({
                 document,
                 rejectReason,
@@ -185,7 +202,7 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async sendCompleteAgreementNotification(documentId, agreerEmployeeNumber) {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
             await this.notificationContext.sendNotificationAfterCompleteAgreement({
                 document,
@@ -200,7 +217,7 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     }
     async sendCompleteImplementationNotification(documentId, implementerEmployeeNumber) {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
             await this.notificationContext.sendNotificationAfterCompleteImplementation({
                 document,
@@ -217,8 +234,10 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
 exports.ApprovalProcessService = ApprovalProcessService;
 exports.ApprovalProcessService = ApprovalProcessService = ApprovalProcessService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [approval_process_context_1.ApprovalProcessContext,
+    __metadata("design:paramtypes", [typeorm_1.DataSource,
+        approval_process_context_1.ApprovalProcessContext,
         document_context_1.DocumentContext,
+        document_query_service_1.DocumentQueryService,
         notification_context_1.NotificationContext])
 ], ApprovalProcessService);
 //# sourceMappingURL=approval-process.service.js.map

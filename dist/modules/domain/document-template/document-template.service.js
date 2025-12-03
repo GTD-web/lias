@@ -13,10 +13,48 @@ exports.DomainDocumentTemplateService = void 0;
 const common_1 = require("@nestjs/common");
 const document_template_repository_1 = require("./document-template.repository");
 const base_service_1 = require("../../../common/services/base.service");
+const document_template_entity_1 = require("./document-template.entity");
 let DomainDocumentTemplateService = class DomainDocumentTemplateService extends base_service_1.BaseService {
     constructor(documentTemplateRepository) {
         super(documentTemplateRepository);
         this.documentTemplateRepository = documentTemplateRepository;
+    }
+    async createDocumentTemplate(params, queryRunner) {
+        const documentTemplate = new document_template_entity_1.DocumentTemplate();
+        documentTemplate.이름을설정한다(params.name);
+        documentTemplate.코드를설정한다(params.code);
+        documentTemplate.템플릿을설정한다(params.template);
+        if (params.description) {
+            documentTemplate.설명을설정한다(params.description);
+        }
+        if (params.categoryId) {
+            documentTemplate.카테고리를설정한다(params.categoryId);
+        }
+        if (params.status) {
+            documentTemplate.상태를설정한다(params.status);
+        }
+        return await this.documentTemplateRepository.save(documentTemplate, { queryRunner });
+    }
+    async updateDocumentTemplate(documentTemplate, params, queryRunner) {
+        if (params.name) {
+            documentTemplate.이름을설정한다(params.name);
+        }
+        if (params.code) {
+            documentTemplate.코드를설정한다(params.code);
+        }
+        if (params.description !== undefined) {
+            documentTemplate.설명을설정한다(params.description);
+        }
+        if (params.template) {
+            documentTemplate.템플릿을설정한다(params.template);
+        }
+        if (params.categoryId !== undefined) {
+            documentTemplate.카테고리를설정한다(params.categoryId);
+        }
+        if (params.status) {
+            documentTemplate.상태를설정한다(params.status);
+        }
+        return await this.documentTemplateRepository.save(documentTemplate, { queryRunner });
     }
 };
 exports.DomainDocumentTemplateService = DomainDocumentTemplateService;

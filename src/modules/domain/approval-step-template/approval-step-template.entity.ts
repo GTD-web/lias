@@ -78,4 +78,55 @@ export class ApprovalStepTemplate {
     @ManyToOne(() => Position, { nullable: true })
     @JoinColumn({ name: 'targetPositionId' })
     targetPosition?: Position;
+
+    // ==================== Setter 메서드 ====================
+
+    /**
+     * 문서 템플릿을 설정한다
+     */
+    문서템플릿을설정한다(documentTemplateId: string): void {
+        this.documentTemplateId = documentTemplateId;
+    }
+
+    /**
+     * 결재 단계 순서를 설정한다
+     */
+    결재단계순서를설정한다(stepOrder: number): void {
+        this.stepOrder = stepOrder;
+    }
+
+    /**
+     * 결재 단계 타입을 설정한다
+     */
+    결재단계타입을설정한다(stepType: ApprovalStepType): void {
+        this.stepType = stepType;
+    }
+
+    /**
+     * 결재자 할당 규칙을 설정한다
+     */
+    결재자할당규칙을설정한다(assigneeRule: AssigneeRule): void {
+        this.assigneeRule = assigneeRule;
+    }
+
+    /**
+     * 대상 직원을 설정한다
+     */
+    대상직원을설정한다(targetEmployeeId?: string): void {
+        this.targetEmployeeId = targetEmployeeId;
+    }
+
+    /**
+     * 대상 부서를 설정한다
+     */
+    대상부서를설정한다(targetDepartmentId?: string): void {
+        this.targetDepartmentId = targetDepartmentId;
+    }
+
+    /**
+     * 대상 직책을 설정한다
+     */
+    대상직책을설정한다(targetPositionId?: string): void {
+        this.targetPositionId = targetPositionId;
+    }
 }

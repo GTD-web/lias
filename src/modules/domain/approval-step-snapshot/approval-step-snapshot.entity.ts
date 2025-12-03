@@ -94,4 +94,47 @@ export class ApprovalStepSnapshot {
     @ManyToOne(() => Employee)
     @JoinColumn({ name: 'approverId' })
     approver: Employee;
+
+    // Setter 메서드들
+    문서를설정한다(documentId: string): void {
+        this.documentId = documentId;
+    }
+
+    결재단계순서를설정한다(stepOrder: number): void {
+        this.stepOrder = stepOrder;
+    }
+
+    결재단계타입을설정한다(stepType: ApprovalStepType): void {
+        this.stepType = stepType;
+    }
+
+    결재자를설정한다(approverId: string): void {
+        this.approverId = approverId;
+    }
+
+    결재자스냅샷을설정한다(approverSnapshot: ApproverSnapshotMetadata): void {
+        this.approverSnapshot = approverSnapshot;
+    }
+
+    의견을설정한다(comment: string): void {
+        this.comment = comment;
+    }
+
+    // 상태 관련 메서드들
+    승인한다(): void {
+        this.status = ApprovalStatus.APPROVED;
+        this.approvedAt = new Date();
+    }
+
+    반려한다(): void {
+        this.status = ApprovalStatus.REJECTED;
+    }
+
+    대기한다(): void {
+        this.status = ApprovalStatus.PENDING;
+    }
+
+    취소한다(): void {
+        this.status = ApprovalStatus.CANCELLED;
+    }
 }

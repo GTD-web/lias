@@ -16,4 +16,11 @@ export declare class ApprovalStepTemplate {
     targetEmployee?: Employee;
     targetDepartment?: Department;
     targetPosition?: Position;
+    문서템플릿을설정한다(documentTemplateId: string): void;
+    결재단계순서를설정한다(stepOrder: number): void;
+    결재단계타입을설정한다(stepType: ApprovalStepType): void;
+    결재자할당규칙을설정한다(assigneeRule: AssigneeRule): void;
+    대상직원을설정한다(targetEmployeeId?: string): void;
+    대상부서를설정한다(targetDepartmentId?: string): void;
+    대상직책을설정한다(targetPositionId?: string): void;
 }

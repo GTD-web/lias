@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DocumentController } from './controllers/document.controller';
-import { TestDataController } from './controllers/test-data.controller';
 import { DocumentService } from './services/document.service';
-import { TestDataService } from './services/test-data.service';
 import { DocumentModule as DocumentContextModule } from '../../context/document/document.module';
 import { TemplateModule as TemplateContextModule } from '../../context/template/template.module';
 import { ApprovalProcessModule as ApprovalProcessContextModule } from '../../context/approval-process/approval-process.module';
@@ -40,7 +38,7 @@ import { Category } from '../../domain/category/category.entity';
             Category,
         ]),
     ],
-    controllers: [DocumentController, TestDataController],
-    providers: [DocumentService, TestDataService],
+    controllers: [DocumentController],
+    providers: [DocumentService],
 })
 export class DocumentBusinessModule {}

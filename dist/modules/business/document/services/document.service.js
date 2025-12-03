@@ -13,15 +13,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentService = void 0;
 const common_1 = require("@nestjs/common");
 const document_context_1 = require("../../../context/document/document.context");
+const document_query_service_1 = require("../../../context/document/document-query.service");
 const template_context_1 = require("../../../context/template/template.context");
 const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
 const notification_context_1 = require("../../../context/notification/notification.context");
 const comment_context_1 = require("../../../context/comment/comment.context");
-const approval_enum_1 = require("../../../../common/enums/approval.enum");
+const transaction_util_1 = require("../../../../common/utils/transaction.util");
+const typeorm_1 = require("typeorm");
+const approver_mapping_service_1 = require("../../../context/template/approver-mapping.service");
+const document_policy_validator_1 = require("../../../../common/utils/document-policy.validator");
 let DocumentService = DocumentService_1 = class DocumentService {
-    constructor(documentContext, templateContext, approvalProcessContext, notificationContext, commentContext) {
+    constructor(dataSource, documentContext, documentQueryService, templateContext, approverMappingService, approvalProcessContext, notificationContext, commentContext) {
+        this.dataSource = dataSource;
         this.documentContext = documentContext;
+        this.documentQueryService = documentQueryService;
         this.templateContext = templateContext;
+        this.approverMappingService = approverMappingService;
         this.approvalProcessContext = approvalProcessContext;
         this.notificationContext = notificationContext;
         this.commentContext = commentContext;
@@ -41,11 +48,22 @@ let DocumentService = DocumentService_1 = class DocumentService {
                 approverId: step.approverId,
             })),
         };
-        return await this.documentContext.createDocument(contextDto);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const document = await this.documentContext.createDocument(contextDto, queryRunner);
+            if (dto.approvalSteps && dto.approvalSteps.length > 0) {
+                await this.documentContext.createApprovalStepSnapshots(document.id, dto.approvalSteps, queryRunner);
+            }
+            return document;
+        });
     }
     async updateDocument(documentId, dto) {
         this.logger.log(`문서 수정 시작: ${documentId}`);
-        const contextDto = {
+        const document = await this.documentQueryService.getDocument(documentId);
+        document_policy_validator_1.DocumentPolicyValidator.validateDrafterActionOrThrow(document.status, document_policy_validator_1.DrafterAction.UPDATE_CONTENT);
+        if (dto.approvalSteps !== undefined) {
+            document_policy_validator_1.DocumentPolicyValidator.validateDrafterActionOrThrow(document.status, document_policy_validator_1.DrafterAction.UPDATE_APPROVAL_LINE);
+        }
+        const fullContextDto = {
             title: dto.title,
             content: dto.content,
             comment: dto.comment,
@@ -56,22 +74,28 @@ let DocumentService = DocumentService_1 = class DocumentService {
                 approverId: step.approverId,
             })),
         };
-        return await this.documentContext.updateDocument(documentId, contextDto);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.documentContext.updateDocument(documentId, fullContextDto, queryRunner);
+        });
     }
     async deleteDocument(documentId) {
         this.logger.log(`문서 삭제 시작: ${documentId}`);
+        const document = await this.documentQueryService.getDocument(documentId);
+        document_policy_validator_1.DocumentPolicyValidator.validateDrafterActionOrThrow(document.status, document_policy_validator_1.DrafterAction.DELETE);
         return await this.documentContext.deleteDocument(documentId);
     }
     async getDocument(documentId) {
         this.logger.debug(`문서 조회: ${documentId}`);
-        return await this.documentContext.getDocument(documentId);
+        return await this.documentQueryService.getDocument(documentId);
     }
     async getDocuments(filter) {
         this.logger.debug('문서 목록 조회', filter);
-        return await this.documentContext.getDocuments(filter);
+        return await this.documentQueryService.getDocuments(filter);
     }
     async submitDocument(dto) {
         this.logger.log(`문서 기안 시작: ${dto.documentId}`);
+        const document = await this.documentQueryService.getDocument(dto.documentId);
+        document_policy_validator_1.DocumentPolicyValidator.validateDrafterActionOrThrow(document.status, document_policy_validator_1.DrafterAction.SUBMIT);
         const contextDto = {
             documentId: dto.documentId,
             documentTemplateId: dto.documentTemplateId,
@@ -81,12 +105,9 @@ let DocumentService = DocumentService_1 = class DocumentService {
                 approverId: step.approverId,
             })),
         };
-        const approvalSteps = contextDto.approvalSteps.filter((step) => step.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
-        const implementationSteps = contextDto.approvalSteps.filter((step) => step.stepType === approval_enum_1.ApprovalStepType.IMPLEMENTATION);
-        if (approvalSteps.length < 1 || implementationSteps.length < 1) {
-            throw new common_1.BadRequestException('결재 하나와 시행 하나는 필수로 필요합니다.');
-        }
-        const submittedDocument = await this.documentContext.submitDocument(contextDto);
+        const submittedDocument = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.documentContext.submitDocument(contextDto, queryRunner);
+        });
         await this.approvalProcessContext.autoApproveIfDrafterIsFirstApprover(submittedDocument.id, submittedDocument.drafterId);
         this.sendSubmitNotification(submittedDocument.id, submittedDocument.drafterId).catch((error) => {
             this.logger.error('문서 기안 알림 전송 실패', error);
@@ -94,9 +115,36 @@ let DocumentService = DocumentService_1 = class DocumentService {
         this.logger.log(`문서 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
         return submittedDocument;
     }
+    async submitDocumentDirect(dto, drafterId) {
+        this.logger.log(`바로 기안 시작: ${dto.title}`);
+        const createDto = {
+            drafterId: drafterId,
+            documentTemplateId: dto.documentTemplateId,
+            title: dto.title,
+            content: dto.content,
+            metadata: dto.metadata,
+            approvalSteps: dto.approvalSteps,
+        };
+        const submittedDocument = await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const draftDocument = await this.documentContext.createDocument(createDto, queryRunner);
+            this.logger.debug(`임시저장 완료: ${draftDocument.id}`);
+            const submitDto = {
+                documentId: draftDocument.id,
+                documentTemplateId: dto.documentTemplateId,
+                approvalSteps: dto.approvalSteps,
+            };
+            return await this.documentContext.submitDocument(submitDto, queryRunner);
+        });
+        await this.approvalProcessContext.autoApproveIfDrafterIsFirstApprover(submittedDocument.id, submittedDocument.drafterId);
+        this.sendSubmitNotification(submittedDocument.id, submittedDocument.drafterId).catch((error) => {
+            this.logger.error('바로 기안 알림 전송 실패', error);
+        });
+        this.logger.log(`바로 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
+        return submittedDocument;
+    }
     async sendSubmitNotification(documentId, drafterId) {
         try {
-            const document = await this.documentContext.getDocument(documentId);
+            const document = await this.documentQueryService.getDocument(documentId);
             const allSteps = await this.approvalProcessContext.getApprovalStepsByDocumentId(documentId);
             const drafter = document.drafter;
             if (!drafter || !drafter.employeeNumber) {
@@ -114,43 +162,25 @@ let DocumentService = DocumentService_1 = class DocumentService {
             throw error;
         }
     }
-    async submitDocumentDirect(dto, drafterId) {
-        this.logger.log(`바로 기안 시작: ${dto.title}`);
-        const createDto = {
-            documentTemplateId: dto.documentTemplateId,
-            title: dto.title,
-            content: dto.content,
-            metadata: dto.metadata,
-            approvalSteps: dto.approvalSteps,
-        };
-        const draftDocument = await this.createDocument(createDto, drafterId);
-        this.logger.debug(`임시저장 완료: ${draftDocument.id}`);
-        const submitDto = {
-            documentId: draftDocument.id,
-            documentTemplateId: dto.documentTemplateId,
-            approvalSteps: dto.approvalSteps,
-        };
-        return await this.submitDocument(submitDto);
-    }
     async getTemplateForNewDocument(templateId, drafterId) {
         this.logger.debug(`템플릿 상세 조회 (결재자 맵핑): ${templateId}, 기안자: ${drafterId}`);
-        return await this.templateContext.getDocumentTemplateWithMappedApprovers(templateId, drafterId);
+        return await this.approverMappingService.getDocumentTemplateWithMappedApprovers(templateId, drafterId);
     }
     async getDocumentStatistics(userId) {
         this.logger.debug(`문서 통계 조회: 사용자 ${userId}`);
-        return await this.documentContext.getDocumentStatistics(userId);
+        return await this.documentQueryService.getDocumentStatistics(userId);
     }
     async getMyAllDocumentsStatistics(userId) {
         this.logger.debug(`내 전체 문서 통계 조회: 사용자 ${userId}`);
-        return await this.documentContext.getMyAllDocumentsStatistics(userId);
+        return await this.documentQueryService.getMyAllDocumentsStatistics(userId);
     }
     async getMyAllDocuments(params) {
         this.logger.debug('내 전체 문서 목록 조회', params);
-        return await this.documentContext.getMyAllDocuments(params);
+        return await this.documentQueryService.getMyAllDocuments(params);
     }
     async getMyDrafts(drafterId, page, limit) {
         this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
-        return await this.documentContext.getMyDrafts(drafterId, page, limit);
+        return await this.documentQueryService.getMyDrafts(drafterId, page, limit);
     }
     async createComment(documentId, dto, authorId) {
         this.logger.log(`코멘트 작성: 문서 ${documentId}`);
@@ -185,8 +215,11 @@ let DocumentService = DocumentService_1 = class DocumentService {
 exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = DocumentService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [document_context_1.DocumentContext,
+    __metadata("design:paramtypes", [typeorm_1.DataSource,
+        document_context_1.DocumentContext,
+        document_query_service_1.DocumentQueryService,
         template_context_1.TemplateContext,
+        approver_mapping_service_1.ApproverMappingService,
         approval_process_context_1.ApprovalProcessContext,
         notification_context_1.NotificationContext,
         comment_context_1.CommentContext])

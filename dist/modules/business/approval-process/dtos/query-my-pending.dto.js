@@ -28,14 +28,6 @@ class QueryMyPendingDto {
 exports.QueryMyPendingDto = QueryMyPendingDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '사용자 ID (기안자 또는 결재자)',
-        example: 'uuid',
-    }),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], QueryMyPendingDto.prototype, "userId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
         description: '조회 타입 (상신/합의/미결)',
         enum: MyPendingType,
         example: MyPendingType.APPROVAL,

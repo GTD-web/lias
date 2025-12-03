@@ -15,6 +15,37 @@ const approval_enum_1 = require("../../../common/enums/approval.enum");
 const employee_entity_1 = require("../employee/employee.entity");
 const document_entity_1 = require("../document/document.entity");
 let ApprovalStepSnapshot = class ApprovalStepSnapshot {
+    문서를설정한다(documentId) {
+        this.documentId = documentId;
+    }
+    결재단계순서를설정한다(stepOrder) {
+        this.stepOrder = stepOrder;
+    }
+    결재단계타입을설정한다(stepType) {
+        this.stepType = stepType;
+    }
+    결재자를설정한다(approverId) {
+        this.approverId = approverId;
+    }
+    결재자스냅샷을설정한다(approverSnapshot) {
+        this.approverSnapshot = approverSnapshot;
+    }
+    의견을설정한다(comment) {
+        this.comment = comment;
+    }
+    승인한다() {
+        this.status = approval_enum_1.ApprovalStatus.APPROVED;
+        this.approvedAt = new Date();
+    }
+    반려한다() {
+        this.status = approval_enum_1.ApprovalStatus.REJECTED;
+    }
+    대기한다() {
+        this.status = approval_enum_1.ApprovalStatus.PENDING;
+    }
+    취소한다() {
+        this.status = approval_enum_1.ApprovalStatus.CANCELLED;
+    }
 };
 exports.ApprovalStepSnapshot = ApprovalStepSnapshot;
 __decorate([

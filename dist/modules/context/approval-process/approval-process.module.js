@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const approval_process_context_1 = require("./approval-process.context");
 const approval_step_snapshot_module_1 = require("../../domain/approval-step-snapshot/approval-step-snapshot.module");
 const document_module_1 = require("../../domain/document/document.module");
+const comment_module_1 = require("../../domain/comment/comment.module");
 let ApprovalProcessModule = class ApprovalProcessModule {
 };
 exports.ApprovalProcessModule = ApprovalProcessModule;
 exports.ApprovalProcessModule = ApprovalProcessModule = __decorate([
     (0, common_1.Module)({
-        imports: [approval_step_snapshot_module_1.DomainApprovalStepSnapshotModule, document_module_1.DomainDocumentModule],
+        imports: [approval_step_snapshot_module_1.DomainApprovalStepSnapshotModule, document_module_1.DomainDocumentModule, comment_module_1.DomainCommentModule],
         providers: [approval_process_context_1.ApprovalProcessContext],
         exports: [approval_process_context_1.ApprovalProcessContext],
     })

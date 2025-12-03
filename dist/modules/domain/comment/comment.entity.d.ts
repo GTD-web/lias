@@ -13,4 +13,9 @@ export declare class Comment {
     author: Employee;
     parentComment?: Comment;
     replies: Comment[];
+    문서를설정한다(documentId: string): void;
+    작성자를설정한다(authorId: string): void;
+    내용을설정한다(content: string): void;
+    부모코멘트를설정한다(parentCommentId?: string): void;
+    삭제한다(): void;
 }

@@ -1,4 +1,5 @@
 import { DocumentContext } from '../../../context/document/document.context';
+import { DocumentQueryService } from '../../../context/document/document-query.service';
 import { TemplateContext } from '../../../context/template/template.context';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { NotificationContext } from '../../../context/notification/notification.context';
@@ -6,14 +7,19 @@ import { CommentContext } from '../../../context/comment/comment.context';
 import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
 import { DocumentFilterDto } from '../../../context/document/dtos/document.dto';
 import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
+import { DataSource } from 'typeorm';
+import { ApproverMappingService } from 'src/modules/context/template/approver-mapping.service';
 export declare class DocumentService {
+    private readonly dataSource;
     private readonly documentContext;
+    private readonly documentQueryService;
     private readonly templateContext;
+    private readonly approverMappingService;
     private readonly approvalProcessContext;
     private readonly notificationContext;
     private readonly commentContext;
     private readonly logger;
-    constructor(documentContext: DocumentContext, templateContext: TemplateContext, approvalProcessContext: ApprovalProcessContext, notificationContext: NotificationContext, commentContext: CommentContext);
+    constructor(dataSource: DataSource, documentContext: DocumentContext, documentQueryService: DocumentQueryService, templateContext: TemplateContext, approverMappingService: ApproverMappingService, approvalProcessContext: ApprovalProcessContext, notificationContext: NotificationContext, commentContext: CommentContext);
     createDocument(dto: CreateDocumentDto, drafterId: string): Promise<import("../../../domain").Document>;
     updateDocument(documentId: string, dto: UpdateDocumentDto): Promise<import("../../../domain").Document>;
     deleteDocument(documentId: string): Promise<{
@@ -33,8 +39,8 @@ export declare class DocumentService {
         };
     }>;
     submitDocument(dto: SubmitDocumentDto): Promise<import("../../../domain").Document>;
-    private sendSubmitNotification;
     submitDocumentDirect(dto: SubmitDocumentDirectDto, drafterId: string): Promise<import("../../../domain").Document>;
+    private sendSubmitNotification;
     getTemplateForNewDocument(templateId: string, drafterId: string): Promise<{
         drafter: {
             id: string;
