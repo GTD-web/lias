@@ -517,6 +517,13 @@ __decorate([
     }),
     __metadata("design:type", Array)
 ], DocumentResponseDto.prototype, "approvalSteps", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '결재취소 가능 여부 (현재 사용자가 이미 승인했고, 다음 단계 수신자가 아직 미처리 상태일 때 true)',
+        example: false,
+    }),
+    __metadata("design:type", Boolean)
+], DocumentResponseDto.prototype, "canCancelApproval", void 0);
 class SubmitDocumentResponseDto {
 }
 exports.SubmitDocumentResponseDto = SubmitDocumentResponseDto;

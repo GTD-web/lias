@@ -455,6 +455,12 @@ export class DocumentResponseDto {
         type: [ApprovalStepSnapshotResponseDto],
     })
     approvalSteps?: ApprovalStepSnapshotResponseDto[];
+
+    @ApiPropertyOptional({
+        description: '결재취소 가능 여부 (현재 사용자가 이미 승인했고, 다음 단계 수신자가 아직 미처리 상태일 때 true)',
+        example: false,
+    })
+    canCancelApproval?: boolean;
 }
 
 /**

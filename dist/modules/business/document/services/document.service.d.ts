@@ -26,7 +26,33 @@ export declare class DocumentService {
         deleted: boolean;
         documentId: string;
     }>;
-    getDocument(documentId: string): Promise<import("../../../domain").Document>;
+    getDocument(documentId: string, userId?: string): Promise<{
+        canCancelApproval: boolean;
+        id: string;
+        documentNumber?: string;
+        title: string;
+        content: string;
+        status: import("src/common/enums/approval.enum").DocumentStatus;
+        comment?: string;
+        metadata?: Record<string, any>;
+        drafterId: string;
+        documentTemplateId?: string;
+        retentionPeriod?: string;
+        retentionPeriodUnit?: string;
+        retentionStartDate?: Date;
+        retentionEndDate?: Date;
+        submittedAt?: Date;
+        cancelReason?: string;
+        cancelledAt?: Date;
+        approvedAt?: Date;
+        rejectedAt?: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        drafter: import("../../../domain").Employee;
+        approvalSteps: import("../../../domain").ApprovalStepSnapshot[];
+        revisions: import("../../../domain").DocumentRevision[];
+        comments: import("../../../domain").Comment[];
+    }>;
     getDocuments(filter: DocumentFilterDto): Promise<{
         data: import("../../../domain").Document[];
         meta: {

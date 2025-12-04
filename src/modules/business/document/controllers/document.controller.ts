@@ -248,6 +248,9 @@ export class DocumentController {
         summary: '문서 상세 조회',
         description:
             '특정 문서의 상세 정보를 조회합니다.\n\n' +
+            '**결재취소 가능 여부:**\n' +
+            '- 각 결재 스텝에 `canCancelApproval` 필드가 포함됩니다.\n' +
+            '- 조건: 문서가 결재진행중(PENDING)이고, 본인이 승인했으며, 다음 단계 수신자가 아직 미처리 상태일 때 true\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 상세 조회\n' +
             '- ❌ 실패: 존재하지 않는 문서 ID',
@@ -269,8 +272,8 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async getDocument(@Param('documentId') documentId: string) {
-        return await this.documentService.getDocument(documentId);
+    async getDocument(@User() user: Employee, @Param('documentId') documentId: string) {
+        return await this.documentService.getDocument(documentId, user.id);
     }
 
     @Put(':documentId')

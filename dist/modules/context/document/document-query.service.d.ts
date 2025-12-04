@@ -10,7 +10,34 @@ export declare class DocumentQueryService {
     private readonly filterBuilder;
     private readonly logger;
     constructor(dataSource: DataSource, documentService: DomainDocumentService, filterBuilder: DocumentFilterBuilder);
-    getDocument(documentId: string, queryRunner?: QueryRunner): Promise<Document>;
+    getDocument(documentId: string, userId?: string, queryRunner?: QueryRunner): Promise<{
+        canCancelApproval: boolean;
+        id: string;
+        documentNumber?: string;
+        title: string;
+        content: string;
+        status: DocumentStatus;
+        comment?: string;
+        metadata?: Record<string, any>;
+        drafterId: string;
+        documentTemplateId?: string;
+        retentionPeriod?: string;
+        retentionPeriodUnit?: string;
+        retentionStartDate?: Date;
+        retentionEndDate?: Date;
+        submittedAt?: Date;
+        cancelReason?: string;
+        cancelledAt?: Date;
+        approvedAt?: Date;
+        rejectedAt?: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        drafter: import("../../domain").Employee;
+        approvalSteps: import("../../domain").ApprovalStepSnapshot[];
+        revisions: import("../../domain").DocumentRevision[];
+        comments: import("../../domain").Comment[];
+    }>;
+    private calculateCanCancelApproval;
     getDocuments(filter: DocumentFilterDto, queryRunner?: QueryRunner): Promise<{
         data: Document[];
         meta: {

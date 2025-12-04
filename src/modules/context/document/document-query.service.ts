@@ -30,8 +30,11 @@ export class DocumentQueryService {
 
     /**
      * 문서 조회 (단건)
+     * @param documentId 문서 ID
+     * @param userId 현재 사용자 ID (결재취소 가능 여부 계산용, 선택적)
+     * @param queryRunner 쿼리 러너 (선택적)
      */
-    async getDocument(documentId: string, queryRunner?: QueryRunner) {
+    async getDocument(documentId: string, userId?: string, queryRunner?: QueryRunner) {
         const document = await this.documentService.findOne({
             where: { id: documentId },
             relations: ['drafter', 'approvalSteps'],
@@ -47,7 +50,67 @@ export class DocumentQueryService {
             throw new NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
         }
 
-        return document;
+        // 결재취소 가능 여부 계산 (userId가 제공된 경우)
+        if (userId && document.approvalSteps && document.approvalSteps.length > 0) {
+            const canCancelApproval = this.calculateCanCancelApproval(document.approvalSteps, document.status, userId);
+            return {
+                ...document,
+                canCancelApproval,
+            };
+        }
+
+        return {
+            ...document,
+            canCancelApproval: false,
+        };
+    }
+
+    /**
+     * 결재취소 가능 여부 계산 (문서 레벨)
+     *
+     * 결재취소 조건:
+     * 1. 문서 상태가 PENDING (결재 진행중)
+     * 2. 현재 사용자가 이미 승인(APPROVED) 상태
+     * 3. 다음 단계 수신자가 아직 어떤 행동도 하지 않은 상태 (PENDING)
+     *
+     * @returns 현재 사용자가 결재취소 가능한지 여부
+     */
+    private calculateCanCancelApproval(
+        approvalSteps: Array<{
+            id: string;
+            approverId: string;
+            status: ApprovalStatus;
+            stepOrder: number;
+            stepType: ApprovalStepType;
+        }>,
+        documentStatus: DocumentStatus,
+        userId: string,
+    ): boolean {
+        // 조건 1: 문서 상태가 PENDING (결재 진행중)이 아니면 취소 불가
+        if (documentStatus !== DocumentStatus.PENDING) {
+            return false;
+        }
+
+        // stepOrder 순으로 정렬
+        const sortedSteps = [...approvalSteps].sort((a, b) => a.stepOrder - b.stepOrder);
+
+        // 현재 사용자의 승인된 스텝 찾기
+        for (let i = 0; i < sortedSteps.length; i++) {
+            const step = sortedSteps[i];
+
+            // 조건 2: 현재 사용자가 이미 승인(APPROVED) 상태인 스텝 찾기
+            if (step.approverId === userId && step.status === ApprovalStatus.APPROVED) {
+                // 조건 3: 다음 단계 수신자가 아직 PENDING 상태인지 확인
+                const nextStep = sortedSteps[i + 1];
+
+                if (nextStep && nextStep.status === ApprovalStatus.PENDING) {
+                    // 다음 단계가 아직 PENDING 상태 → 취소 가능
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -298,12 +361,21 @@ export class DocumentQueryService {
                 }));
             }
 
-            // Template 정보를 Document에 매핑
+            // Template 정보를 Document에 매핑 및 결재취소 가능 여부 계산
             const templateMap = new Map(templatesWithCategory.map((t) => [t.id, t]));
-            const documentsWithTemplate = documentsMap.map((doc) => ({
-                ...doc,
-                documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
-            }));
+            const documentsWithTemplate = documentsMap.map((doc) => {
+                // 결재취소 가능 여부 계산 (문서 레벨)
+                const canCancelApproval =
+                    doc.approvalSteps && doc.approvalSteps.length > 0
+                        ? this.calculateCanCancelApproval(doc.approvalSteps, doc.status, params.userId)
+                        : false;
+
+                return {
+                    ...doc,
+                    documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
+                    canCancelApproval,
+                };
+            });
 
             // ID 순서대로 정렬 (페이지네이션 순서 유지)
             const docMap = new Map(documentsWithTemplate.map((doc) => [doc.id, doc]));
