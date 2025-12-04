@@ -140,7 +140,7 @@ export class ApprovalProcessController {
     /**
      * 결재취소 (결재자용)
      */
-    @Post('cancel-approval-step')
+    @Post('cancel')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: '결재취소 (결재자용)',
@@ -167,23 +167,23 @@ export class ApprovalProcessController {
     /**
      * @deprecated cancelSubmit과 cancelApprovalStep으로 분리됨
      */
-    @Post('cancel')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: '[Deprecated] 결재 취소 (상신취소/결재취소 통합)',
-        description:
-            '⚠️ 이 API는 더 이상 사용되지 않습니다. 대신 다음 API를 사용하세요:\n' +
-            '- 상신취소: POST /approval-process/cancel-submit\n' +
-            '- 결재취소: POST /approval-process/cancel-approval-step',
-        deprecated: true,
-    })
-    @ApiResponse({ status: 200, description: '결재 취소 성공', type: CancelApprovalResponseDto })
-    @ApiResponse({ status: 400, description: '잘못된 요청' })
-    @ApiResponse({ status: 403, description: '권한 없음' })
-    @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
-    async cancelApproval(@User() user: Employee, @Body() dto: CancelApprovalDto) {
-        return await this.approvalProcessService.cancelApproval(dto, user.id);
-    }
+    // @Post('cancel')
+    // @HttpCode(HttpStatus.OK)
+    // @ApiOperation({
+    //     summary: '[Deprecated] 결재 취소 (상신취소/결재취소 통합)',
+    //     description:
+    //         '⚠️ 이 API는 더 이상 사용되지 않습니다. 대신 다음 API를 사용하세요:\n' +
+    //         '- 상신취소: POST /approval-process/cancel-submit\n' +
+    //         '- 결재취소: POST /approval-process/cancel-approval-step',
+    //     deprecated: true,
+    // })
+    // @ApiResponse({ status: 200, description: '결재 취소 성공', type: CancelApprovalResponseDto })
+    // @ApiResponse({ status: 400, description: '잘못된 요청' })
+    // @ApiResponse({ status: 403, description: '권한 없음' })
+    // @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
+    // async cancelApproval(@User() user: Employee, @Body() dto: CancelApprovalDto) {
+    //     return await this.approvalProcessService.cancelApproval(dto, user.id);
+    // }
 
     /**
      * 내 결재 대기 목록 조회 (페이징, 필터링)
