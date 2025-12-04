@@ -206,17 +206,31 @@ export class DocumentController {
 
     @Get('my-drafts')
     @ApiOperation({
-        summary: '내가 작성한 문서 전체 조회 (상태 무관)',
+        summary: '내가 작성한 문서 전체 조회',
         description:
-            '내가 작성한 모든 문서를 상태에 상관없이 조회합니다.\n\n' +
+            '내가 작성한 모든 문서를 조회합니다.\n\n' +
             '**주요 기능:**\n' +
             '- 내가 기안한 모든 문서 조회 (DRAFT, PENDING, APPROVED, REJECTED, IMPLEMENTED 모두 포함)\n' +
             '- 페이징 지원\n' +
-            '- 생성일 기준 내림차순 정렬\n\n' +
+            '- 생성일 기준 내림차순 정렬\n' +
+            '- DRAFT 상태 필터링 지원\n\n' +
+            '**draftFilter 옵션:**\n' +
+            '- DRAFT_ONLY: 임시저장(DRAFT) 상태 문서만 조회\n' +
+            '- EXCLUDE_DRAFT: 임시저장(DRAFT)을 제외한 문서만 조회 (상신된 문서)\n' +
+            '- 미지정: 모든 상태의 문서 조회\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 내가 작성한 문서 전체 조회\n' +
+            '- ✅ 정상: DRAFT_ONLY 필터링\n' +
+            '- ✅ 정상: EXCLUDE_DRAFT 필터링\n' +
             '- ✅ 정상: 페이징 처리\n' +
             '- ❌ 실패: 존재하지 않는 사용자 ID',
+    })
+    @ApiQuery({
+        name: 'draftFilter',
+        required: false,
+        description: 'DRAFT 상태 필터 (DRAFT_ONLY: 임시저장만, EXCLUDE_DRAFT: 임시저장 제외)',
+        enum: ['DRAFT_ONLY', 'EXCLUDE_DRAFT'],
+        example: 'EXCLUDE_DRAFT',
     })
     @ApiQuery({
         name: 'page',
@@ -239,8 +253,13 @@ export class DocumentController {
         status: 401,
         description: '인증 실패',
     })
-    async getMyDrafts(@User() user: Employee, @Query('page') page?: number, @Query('limit') limit?: number) {
-        return await this.documentService.getMyDrafts(user.id, page || 1, limit || 20);
+    async getMyDrafts(
+        @User() user: Employee,
+        @Query('draftFilter') draftFilter?: 'DRAFT_ONLY' | 'EXCLUDE_DRAFT',
+        @Query('page') page?: number,
+        @Query('limit') limit?: number,
+    ) {
+        return await this.documentService.getMyDrafts(user.id, page || 1, limit || 20, draftFilter);
     }
 
     @Get(':documentId')

@@ -178,9 +178,9 @@ let DocumentService = DocumentService_1 = class DocumentService {
         this.logger.debug('내 전체 문서 목록 조회', params);
         return await this.documentQueryService.getMyAllDocuments(params);
     }
-    async getMyDrafts(drafterId, page, limit) {
-        this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
-        return await this.documentQueryService.getMyDrafts(drafterId, page, limit);
+    async getMyDrafts(drafterId, page, limit, draftFilter) {
+        this.logger.debug(`내가 작성한 문서 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}, 필터 ${draftFilter || '없음'}`);
+        return await this.documentQueryService.getMyDrafts(drafterId, page, limit, draftFilter);
     }
     async createComment(documentId, dto, authorId) {
         this.logger.log(`코멘트 작성: 문서 ${documentId}`);
