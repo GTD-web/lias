@@ -142,6 +142,16 @@ let DocumentService = DocumentService_1 = class DocumentService {
         this.logger.log(`바로 기안 및 자동 승인 처리 완료: ${submittedDocument.id}`);
         return submittedDocument;
     }
+    async cancelSubmit(documentId, drafterId, reason) {
+        this.logger.log(`상신 취소 요청: ${documentId}, 기안자: ${drafterId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.documentContext.상신을취소한다({
+                documentId,
+                drafterId,
+                reason,
+            }, queryRunner);
+        });
+    }
     async sendSubmitNotification(documentId, drafterId) {
         try {
             const document = await this.documentQueryService.getDocument(documentId);

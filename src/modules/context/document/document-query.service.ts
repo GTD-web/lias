@@ -50,18 +50,31 @@ export class DocumentQueryService {
             throw new NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
         }
 
-        // 결재취소 가능 여부 계산 (userId가 제공된 경우)
-        if (userId && document.approvalSteps && document.approvalSteps.length > 0) {
-            const canCancelApproval = this.calculateCanCancelApproval(document.approvalSteps, document.status, userId);
+        // 결재취소/상신취소 가능 여부 계산 (userId가 제공된 경우)
+        if (userId) {
+            const canCancelApproval =
+                document.approvalSteps && document.approvalSteps.length > 0
+                    ? this.calculateCanCancelApproval(document.approvalSteps, document.status, userId)
+                    : false;
+
+            const canCancelSubmit = this.calculateCanCancelSubmit(
+                document.approvalSteps || [],
+                document.status,
+                document.drafterId,
+                userId,
+            );
+
             return {
                 ...document,
                 canCancelApproval,
+                canCancelSubmit,
             };
         }
 
         return {
             ...document,
             canCancelApproval: false,
+            canCancelSubmit: false,
         };
     }
 
@@ -111,6 +124,47 @@ export class DocumentQueryService {
         }
 
         return false;
+    }
+
+    /**
+     * 상신취소 가능 여부 계산 (문서 레벨)
+     *
+     * 상신취소 조건:
+     * 1. 문서 상태가 PENDING (결재 진행중)
+     * 2. 현재 사용자가 기안자
+     * 3. 결재자가 아직 어떤 처리도 하지 않은 상태 (모든 결재 단계가 PENDING)
+     *
+     * @returns 현재 사용자가 상신취소 가능한지 여부
+     */
+    private calculateCanCancelSubmit(
+        approvalSteps: Array<{
+            id: string;
+            approverId: string;
+            status: ApprovalStatus;
+            stepOrder: number;
+            stepType: ApprovalStepType;
+        }>,
+        documentStatus: DocumentStatus,
+        drafterId: string,
+        userId: string,
+    ): boolean {
+        // 조건 1: 문서 상태가 PENDING (결재 진행중)이 아니면 취소 불가
+        if (documentStatus !== DocumentStatus.PENDING) {
+            return false;
+        }
+
+        // 조건 2: 현재 사용자가 기안자가 아니면 취소 불가
+        if (drafterId !== userId) {
+            return false;
+        }
+
+        // 조건 3: 결재자가 아직 어떤 처리도 하지 않은 상태인지 확인
+        // (모든 결재 단계가 PENDING 상태여야 함)
+        const hasAnyProcessed = approvalSteps.some(
+            (step) => step.status === ApprovalStatus.APPROVED || step.status === ApprovalStatus.REJECTED,
+        );
+
+        return !hasAnyProcessed;
     }
 
     /**
@@ -361,7 +415,7 @@ export class DocumentQueryService {
                 }));
             }
 
-            // Template 정보를 Document에 매핑 및 결재취소 가능 여부 계산
+            // Template 정보를 Document에 매핑 및 결재취소/상신취소 가능 여부 계산
             const templateMap = new Map(templatesWithCategory.map((t) => [t.id, t]));
             const documentsWithTemplate = documentsMap.map((doc) => {
                 // 결재취소 가능 여부 계산 (문서 레벨)
@@ -370,10 +424,19 @@ export class DocumentQueryService {
                         ? this.calculateCanCancelApproval(doc.approvalSteps, doc.status, params.userId)
                         : false;
 
+                // 상신취소 가능 여부 계산 (문서 레벨)
+                const canCancelSubmit = this.calculateCanCancelSubmit(
+                    doc.approvalSteps || [],
+                    doc.status,
+                    doc.drafterId,
+                    params.userId,
+                );
+
                 return {
                     ...doc,
                     documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
                     canCancelApproval,
+                    canCancelSubmit,
                 };
             });
 

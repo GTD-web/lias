@@ -201,6 +201,35 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
         this.logger.log(`결재 반려 완료: ${dto.stepSnapshotId}`);
         return rejectedStep;
     }
+    async 결재를취소한다(dto, queryRunner) {
+        this.logger.log(`결재 취소 시작: ${dto.stepSnapshotId}, 결재자: ${dto.approverId}`);
+        const step = await this.approvalStepSnapshotService.findOneWithError({
+            where: { id: dto.stepSnapshotId },
+            relations: ['document', 'document.approvalSteps'],
+            queryRunner,
+        });
+        const document = step.document;
+        if (document.status !== approval_enum_1.DocumentStatus.PENDING) {
+            throw new common_1.BadRequestException('결재 진행 중인 문서만 결재취소할 수 있습니다.');
+        }
+        if (step.approverId !== dto.approverId) {
+            throw new common_1.ForbiddenException('본인의 결재 단계만 취소할 수 있습니다.');
+        }
+        if (step.status !== approval_enum_1.ApprovalStatus.APPROVED) {
+            throw new common_1.BadRequestException('승인한 결재만 취소할 수 있습니다.');
+        }
+        const hasNextProcessed = document_policy_validator_1.DocumentPolicyValidator.hasNextStepProcessed(step.stepOrder, document.approvalSteps);
+        document_policy_validator_1.DocumentPolicyValidator.validateCancelApprovalOrThrow(step.status, hasNextProcessed);
+        step.대기한다();
+        step.의견을설정한다(dto.reason || '');
+        await this.approvalStepSnapshotService.save(step, { queryRunner });
+        this.logger.log(`결재 취소 완료: ${dto.stepSnapshotId}, 결재자: ${dto.approverId}`);
+        return {
+            stepSnapshotId: step.id,
+            documentId: document.id,
+            message: '결재가 취소되었습니다.',
+        };
+    }
     async cancelApproval(dto, queryRunner) {
         this.logger.log(`결재 취소 시작: ${dto.documentId}`);
         const document = await this.documentService.findOneWithError({

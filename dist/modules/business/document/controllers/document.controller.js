@@ -64,6 +64,9 @@ let DocumentController = class DocumentController {
             ...dto,
         });
     }
+    async cancelSubmit(user, documentId, dto) {
+        return await this.documentService.cancelSubmit(documentId, user.id, dto.reason);
+    }
     async submitDocumentDirect(user, dto) {
         return await this.documentService.submitDocumentDirect(dto, user.id);
     }
@@ -451,6 +454,50 @@ __decorate([
     __metadata("design:paramtypes", [String, dtos_1.SubmitDocumentBodyDto]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "submitDocument", null);
+__decorate([
+    (0, common_1.Post)(':documentId/cancel-submit'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: '상신취소 (기안자용)',
+        description: '기안자가 상신한 문서를 취소합니다.\n\n' +
+            '**정책:**\n' +
+            '- 결재진행중(PENDING) 상태의 문서만 취소 가능\n' +
+            '- 결재자가 아직 어떤 처리도 하지 않은 상태에서만 가능\n' +
+            '- 취소 시 문서 상태가 CANCELLED로 변경됨\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 결재자 처리 전 상신취소\n' +
+            '- ❌ 실패: 결재자가 처리한 후 상신취소 시도\n' +
+            '- ❌ 실패: 기안자가 아닌 사용자의 상신취소 시도\n' +
+            '- ❌ 실패: 취소 사유 누락',
+    }),
+    (0, swagger_1.ApiParam)({
+        name: 'documentId',
+        description: '상신취소할 문서 ID',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '상신 취소 성공',
+        type: dtos_1.DocumentResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능, 이미 처리된 결재 있음)',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 403,
+        description: '권한 없음 (기안자만 상신취소 가능)',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: '문서를 찾을 수 없음',
+    }),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Param)('documentId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, String, dtos_1.CancelSubmitDto]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "cancelSubmit", null);
 __decorate([
     (0, common_1.Post)('submit-direct'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),

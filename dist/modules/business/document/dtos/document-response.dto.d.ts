@@ -85,6 +85,7 @@ export declare class DocumentResponseDto {
     updatedAt: Date;
     approvalSteps?: ApprovalStepSnapshotResponseDto[];
     canCancelApproval?: boolean;
+    canCancelSubmit?: boolean;
 }
 export declare class SubmitDocumentResponseDto {
     document: DocumentResponseDto;

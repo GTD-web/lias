@@ -4,7 +4,7 @@ import { DomainDocumentService } from '../../domain/document/document.service';
 import { DomainDocumentTemplateService } from '../../domain/document-template/document-template.service';
 import { DomainEmployeeService } from '../../domain/employee/employee.service';
 import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto } from './dtos/document.dto';
+import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, CancelSubmitDto } from './dtos/document.dto';
 import { DocumentStatus } from '../../../common/enums/approval.enum';
 export interface DocumentModificationHistoryItem {
     previousTitle: string;
@@ -28,6 +28,7 @@ export declare class DocumentContext {
         documentId: string;
     }>;
     submitDocument(dto: SubmitDocumentDto, queryRunner?: QueryRunner): Promise<Document>;
+    상신을취소한다(dto: CancelSubmitDto, queryRunner?: QueryRunner): Promise<Document>;
     private buildUpdatedMetadata;
     private generateDocumentNumber;
     createApprovalStepSnapshots(documentId: string, approvalSteps: CreateDocumentDto['approvalSteps'], queryRunner: QueryRunner): Promise<void>;

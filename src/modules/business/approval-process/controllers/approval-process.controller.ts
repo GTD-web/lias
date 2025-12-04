@@ -8,6 +8,7 @@ import {
     CompleteAgreementDto,
     CompleteImplementationDto,
     CancelApprovalDto,
+    CancelApprovalStepDto,
     MarkReferenceReadDto,
     ProcessApprovalActionDto,
     ApprovalActionResponseDto,
@@ -137,34 +138,48 @@ export class ApprovalProcessController {
     }
 
     /**
-     * 결재 취소
+     * 결재취소 (결재자용)
+     */
+    @Post('cancel-approval-step')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: '결재취소 (결재자용)',
+        description:
+            '결재자가 본인의 결재를 취소합니다.\n\n' +
+            '**정책:**\n' +
+            '- 본인이 승인(APPROVED)한 결재 단계만 취소 가능\n' +
+            '- 다음 단계 수신자가 아직 어떤 처리도 하지 않은 상태에서만 가능\n' +
+            '- 취소 시 해당 결재 단계만 PENDING으로 되돌림 (문서 상태는 변경되지 않음)\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 다음 결재자 대기 중일 때 본인 결재 취소\n' +
+            '- ❌ 실패: 다음 결재자가 이미 처리한 경우\n' +
+            '- ❌ 실패: 본인이 승인하지 않은 결재 단계 취소 시도\n' +
+            '- ❌ 실패: 다른 사람의 결재 단계 취소 시도',
+    })
+    @ApiResponse({ status: 200, description: '결재 취소 성공' })
+    @ApiResponse({ status: 400, description: '잘못된 요청 (승인한 결재만 취소 가능, 다음 단계가 이미 처리됨)' })
+    @ApiResponse({ status: 403, description: '권한 없음 (본인의 결재 단계만 취소 가능)' })
+    @ApiResponse({ status: 404, description: '결재 단계를 찾을 수 없음' })
+    async cancelApprovalStep(@User() user: Employee, @Body() dto: CancelApprovalStepDto) {
+        return await this.approvalProcessService.cancelApprovalStep(dto, user.id);
+    }
+
+    /**
+     * @deprecated cancelSubmit과 cancelApprovalStep으로 분리됨
      */
     @Post('cancel')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: '결재 취소, 문서 취소 (대리취소 지원)',
+        summary: '[Deprecated] 결재 취소 (상신취소/결재취소 통합)',
         description:
-            '결재 진행 중인 문서를 취소합니다.\n\n' +
-            '**취소 가능 대상:**\n' +
-            '- 기안자 상신취소: 결재자가 아직 처리하지 않은 상태에서만 가능\n' +
-            '- 결재자 결재취소: 본인이 승인한 결재 단계만 취소 가능, 다음 단계가 처리되지 않은 경우에만\n' +
-            '  - ⚠️ APPROVAL 타입의 결재만 취소 대상 (AGREEMENT, REFERENCE, IMPLEMENTATION 제외)\n\n' +
-            '**예시:**\n' +
-            '- 결재자가 아직 처리하기 전 → 기안자 상신취소 가능\n' +
-            '- 1번 결재자 승인 후 → 기안자 상신취소 불가, 1번 결재자 결재취소 가능\n' +
-            '- 2번 결재자까지 승인 후 → 1번 취소 불가, 2번 취소 가능\n\n' +
-            '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 기안자가 결재자 처리 전 상신취소\n' +
-            '- ✅ 정상: 본인이 승인한 결재 취소 (다음 결재자 대기 중)\n' +
-            '- ❌ 실패: 결재자가 처리한 후 기안자 상신취소 시도\n' +
-            '- ❌ 실패: 취소 사유 누락',
+            '⚠️ 이 API는 더 이상 사용되지 않습니다. 대신 다음 API를 사용하세요:\n' +
+            '- 상신취소: POST /approval-process/cancel-submit\n' +
+            '- 결재취소: POST /approval-process/cancel-approval-step',
+        deprecated: true,
     })
     @ApiResponse({ status: 200, description: '결재 취소 성공', type: CancelApprovalResponseDto })
-    @ApiResponse({ status: 400, description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능)' })
-    @ApiResponse({
-        status: 403,
-        description: '권한 없음 (기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소 가능)',
-    })
+    @ApiResponse({ status: 400, description: '잘못된 요청' })
+    @ApiResponse({ status: 403, description: '권한 없음' })
     @ApiResponse({ status: 404, description: '문서를 찾을 수 없음' })
     async cancelApproval(@User() user: Employee, @Body() dto: CancelApprovalDto) {
         return await this.approvalProcessService.cancelApproval(dto, user.id);

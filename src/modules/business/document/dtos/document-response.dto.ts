@@ -461,6 +461,13 @@ export class DocumentResponseDto {
         example: false,
     })
     canCancelApproval?: boolean;
+
+    @ApiPropertyOptional({
+        description:
+            '상신취소 가능 여부 (기안자이고, 결재진행중이며, 결재자가 아직 어떤 처리도 하지 않은 상태일 때 true)',
+        example: false,
+    })
+    canCancelSubmit?: boolean;
 }
 
 /**

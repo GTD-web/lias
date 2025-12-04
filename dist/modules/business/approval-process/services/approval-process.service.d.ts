@@ -3,7 +3,7 @@ import { ApprovalProcessContext } from '../../../context/approval-process/approv
 import { DocumentContext } from '../../../context/document/document.context';
 import { DocumentQueryService } from '../../../context/document/document-query.service';
 import { NotificationContext } from '../../../context/notification/notification.context';
-import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, ProcessApprovalActionDto } from '../dtos';
+import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, CancelApprovalStepDto, ProcessApprovalActionDto } from '../dtos';
 export declare class ApprovalProcessService {
     private readonly dataSource;
     private readonly approvalProcessContext;
@@ -20,6 +20,7 @@ export declare class ApprovalProcessService {
         stepSnapshotId: string;
         comment?: string;
     }, referenceUserId: string): Promise<import("../../../domain").ApprovalStepSnapshot>;
+    cancelApprovalStep(dto: CancelApprovalStepDto, approverId: string): Promise<import("../../../context/approval-process/dtos/approval-action.dto").CancelApprovalStepResultDto>;
     cancelApproval(dto: CancelApprovalDto, cancelerId: string): Promise<import("../../../domain").Document>;
     getMyPendingApprovals(userId: string, type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL', page: number, limit: number): Promise<{
         data: {
@@ -61,7 +62,7 @@ export declare class ApprovalProcessService {
         };
     }>;
     getApprovalSteps(documentId: string): Promise<import("../../../domain").ApprovalStepSnapshot[]>;
-    processApprovalAction(dto: ProcessApprovalActionDto, approverId: string): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
+    processApprovalAction(dto: ProcessApprovalActionDto, approverId: string): Promise<import("../../../domain").ApprovalStepSnapshot | import("../../../domain").Document>;
     private sendApproveNotification;
     private sendRejectNotification;
     private sendCompleteAgreementNotification;

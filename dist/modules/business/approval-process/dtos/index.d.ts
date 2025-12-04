@@ -3,6 +3,7 @@ export * from './reject-step.dto';
 export * from './complete-agreement.dto';
 export * from './complete-implementation.dto';
 export * from './cancel-approval.dto';
+export * from './cancel-approval-step.dto';
 export * from './mark-reference-read.dto';
 export * from './process-approval-action.dto';
 export * from './approval-process-response.dto';

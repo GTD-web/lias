@@ -29,6 +29,11 @@ export declare class SubmitDocumentDto {
     documentTemplateId?: string;
     approvalSteps?: ApprovalStepSnapshotItemDto[];
 }
+export declare class CancelSubmitDto {
+    documentId: string;
+    drafterId: string;
+    reason: string;
+}
 export declare class DocumentFilterDto {
     status?: DocumentStatus;
     pendingStepType?: ApprovalStepType;

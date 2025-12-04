@@ -11,6 +11,7 @@ import {
     CompleteAgreementDto,
     CompleteImplementationDto,
     CancelApprovalDto,
+    CancelApprovalStepDto,
     ProcessApprovalActionDto,
     ApprovalActionType,
 } from '../dtos';
@@ -150,7 +151,25 @@ export class ApprovalProcessService {
     }
 
     /**
-     * 결재 취소
+     * 결재취소 (결재자용)
+     * 정책: 본인이 승인한 상태이고, 다음 단계가 처리되지 않은 상태에서만 가능
+     */
+    async cancelApprovalStep(dto: CancelApprovalStepDto, approverId: string) {
+        this.logger.log(`결재 취소 요청: ${dto.stepSnapshotId}, 결재자: ${approverId}`);
+
+        return await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.결재를취소한다(
+                {
+                    ...dto,
+                    approverId: approverId,
+                },
+                queryRunner,
+            );
+        });
+    }
+
+    /**
+     * @deprecated cancelSubmit과 cancelApprovalStep으로 분리됨
      */
     async cancelApproval(dto: CancelApprovalDto, cancelerId: string) {
         this.logger.log(`결재 취소 요청: ${dto.documentId}`);

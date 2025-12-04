@@ -39,6 +39,9 @@ let ApprovalProcessController = class ApprovalProcessController {
     async rejectStep(user, dto) {
         return await this.approvalProcessService.rejectStep(dto, user.id);
     }
+    async cancelApprovalStep(user, dto) {
+        return await this.approvalProcessService.cancelApprovalStep(dto, user.id);
+    }
     async cancelApproval(user, dto) {
         return await this.approvalProcessService.cancelApproval(dto, user.id);
     }
@@ -159,31 +162,44 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "rejectStep", null);
 __decorate([
+    (0, common_1.Post)('cancel-approval-step'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: '결재취소 (결재자용)',
+        description: '결재자가 본인의 결재를 취소합니다.\n\n' +
+            '**정책:**\n' +
+            '- 본인이 승인(APPROVED)한 결재 단계만 취소 가능\n' +
+            '- 다음 단계 수신자가 아직 어떤 처리도 하지 않은 상태에서만 가능\n' +
+            '- 취소 시 해당 결재 단계만 PENDING으로 되돌림 (문서 상태는 변경되지 않음)\n\n' +
+            '**테스트 시나리오:**\n' +
+            '- ✅ 정상: 다음 결재자 대기 중일 때 본인 결재 취소\n' +
+            '- ❌ 실패: 다음 결재자가 이미 처리한 경우\n' +
+            '- ❌ 실패: 본인이 승인하지 않은 결재 단계 취소 시도\n' +
+            '- ❌ 실패: 다른 사람의 결재 단계 취소 시도',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 취소 성공' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (승인한 결재만 취소 가능, 다음 단계가 이미 처리됨)' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음 (본인의 결재 단계만 취소 가능)' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: '결재 단계를 찾을 수 없음' }),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CancelApprovalStepDto]),
+    __metadata("design:returntype", Promise)
+], ApprovalProcessController.prototype, "cancelApprovalStep", null);
+__decorate([
     (0, common_1.Post)('cancel'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
-        summary: '결재 취소, 문서 취소 (대리취소 지원)',
-        description: '결재 진행 중인 문서를 취소합니다.\n\n' +
-            '**취소 가능 대상:**\n' +
-            '- 기안자 상신취소: 결재자가 아직 처리하지 않은 상태에서만 가능\n' +
-            '- 결재자 결재취소: 본인이 승인한 결재 단계만 취소 가능, 다음 단계가 처리되지 않은 경우에만\n' +
-            '  - ⚠️ APPROVAL 타입의 결재만 취소 대상 (AGREEMENT, REFERENCE, IMPLEMENTATION 제외)\n\n' +
-            '**예시:**\n' +
-            '- 결재자가 아직 처리하기 전 → 기안자 상신취소 가능\n' +
-            '- 1번 결재자 승인 후 → 기안자 상신취소 불가, 1번 결재자 결재취소 가능\n' +
-            '- 2번 결재자까지 승인 후 → 1번 취소 불가, 2번 취소 가능\n\n' +
-            '**테스트 시나리오:**\n' +
-            '- ✅ 정상: 기안자가 결재자 처리 전 상신취소\n' +
-            '- ✅ 정상: 본인이 승인한 결재 취소 (다음 결재자 대기 중)\n' +
-            '- ❌ 실패: 결재자가 처리한 후 기안자 상신취소 시도\n' +
-            '- ❌ 실패: 취소 사유 누락',
+        summary: '[Deprecated] 결재 취소 (상신취소/결재취소 통합)',
+        description: '⚠️ 이 API는 더 이상 사용되지 않습니다. 대신 다음 API를 사용하세요:\n' +
+            '- 상신취소: POST /approval-process/cancel-submit\n' +
+            '- 결재취소: POST /approval-process/cancel-approval-step',
+        deprecated: true,
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '결재 취소 성공', type: dtos_1.CancelApprovalResponseDto }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청 (결재 진행 중인 문서만 취소 가능)' }),
-    (0, swagger_1.ApiResponse)({
-        status: 403,
-        description: '권한 없음 (기안자 또는 가장 최근에 APPROVAL 결재를 완료한 결재자만 취소 가능)',
-    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: '문서를 찾을 수 없음' }),
     __param(0, (0, user_decorator_1.User)()),
     __param(1, (0, common_1.Body)()),

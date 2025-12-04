@@ -3,6 +3,7 @@ export * from './update-document.dto';
 export * from './submit-document.dto';
 export * from './submit-document-body.dto';
 export * from './submit-document-direct.dto';
+export * from './cancel-submit.dto';
 export * from './approval-step-snapshot.dto';
 export * from './update-approval-step-snapshot.dto';
 export * from './document-response.dto';

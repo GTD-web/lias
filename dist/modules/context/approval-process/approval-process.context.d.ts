@@ -4,7 +4,7 @@ import { DomainDocumentService } from '../../domain/document/document.service';
 import { DomainCommentService } from '../../domain/comment/comment.service';
 import { Document } from '../../domain/document/document.entity';
 import { ApprovalStepSnapshot } from '../../domain/approval-step-snapshot/approval-step-snapshot.entity';
-import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto } from './dtos/approval-action.dto';
+import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, CancelApprovalStepDto, CancelApprovalStepResultDto } from './dtos/approval-action.dto';
 import { ApprovalStatus, ApprovalStepType, DocumentStatus } from '../../../common/enums/approval.enum';
 export declare class ApprovalProcessContext {
     private readonly dataSource;
@@ -22,6 +22,7 @@ export declare class ApprovalProcessContext {
     approveStep(dto: ApproveStepDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
     completeImplementation(dto: CompleteImplementationDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
     rejectStep(dto: RejectStepDto, queryRunner?: QueryRunner): Promise<ApprovalStepSnapshot>;
+    결재를취소한다(dto: CancelApprovalStepDto, queryRunner?: QueryRunner): Promise<CancelApprovalStepResultDto>;
     cancelApproval(dto: CancelApprovalDto, queryRunner?: QueryRunner): Promise<Document>;
     getMyPendingApprovals(userId: string, type: 'SUBMITTED' | 'AGREEMENT' | 'APPROVAL', page?: number, limit?: number, queryRunner?: QueryRunner): Promise<{
         data: {

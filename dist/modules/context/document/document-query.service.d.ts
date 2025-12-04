@@ -12,6 +12,7 @@ export declare class DocumentQueryService {
     constructor(dataSource: DataSource, documentService: DomainDocumentService, filterBuilder: DocumentFilterBuilder);
     getDocument(documentId: string, userId?: string, queryRunner?: QueryRunner): Promise<{
         canCancelApproval: boolean;
+        canCancelSubmit: boolean;
         id: string;
         documentNumber?: string;
         title: string;
@@ -38,6 +39,7 @@ export declare class DocumentQueryService {
         comments: import("../../domain").Comment[];
     }>;
     private calculateCanCancelApproval;
+    private calculateCanCancelSubmit;
     getDocuments(filter: DocumentFilterDto, queryRunner?: QueryRunner): Promise<{
         data: Document[];
         meta: {

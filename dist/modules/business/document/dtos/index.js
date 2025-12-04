@@ -19,6 +19,7 @@ __exportStar(require("./update-document.dto"), exports);
 __exportStar(require("./submit-document.dto"), exports);
 __exportStar(require("./submit-document-body.dto"), exports);
 __exportStar(require("./submit-document-direct.dto"), exports);
+__exportStar(require("./cancel-submit.dto"), exports);
 __exportStar(require("./approval-step-snapshot.dto"), exports);
 __exportStar(require("./update-approval-step-snapshot.dto"), exports);
 __exportStar(require("./document-response.dto"), exports);

@@ -1,14 +1,15 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { DataSource, DeepPartial, QueryRunner } from 'typeorm';
 import { Document } from '../../domain/document/document.entity';
 import { DomainDocumentService } from '../../domain/document/document.service';
 import { DomainDocumentTemplateService } from '../../domain/document-template/document-template.service';
 import { DomainEmployeeService } from '../../domain/employee/employee.service';
 import { DomainApprovalStepSnapshotService } from '../../domain/approval-step-snapshot/approval-step-snapshot.service';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto } from './dtos/document.dto';
-import { DocumentStatus, ApprovalStepType } from '../../../common/enums/approval.enum';
+import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, CancelSubmitDto } from './dtos/document.dto';
+import { DocumentStatus, ApprovalStepType, ApprovalStatus } from '../../../common/enums/approval.enum';
 import { withTransaction } from '../../../common/utils/transaction.util';
 import { ApproverSnapshotMetadata } from '../../domain/approval-step-snapshot/approval-step-snapshot.entity';
+import { DocumentPolicyValidator } from '../../../common/utils/document-policy.validator';
 
 /**
  * 문서 수정 이력 항목 인터페이스
@@ -195,6 +196,45 @@ export class DocumentContext {
 
         this.logger.log(`문서 기안 완료: ${dto.documentId}, 문서번호: ${documentNumber}`);
         return submittedDocument;
+    }
+
+    /**
+     * 상신취소 (기안자용)
+     *
+     * 정책: 결재진행중이고 결재자가 아직 어떤 처리도 하지 않은 상태일 때만 가능
+     * 결과: 문서 상태를 CANCELLED로 변경
+     */
+    async 상신을취소한다(dto: CancelSubmitDto, queryRunner?: QueryRunner) {
+        this.logger.log(`상신 취소 시작: ${dto.documentId}, 기안자: ${dto.drafterId}`);
+
+        // 1) Document 조회
+        const document = await this.documentService.findOneWithError({
+            where: { id: dto.documentId },
+            relations: ['approvalSteps'],
+            queryRunner,
+        });
+
+        // 2) 결재진행중 상태 확인
+        if (document.status !== DocumentStatus.PENDING) {
+            throw new BadRequestException('결재 진행 중인 문서만 상신취소할 수 있습니다.');
+        }
+
+        // 3) 기안자 확인
+        if (document.drafterId !== dto.drafterId) {
+            throw new ForbiddenException('기안자만 상신취소할 수 있습니다.');
+        }
+
+        // 4) 정책 검증: 결재자가 아직 아무것도 처리하지 않은 경우에만 가능
+        const hasAnyProcessed = DocumentPolicyValidator.hasAnyApprovalProcessed(document.approvalSteps);
+        DocumentPolicyValidator.validateCancelSubmitOrThrow(document.status, hasAnyProcessed);
+
+        // 5) Document 상태를 CANCELLED로 변경
+        document.취소한다(dto.reason);
+
+        const cancelledDocument = await this.documentService.save(document, { queryRunner });
+
+        this.logger.log(`상신 취소 완료: ${dto.documentId}, 기안자: ${dto.drafterId}`);
+        return cancelledDocument;
     }
 
     // ============================================

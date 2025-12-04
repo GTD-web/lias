@@ -38,16 +38,21 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
         if (!document) {
             throw new common_1.NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
         }
-        if (userId && document.approvalSteps && document.approvalSteps.length > 0) {
-            const canCancelApproval = this.calculateCanCancelApproval(document.approvalSteps, document.status, userId);
+        if (userId) {
+            const canCancelApproval = document.approvalSteps && document.approvalSteps.length > 0
+                ? this.calculateCanCancelApproval(document.approvalSteps, document.status, userId)
+                : false;
+            const canCancelSubmit = this.calculateCanCancelSubmit(document.approvalSteps || [], document.status, document.drafterId, userId);
             return {
                 ...document,
                 canCancelApproval,
+                canCancelSubmit,
             };
         }
         return {
             ...document,
             canCancelApproval: false,
+            canCancelSubmit: false,
         };
     }
     calculateCanCancelApproval(approvalSteps, documentStatus, userId) {
@@ -65,6 +70,16 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
             }
         }
         return false;
+    }
+    calculateCanCancelSubmit(approvalSteps, documentStatus, drafterId, userId) {
+        if (documentStatus !== approval_enum_1.DocumentStatus.PENDING) {
+            return false;
+        }
+        if (drafterId !== userId) {
+            return false;
+        }
+        const hasAnyProcessed = approvalSteps.some((step) => step.status === approval_enum_1.ApprovalStatus.APPROVED || step.status === approval_enum_1.ApprovalStatus.REJECTED);
+        return !hasAnyProcessed;
     }
     async getDocuments(filter, queryRunner) {
         const qb = queryRunner
@@ -232,10 +247,12 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
                 const canCancelApproval = doc.approvalSteps && doc.approvalSteps.length > 0
                     ? this.calculateCanCancelApproval(doc.approvalSteps, doc.status, params.userId)
                     : false;
+                const canCancelSubmit = this.calculateCanCancelSubmit(doc.approvalSteps || [], doc.status, doc.drafterId, params.userId);
                 return {
                     ...doc,
                     documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
                     canCancelApproval,
+                    canCancelSubmit,
                 };
             });
             const docMap = new Map(documentsWithTemplate.map((doc) => [doc.id, doc]));
