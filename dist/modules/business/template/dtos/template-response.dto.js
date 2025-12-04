@@ -95,13 +95,6 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], CategoryResponseDto.prototype, "updatedAt", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: '카테고리에 속한 문서 템플릿 목록',
-        type: [CategoryDocumentTemplateDto],
-    }),
-    __metadata("design:type", Array)
-], CategoryResponseDto.prototype, "documentTemplates", void 0);
 class ApprovalStepTemplateResponseDto {
 }
 exports.ApprovalStepTemplateResponseDto = ApprovalStepTemplateResponseDto;

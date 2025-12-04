@@ -13,7 +13,6 @@ export declare class CategoryResponseDto {
     order: number;
     createdAt: Date;
     updatedAt: Date;
-    documentTemplates?: CategoryDocumentTemplateDto[];
 }
 export declare class ApprovalStepTemplateResponseDto {
     id: string;

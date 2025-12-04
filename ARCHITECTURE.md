@@ -142,6 +142,7 @@ Database
 ### 1️⃣ Domain Layer (도메인 레이어)
 
 **책임:**
+
 - 비즈니스 핵심 로직 캡슐화
 - 엔티티 생명주기 관리
 - 데이터 정합성 보장
@@ -149,6 +150,7 @@ Database
 **구성 요소:**
 
 #### Entity (엔티티)
+
 ```typescript
 @Entity('documents')
 export class Document {
@@ -162,7 +164,7 @@ export class Document {
     status: DocumentStatus;
 
     // ==================== Setter 메서드 ====================
-    
+
     /**
      * 제목을 설정한다
      */
@@ -189,53 +191,49 @@ export class Document {
 ```
 
 **특징:**
+
 - ✅ 한글 메서드명 사용 (`~한다` 형태)
 - ✅ 상태 변경과 날짜 설정을 원자적으로 처리
 - ✅ 비즈니스 규칙을 엔티티 내부에 캡슐화
 
 #### Domain Service (도메인 서비스)
+
 ```typescript
 @Injectable()
 export class DomainDocumentService extends BaseService<Document> {
     /**
      * 문서를 생성한다
      */
-    async createDocument(
-        dto: DeepPartial<Document>,
-        queryRunner?: QueryRunner
-    ): Promise<Document> {
+    async createDocument(dto: DeepPartial<Document>, queryRunner?: QueryRunner): Promise<Document> {
         const document = new Document();
-        
+
         if (dto.title) {
             document.제목을설정한다(dto.title);
         }
         if (dto.content) {
             document.내용을설정한다(dto.content);
         }
-        
+
         document.임시저장한다();
-        
+
         return await this.documentRepository.save(document, { queryRunner });
     }
 
     /**
      * 문서를 수정한다
      */
-    async updateDocument(
-        document: Document,
-        dto: DeepPartial<Document>,
-        queryRunner?: QueryRunner
-    ): Promise<Document> {
+    async updateDocument(document: Document, dto: DeepPartial<Document>, queryRunner?: QueryRunner): Promise<Document> {
         if (dto.title) {
             document.제목을설정한다(dto.title);
         }
-        
+
         return await this.documentRepository.save(document, { queryRunner });
     }
 }
 ```
 
 **특징:**
+
 - ✅ BaseService를 상속하여 기본 CRUD 제공
 - ✅ Entity Setter를 활용한 도메인 로직 수행
 - ✅ `queryRunner` 파라미터로 트랜잭션 참여
@@ -246,6 +244,7 @@ export class DomainDocumentService extends BaseService<Document> {
 ### 2️⃣ Context Layer (컨텍스트 레이어)
 
 **책임:**
+
 - 여러 도메인 간 협력 조율
 - 복잡한 비즈니스 규칙 검증
 - 도메인 로직 조합
@@ -253,6 +252,7 @@ export class DomainDocumentService extends BaseService<Document> {
 **구성 요소:**
 
 #### Context (컨텍스트)
+
 ```typescript
 @Injectable()
 export class DocumentContext {
@@ -265,10 +265,7 @@ export class DocumentContext {
     /**
      * 문서를 생성한다
      */
-    async createDocument(
-        dto: CreateDocumentDto,
-        queryRunner?: QueryRunner
-    ): Promise<Document> {
+    async createDocument(dto: CreateDocumentDto, queryRunner?: QueryRunner): Promise<Document> {
         // 1. 기안자 존재 확인
         await this.employeeService.findOneWithError({
             where: { id: dto.drafterId },
@@ -280,11 +277,7 @@ export class DocumentContext {
 
         // 3. 결재단계 스냅샷 생성 (필요한 경우)
         if (dto.approvalSteps && dto.approvalSteps.length > 0) {
-            await this.createApprovalStepSnapshots(
-                document.id,
-                dto.approvalSteps,
-                queryRunner
-            );
+            await this.createApprovalStepSnapshots(document.id, dto.approvalSteps, queryRunner);
         }
 
         return document;
@@ -293,12 +286,14 @@ export class DocumentContext {
 ```
 
 **특징:**
+
 - ✅ 여러 Domain Service 조합
 - ✅ 크로스 도메인 검증 수행
 - ✅ 트랜잭션은 받지만 생성하지 않음
 - ✅ 비즈니스 흐름 조율
 
 #### Query Service (조회 서비스)
+
 ```typescript
 @Injectable()
 export class DocumentQueryService {
@@ -307,34 +302,34 @@ export class DocumentQueryService {
      */
     async getDocuments(query: QueryDocumentsDto) {
         const qb = this.documentService.createQueryBuilder('document');
-        
+
         // 필터 적용
         this.filterBuilder.applyFilters(qb, query);
-        
+
         // 페이지네이션
         const skip = (query.page - 1) * query.limit;
-        const [data, total] = await qb
-            .skip(skip)
-            .take(query.limit)
-            .getManyAndCount();
-        
+        const [data, total] = await qb.skip(skip).take(query.limit).getManyAndCount();
+
         return { data, pagination: { page, limit, total } };
     }
 }
 ```
 
 **특징:**
+
 - ✅ Command와 Query 분리 (CQRS 패턴)
 - ✅ 복잡한 조회 로직 캡슐화
 - ✅ 트랜잭션 불필요
 
 #### Filter Builder (필터 빌더)
+
 ```typescript
 @Injectable()
 export class DocumentFilterBuilder {
     applyDraftFilter(qb: SelectQueryBuilder<Document>, userId: string) {
-        qb.andWhere('document.drafterId = :userId', { userId })
-          .andWhere('document.status = :status', { status: DocumentStatus.DRAFT });
+        qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status = :status', {
+            status: DocumentStatus.DRAFT,
+        });
     }
 
     applyFilter(qb: SelectQueryBuilder<Document>, filterType: string, userId: string) {
@@ -349,6 +344,7 @@ export class DocumentFilterBuilder {
 ```
 
 **특징:**
+
 - ✅ 필터링 로직을 모듈화
 - ✅ 재사용성 향상
 - ✅ 복잡도 감소
@@ -358,6 +354,7 @@ export class DocumentFilterBuilder {
 ### 3️⃣ Business Layer (비즈니스 레이어)
 
 **책임:**
+
 - 트랜잭션 생명주기 관리
 - 여러 Context 조율
 - 외부 서비스 연동 (알림, 이메일 등)
@@ -386,22 +383,20 @@ export class DocumentService {
      * 문서를 기안한다
      */
     async submitDocument(dto: SubmitDocumentDto) {
-        const submittedDocument = await withTransaction(
-            this.dataSource,
-            async (queryRunner) => {
-                return await this.documentContext.submitDocument(dto, queryRunner);
-            }
-        );
+        const submittedDocument = await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.documentContext.submitDocument(dto, queryRunner);
+        });
 
         // 트랜잭션 외부 작업 (비동기 알림)
         await this.approvalProcessContext.autoApproveIfDrafterIsFirstApprover(
             submittedDocument.id,
-            submittedDocument.drafterId
+            submittedDocument.drafterId,
         );
 
         // 알림 전송 (실패해도 롤백하지 않음)
-        this.sendSubmitNotification(submittedDocument.id, submittedDocument.drafterId)
-            .catch(error => this.logger.error('알림 전송 실패', error));
+        this.sendSubmitNotification(submittedDocument.id, submittedDocument.drafterId).catch((error) =>
+            this.logger.error('알림 전송 실패', error),
+        );
 
         return submittedDocument;
     }
@@ -416,6 +411,7 @@ export class DocumentService {
 ```
 
 **특징:**
+
 - ✅ `withTransaction`으로 트랜잭션 시작
 - ✅ `queryRunner`를 Context로 전파
 - ✅ 트랜잭션 외부 작업 분리
@@ -448,6 +444,7 @@ setTitle(title: string): void { }  // 영문 사용
 ### Setter 함수 구현 원칙
 
 1. **단순 할당 Setter**
+
 ```typescript
 제목을설정한다(title: string): void {
     this.title = title;
@@ -455,6 +452,7 @@ setTitle(title: string): void { }  // 영문 사용
 ```
 
 2. **상태 변경 Setter (날짜 자동 설정)**
+
 ```typescript
 상신한다(): void {
     this.status = DocumentStatus.PENDING;
@@ -468,6 +466,7 @@ setTitle(title: string): void { }  // 영문 사용
 ```
 
 3. **복합 로직 Setter**
+
 ```typescript
 취소한다(reason?: string): void {
     this.status = DocumentStatus.CANCELLED;
@@ -483,19 +482,22 @@ setTitle(title: string): void { }  // 영문 사용
 ### 왜 Setter 함수를 사용하는가?
 
 1. **비즈니스 로직 캡슐화**
-   - 상태 변경 시 필요한 부가 작업을 한 곳에서 관리
-   - 예: 상신 시 `status`와 `submittedAt`을 함께 설정
+
+    - 상태 변경 시 필요한 부가 작업을 한 곳에서 관리
+    - 예: 상신 시 `status`와 `submittedAt`을 함께 설정
 
 2. **데이터 정합성 보장**
-   - 관련된 필드들이 항상 일관성 있게 변경됨
-   - 실수로 날짜를 설정하지 않는 버그 방지
+
+    - 관련된 필드들이 항상 일관성 있게 변경됨
+    - 실수로 날짜를 설정하지 않는 버그 방지
 
 3. **유지보수성 향상**
-   - 상태 변경 로직이 변경되어도 Setter 내부만 수정
-   - 코드 중복 제거
+
+    - 상태 변경 로직이 변경되어도 Setter 내부만 수정
+    - 코드 중복 제거
 
 4. **가독성 향상**
-   - `document.상신한다()`가 `document.status = DocumentStatus.PENDING; document.submittedAt = new Date()`보다 의도가 명확
+    - `document.상신한다()`가 `document.status = DocumentStatus.PENDING; document.submittedAt = new Date()`보다 의도가 명확
 
 ---
 
@@ -552,6 +554,7 @@ export async function withTransaction<T>(
 ### 사용 예시
 
 **Business Service:**
+
 ```typescript
 async createTemplateWithApprovalSteps(dto: CreateTemplateDto) {
     return await withTransaction(this.dataSource, async (queryRunner) => {
@@ -576,10 +579,11 @@ async createTemplateWithApprovalSteps(dto: CreateTemplateDto) {
 ```
 
 **Context:**
+
 ```typescript
 async createDocumentTemplate(dto: CreateDto, queryRunner?: QueryRunner) {
     // 검증 로직
-    
+
     // Domain Service에 queryRunner 전달
     return await this.documentTemplateService.createDocumentTemplate(
         dto,
@@ -589,11 +593,12 @@ async createDocumentTemplate(dto: CreateDto, queryRunner?: QueryRunner) {
 ```
 
 **Domain Service:**
+
 ```typescript
 async createDocumentTemplate(params, queryRunner?: QueryRunner) {
     const template = new DocumentTemplate();
     template.이름을설정한다(params.name);
-    
+
     // Repository에 queryRunner 전달
     return await this.repository.save(template, { queryRunner });
 }
@@ -602,17 +607,19 @@ async createDocumentTemplate(params, queryRunner?: QueryRunner) {
 ### 트랜잭션 규칙
 
 1. **시작점: Business Service**
-   - ✅ `withTransaction` 호출
-   - ✅ `queryRunner` 생성 및 관리
+
+    - ✅ `withTransaction` 호출
+    - ✅ `queryRunner` 생성 및 관리
 
 2. **참여: Context & Domain Service**
-   - ✅ `queryRunner` 파라미터 받기
-   - ✅ 하위 레이어로 `queryRunner` 전달
-   - ❌ 새 트랜잭션 시작 금지
+
+    - ✅ `queryRunner` 파라미터 받기
+    - ✅ 하위 레이어로 `queryRunner` 전달
+    - ❌ 새 트랜잭션 시작 금지
 
 3. **조회 작업**
-   - ❌ 트랜잭션 불필요
-   - ✅ Query Service에서 직접 실행
+    - ❌ 트랜잭션 불필요
+    - ✅ Query Service에서 직접 실행
 
 ---
 
@@ -623,43 +630,47 @@ async createDocumentTemplate(params, queryRunner?: QueryRunner) {
 #### ✅ 분리가 필요한 경우
 
 1. **독립적인 비즈니스 도메인**
-   ```
-   DocumentContext         ← 문서 CRUD
-   ApprovalProcessContext  ← 결재 처리 흐름
-   CommentContext          ← 댓글 관리
-   ```
+
+    ```
+    DocumentContext         ← 문서 CRUD
+    ApprovalProcessContext  ← 결재 처리 흐름
+    CommentContext          ← 댓글 관리
+    ```
 
 2. **조회와 명령 분리 (CQRS)**
-   ```
-   DocumentContext         ← Command (쓰기)
-   DocumentQueryService    ← Query (읽기)
-   ```
+
+    ```
+    DocumentContext         ← Command (쓰기)
+    DocumentQueryService    ← Query (읽기)
+    ```
 
 3. **복잡한 로직의 모듈화**
-   ```
-   TemplateContext           ← CRUD
-   ApproverMappingService    ← 결재자 매핑 로직 (375줄)
-   TemplateQueryService      ← 조회 로직
-   ```
+    ```
+    TemplateContext           ← CRUD
+    ApproverMappingService    ← 결재자 매핑 로직 (375줄)
+    TemplateQueryService      ← 조회 로직
+    ```
 
 #### ❌ 분리하지 않는 경우
 
 1. **강한 결합 관계**
-   ```
-   DocumentContext
-   └─ ApprovalStepSnapshotContext (X)
-      → Document 생성 시 항상 함께 생성됨
-      → DocumentContext의 private 메서드로 통합
-   ```
+
+    ```
+    DocumentContext
+    └─ ApprovalStepSnapshotContext (X)
+       → Document 생성 시 항상 함께 생성됨
+       → DocumentContext의 private 메서드로 통합
+    ```
 
 2. **단순한 로직**
-   ```
-   // 100줄 미만의 단순 Context는 분리 불필요
-   ```
+    ```
+    // 100줄 미만의 단순 Context는 분리 불필요
+    ```
 
 ### Context 분리 예시: Template 모듈
 
 **Before (1,043줄):**
+
 ```
 template.context.ts
 ├─ CRUD 로직 (350줄)
@@ -668,6 +679,7 @@ template.context.ts
 ```
 
 **After:**
+
 ```
 template.context.ts (340줄)          ← CRUD만
 template-query.service.ts (162줄)    ← 조회 전담
@@ -675,6 +687,7 @@ approver-mapping.service.ts (375줄)  ← 매핑 전담
 ```
 
 **효과:**
+
 - ✅ 각 파일의 책임이 명확
 - ✅ 테스트 용이성 향상
 - ✅ 코드 가독성 향상
@@ -729,6 +742,7 @@ Component 리렌더링
 ### 예시 1: Document 생성 (전체 흐름)
 
 **1. Controller (Presentation Layer)**
+
 ```typescript
 @Post()
 async createDocument(@Body() dto: CreateDocumentDto, @User() user: Employee) {
@@ -740,11 +754,12 @@ async createDocument(@Body() dto: CreateDocumentDto, @User() user: Employee) {
 ```
 
 **2. Business Service**
+
 ```typescript
 async createDocument(dto: CreateDocumentDto) {
     return await withTransaction(this.dataSource, async (queryRunner) => {
         const document = await this.documentContext.createDocument(dto, queryRunner);
-        
+
         if (dto.approvalSteps?.length > 0) {
             await this.documentContext.createApprovalStepSnapshots(
                 document.id,
@@ -752,13 +767,14 @@ async createDocument(dto: CreateDocumentDto) {
                 queryRunner
             );
         }
-        
+
         return document;
     });
 }
 ```
 
 **3. Context**
+
 ```typescript
 async createDocument(dto: CreateDocumentDto, queryRunner?: QueryRunner) {
     // 기안자 확인
@@ -775,20 +791,22 @@ async createDocument(dto: CreateDocumentDto, queryRunner?: QueryRunner) {
 ```
 
 **4. Domain Service**
+
 ```typescript
 async createDocument(dto: DeepPartial<Document>, queryRunner?: QueryRunner) {
     const document = new Document();
-    
+
     document.제목을설정한다(dto.title);
     document.내용을설정한다(dto.content);
     document.기안자를설정한다(dto.drafterId);
     document.임시저장한다();
-    
+
     return await this.documentRepository.save(document, { queryRunner });
 }
 ```
 
 **5. Entity**
+
 ```typescript
 임시저장한다(): void {
     this.status = DocumentStatus.DRAFT;
@@ -798,6 +816,7 @@ async createDocument(dto: DeepPartial<Document>, queryRunner?: QueryRunner) {
 ### 예시 2: 복잡한 조회 (Query 패턴)
 
 **1. Controller**
+
 ```typescript
 @Get()
 async getDocuments(@Query() query: QueryDocumentsDto, @User() user: Employee) {
@@ -806,6 +825,7 @@ async getDocuments(@Query() query: QueryDocumentsDto, @User() user: Employee) {
 ```
 
 **2. Business Service**
+
 ```typescript
 async getDocuments(query: QueryDocumentsDto, userId: string) {
     // 트랜잭션 불필요 - 직접 Query Service 호출
@@ -814,31 +834,33 @@ async getDocuments(query: QueryDocumentsDto, userId: string) {
 ```
 
 **3. Query Service**
+
 ```typescript
 async getDocuments(query: QueryDocumentsDto, userId: string) {
     const qb = this.documentService.createQueryBuilder('document');
-    
+
     // 필터 적용
     this.filterBuilder.applyFilter(qb, query.filterType, userId);
-    
+
     // 검색
     if (query.searchKeyword) {
         qb.andWhere('document.title LIKE :keyword', {
             keyword: `%${query.searchKeyword}%`
         });
     }
-    
+
     // 페이지네이션
     const [data, total] = await qb
         .skip((query.page - 1) * query.limit)
         .take(query.limit)
         .getManyAndCount();
-    
+
     return { data, pagination: { page, limit, total } };
 }
 ```
 
 **4. Filter Builder**
+
 ```typescript
 applyFilter(qb: SelectQueryBuilder<Document>, filterType: string, userId: string) {
     switch (filterType) {
@@ -918,81 +940,88 @@ src/
 ### ✅ DO (권장 사항)
 
 1. **트랜잭션은 Business Service에서만 시작**
-   ```typescript
-   // ✅ 올바름
-   async createDocument(dto) {
-       return await withTransaction(this.dataSource, async (qr) => {
-           return await this.context.create(dto, qr);
-       });
-   }
-   ```
+
+    ```typescript
+    // ✅ 올바름
+    async createDocument(dto) {
+        return await withTransaction(this.dataSource, async (qr) => {
+            return await this.context.create(dto, qr);
+        });
+    }
+    ```
 
 2. **Entity Setter 사용**
-   ```typescript
-   // ✅ 올바름
-   document.제목을설정한다(title);
-   document.상신한다();
 
-   // ❌ 잘못됨
-   document.title = title;
-   document.status = DocumentStatus.PENDING;
-   document.submittedAt = new Date();
-   ```
+    ```typescript
+    // ✅ 올바름
+    document.제목을설정한다(title);
+    document.상신한다();
+
+    // ❌ 잘못됨
+    document.title = title;
+    document.status = DocumentStatus.PENDING;
+    document.submittedAt = new Date();
+    ```
 
 3. **findOneWithError 사용**
-   ```typescript
-   // ✅ 올바름
-   const employee = await this.employeeService.findOneWithError({
-       where: { id: employeeId }
-   });
 
-   // ❌ 잘못됨
-   const employee = await this.employeeService.findOne(...);
-   if (!employee) throw new NotFoundException();
-   ```
+    ```typescript
+    // ✅ 올바름
+    const employee = await this.employeeService.findOneWithError({
+        where: { id: employeeId }
+    });
+
+    // ❌ 잘못됨
+    const employee = await this.employeeService.findOne(...);
+    if (!employee) throw new NotFoundException();
+    ```
 
 4. **Query와 Command 분리**
-   ```typescript
-   // ✅ 올바름
-   DocumentContext        // CRUD
-   DocumentQueryService   // 조회
 
-   // ❌ 잘못됨
-   DocumentContext        // CRUD + 조회 혼재
-   ```
+    ```typescript
+    // ✅ 올바름
+    DocumentContext; // CRUD
+    DocumentQueryService; // 조회
+
+    // ❌ 잘못됨
+    DocumentContext; // CRUD + 조회 혼재
+    ```
 
 ### ❌ DON'T (지양할 사항)
 
 1. **Context에서 트랜잭션 시작**
-   ```typescript
-   // ❌ 잘못됨
-   async createDocument(dto) {
-       return await withTransaction(this.dataSource, async (qr) => {
-           // Context에서 트랜잭션 시작하지 말 것
-       });
-   }
-   ```
+
+    ```typescript
+    // ❌ 잘못됨
+    async createDocument(dto) {
+        return await withTransaction(this.dataSource, async (qr) => {
+            // Context에서 트랜잭션 시작하지 말 것
+        });
+    }
+    ```
 
 2. **직접 프로퍼티 할당**
-   ```typescript
-   // ❌ 잘못됨
-   document.status = DocumentStatus.PENDING;
-   document.submittedAt = new Date();
-   
-   // ✅ Setter 사용
-   document.상신한다();
-   ```
+
+    ```typescript
+    // ❌ 잘못됨
+    document.status = DocumentStatus.PENDING;
+    document.submittedAt = new Date();
+
+    // ✅ Setter 사용
+    document.상신한다();
+    ```
 
 3. **과도한 Context 분리**
-   ```typescript
-   // ❌ 잘못됨 - 너무 강하게 결합된 로직 분리
-   DocumentContext
-   ApprovalStepSnapshotContext  // Document에 너무 의존적
 
-   // ✅ 올바름
-   DocumentContext
-   └─ private createApprovalStepSnapshots()  // 내부 메서드로
-   ```
+    ```typescript
+    // ❌ 잘못됨 - 너무 강하게 결합된 로직 분리
+    DocumentContext
+    ApprovalStepSnapshotContext  // Document에 너무 의존적
+
+    // ✅ 올바름
+    DocumentContext
+    └─ private createApprovalStepSnapshots()  // 내부 메서드로
+    ```
 
 ---
 
@@ -1008,12 +1037,12 @@ src/
 
 ### 리팩토링 결과
 
-| 모듈 | Before | After | 개선율 |
-|------|--------|-------|--------|
-| Document Context | 488줄 (CRUD + Query 혼재) | 488줄 (CRUD) + QueryService (545줄) | 책임 분리 ✅ |
-| Template Context | 1,043줄 (모든 로직 혼재) | 340줄 (CRUD) + QueryService (162줄) + MappingService (375줄) | **-67%** |
-| Entity Setters | ❌ 없음 | ✅ 모든 엔티티에 적용 | 일관성 ✅ |
-| 트랜잭션 관리 | ⚠️ 혼재 | ✅ Business Service에서만 | 일관성 ✅ |
+| 모듈             | Before                    | After                                                        | 개선율       |
+| ---------------- | ------------------------- | ------------------------------------------------------------ | ------------ |
+| Document Context | 488줄 (CRUD + Query 혼재) | 488줄 (CRUD) + QueryService (545줄)                          | 책임 분리 ✅ |
+| Template Context | 1,043줄 (모든 로직 혼재)  | 340줄 (CRUD) + QueryService (162줄) + MappingService (375줄) | **-67%**     |
+| Entity Setters   | ❌ 없음                   | ✅ 모든 엔티티에 적용                                        | 일관성 ✅    |
+| 트랜잭션 관리    | ⚠️ 혼재                   | ✅ Business Service에서만                                    | 일관성 ✅    |
 
 ---
 
@@ -1023,4 +1052,3 @@ src/
 - [TypeORM Documentation](https://typeorm.io/)
 - [Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)
 - [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html)
-
