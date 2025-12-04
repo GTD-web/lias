@@ -84,9 +84,9 @@ let DocumentService = DocumentService_1 = class DocumentService {
         document_policy_validator_1.DocumentPolicyValidator.validateDrafterActionOrThrow(document.status, document_policy_validator_1.DrafterAction.DELETE);
         return await this.documentContext.deleteDocument(documentId);
     }
-    async getDocument(documentId) {
-        this.logger.debug(`문서 조회: ${documentId}`);
-        return await this.documentQueryService.getDocument(documentId);
+    async getDocument(documentId, userId) {
+        this.logger.debug(`문서 조회: ${documentId}, 사용자: ${userId || 'N/A'}`);
+        return await this.documentQueryService.getDocument(documentId, userId);
     }
     async getDocuments(filter) {
         this.logger.debug('문서 목록 조회', filter);

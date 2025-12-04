@@ -119,10 +119,12 @@ export class DocumentService {
 
     /**
      * 문서 조회 (단건)
+     * @param documentId 문서 ID
+     * @param userId 현재 사용자 ID (결재취소 가능 여부 계산용, 선택적)
      */
-    async getDocument(documentId: string) {
-        this.logger.debug(`문서 조회: ${documentId}`);
-        return await this.documentQueryService.getDocument(documentId);
+    async getDocument(documentId: string, userId?: string) {
+        this.logger.debug(`문서 조회: ${documentId}, 사용자: ${userId || 'N/A'}`);
+        return await this.documentQueryService.getDocument(documentId, userId);
     }
 
     /**

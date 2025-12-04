@@ -49,8 +49,8 @@ let DocumentController = class DocumentController {
     async getMyDrafts(user, page, limit) {
         return await this.documentService.getMyDrafts(user.id, page || 1, limit || 20);
     }
-    async getDocument(documentId) {
-        return await this.documentService.getDocument(documentId);
+    async getDocument(user, documentId) {
+        return await this.documentService.getDocument(documentId, user.id);
     }
     async updateDocument(user, documentId, dto) {
         return await this.documentService.updateDocument(documentId, dto);
@@ -289,6 +289,9 @@ __decorate([
     (0, swagger_1.ApiOperation)({
         summary: '문서 상세 조회',
         description: '특정 문서의 상세 정보를 조회합니다.\n\n' +
+            '**결재취소 가능 여부:**\n' +
+            '- 각 결재 스텝에 `canCancelApproval` 필드가 포함됩니다.\n' +
+            '- 조건: 문서가 결재진행중(PENDING)이고, 본인이 승인했으며, 다음 단계 수신자가 아직 미처리 상태일 때 true\n\n' +
             '**테스트 시나리오:**\n' +
             '- ✅ 정상: 문서 상세 조회\n' +
             '- ❌ 실패: 존재하지 않는 문서 ID',
@@ -310,9 +313,10 @@ __decorate([
         status: 401,
         description: '인증 실패',
     }),
-    __param(0, (0, common_1.Param)('documentId')),
+    __param(0, (0, user_decorator_1.User)()),
+    __param(1, (0, common_1.Param)('documentId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [employee_entity_1.Employee, String]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getDocument", null);
 __decorate([

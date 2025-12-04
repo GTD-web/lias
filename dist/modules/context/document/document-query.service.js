@@ -24,7 +24,7 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
         this.filterBuilder = filterBuilder;
         this.logger = new common_1.Logger(DocumentQueryService_1.name);
     }
-    async getDocument(documentId, queryRunner) {
+    async getDocument(documentId, userId, queryRunner) {
         const document = await this.documentService.findOne({
             where: { id: documentId },
             relations: ['drafter', 'approvalSteps'],
@@ -38,7 +38,33 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
         if (!document) {
             throw new common_1.NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
         }
-        return document;
+        if (userId && document.approvalSteps && document.approvalSteps.length > 0) {
+            const canCancelApproval = this.calculateCanCancelApproval(document.approvalSteps, document.status, userId);
+            return {
+                ...document,
+                canCancelApproval,
+            };
+        }
+        return {
+            ...document,
+            canCancelApproval: false,
+        };
+    }
+    calculateCanCancelApproval(approvalSteps, documentStatus, userId) {
+        if (documentStatus !== approval_enum_1.DocumentStatus.PENDING) {
+            return false;
+        }
+        const sortedSteps = [...approvalSteps].sort((a, b) => a.stepOrder - b.stepOrder);
+        for (let i = 0; i < sortedSteps.length; i++) {
+            const step = sortedSteps[i];
+            if (step.approverId === userId && step.status === approval_enum_1.ApprovalStatus.APPROVED) {
+                const nextStep = sortedSteps[i + 1];
+                if (nextStep && nextStep.status === approval_enum_1.ApprovalStatus.PENDING) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     async getDocuments(filter, queryRunner) {
         const qb = queryRunner
@@ -202,10 +228,16 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
                 }));
             }
             const templateMap = new Map(templatesWithCategory.map((t) => [t.id, t]));
-            const documentsWithTemplate = documentsMap.map((doc) => ({
-                ...doc,
-                documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
-            }));
+            const documentsWithTemplate = documentsMap.map((doc) => {
+                const canCancelApproval = doc.approvalSteps && doc.approvalSteps.length > 0
+                    ? this.calculateCanCancelApproval(doc.approvalSteps, doc.status, params.userId)
+                    : false;
+                return {
+                    ...doc,
+                    documentTemplate: doc.documentTemplateId ? templateMap.get(doc.documentTemplateId) : undefined,
+                    canCancelApproval,
+                };
+            });
             const docMap = new Map(documentsWithTemplate.map((doc) => [doc.id, doc]));
             documents = ids.map((id) => docMap.get(id)).filter((doc) => doc !== undefined);
         }
