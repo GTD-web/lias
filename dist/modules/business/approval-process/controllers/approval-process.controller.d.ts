@@ -1,5 +1,5 @@
 import { ApprovalProcessService } from '../services/approval-process.service';
-import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalDto, CancelApprovalStepDto, MarkReferenceReadDto, ProcessApprovalActionDto, QueryMyPendingDto } from '../dtos';
+import { ApproveStepDto, RejectStepDto, CompleteAgreementDto, CompleteImplementationDto, CancelApprovalStepDto, MarkReferenceReadDto, ProcessApprovalActionDto, QueryMyPendingDto } from '../dtos';
 import { Employee } from '../../../domain/employee/employee.entity';
 export declare class ApprovalProcessController {
     private readonly approvalProcessService;
@@ -10,7 +10,6 @@ export declare class ApprovalProcessController {
     markReferenceRead(user: Employee, dto: MarkReferenceReadDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     rejectStep(user: Employee, dto: RejectStepDto): Promise<import("../../../domain").ApprovalStepSnapshot>;
     cancelApprovalStep(user: Employee, dto: CancelApprovalStepDto): Promise<import("../../../context/approval-process/dtos/approval-action.dto").CancelApprovalStepResultDto>;
-    cancelApproval(user: Employee, dto: CancelApprovalDto): Promise<import("../../../domain").Document>;
     getMyPendingApprovals(user: Employee, query: QueryMyPendingDto): Promise<{
         data: {
             documentId: string;

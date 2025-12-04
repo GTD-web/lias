@@ -42,9 +42,6 @@ let ApprovalProcessController = class ApprovalProcessController {
     async cancelApprovalStep(user, dto) {
         return await this.approvalProcessService.cancelApprovalStep(dto, user.id);
     }
-    async cancelApproval(user, dto) {
-        return await this.approvalProcessService.cancelApproval(dto, user.id);
-    }
     async getMyPendingApprovals(user, query) {
         return await this.approvalProcessService.getMyPendingApprovals(user.id, query.type, query.page || 1, query.limit || 20);
     }
@@ -162,7 +159,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "rejectStep", null);
 __decorate([
-    (0, common_1.Post)('cancel-approval-step'),
+    (0, common_1.Post)('cancel'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
         summary: '결재취소 (결재자용)',
@@ -187,26 +184,6 @@ __decorate([
     __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CancelApprovalStepDto]),
     __metadata("design:returntype", Promise)
 ], ApprovalProcessController.prototype, "cancelApprovalStep", null);
-__decorate([
-    (0, common_1.Post)('cancel'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({
-        summary: '[Deprecated] 결재 취소 (상신취소/결재취소 통합)',
-        description: '⚠️ 이 API는 더 이상 사용되지 않습니다. 대신 다음 API를 사용하세요:\n' +
-            '- 상신취소: POST /approval-process/cancel-submit\n' +
-            '- 결재취소: POST /approval-process/cancel-approval-step',
-        deprecated: true,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '결재 취소 성공', type: dtos_1.CancelApprovalResponseDto }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: '잘못된 요청' }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: '권한 없음' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: '문서를 찾을 수 없음' }),
-    __param(0, (0, user_decorator_1.User)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [employee_entity_1.Employee, dtos_1.CancelApprovalDto]),
-    __metadata("design:returntype", Promise)
-], ApprovalProcessController.prototype, "cancelApproval", null);
 __decorate([
     (0, common_1.Get)('my-pending'),
     (0, swagger_1.ApiOperation)({
