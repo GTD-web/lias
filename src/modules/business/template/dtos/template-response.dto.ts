@@ -83,11 +83,11 @@ export class CategoryResponseDto {
     })
     updatedAt: Date;
 
-    @ApiPropertyOptional({
-        description: '카테고리에 속한 문서 템플릿 목록',
-        type: [CategoryDocumentTemplateDto],
-    })
-    documentTemplates?: CategoryDocumentTemplateDto[];
+    // @ApiPropertyOptional({
+    //     description: '카테고리에 속한 문서 템플릿 목록',
+    //     type: [CategoryDocumentTemplateDto],
+    // })
+    // documentTemplates?: CategoryDocumentTemplateDto[];
 }
 
 /**

@@ -275,7 +275,7 @@ export class MetadataSyncContext {
                 }
             } catch (error) {
                 this.logger.error(`EmployeeDepartmentPosition 동기화 실패: ${edp.id}`, error);
-                throw error;
+                continue;
             }
         }
 

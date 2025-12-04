@@ -224,7 +224,7 @@ let MetadataSyncContext = MetadataSyncContext_1 = class MetadataSyncContext {
             }
             catch (error) {
                 this.logger.error(`EmployeeDepartmentPosition 동기화 실패: ${edp.id}`, error);
-                throw error;
+                continue;
             }
         }
         this.logger.log('EmployeeDepartmentPosition 동기화 완료');
