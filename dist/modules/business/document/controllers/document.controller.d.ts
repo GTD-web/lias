@@ -19,7 +19,7 @@ export declare class DocumentController {
             hasPreviousPage: boolean;
         };
     }>;
-    getMyDrafts(user: Employee, page?: number, limit?: number): Promise<{
+    getMyDrafts(user: Employee, draftFilter?: 'DRAFT_ONLY' | 'EXCLUDE_DRAFT', page?: number, limit?: number): Promise<{
         data: (import("../../../domain").Document | {
             drafter: {
                 id: string;

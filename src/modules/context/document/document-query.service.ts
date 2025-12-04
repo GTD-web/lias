@@ -399,9 +399,18 @@ export class DocumentQueryService {
     }
 
     /**
-     * 내가 작성한 문서 전체 조회 (상태 무관)
+     * 내가 작성한 문서 전체 조회
+     * @param drafterId 기안자 ID
+     * @param page 페이지 번호
+     * @param limit 페이지당 항목 수
+     * @param draftFilter DRAFT 상태 필터 (DRAFT_ONLY: 임시저장만, EXCLUDE_DRAFT: 임시저장 제외)
      */
-    async getMyDrafts(drafterId: string, page: number = 1, limit: number = 20) {
+    async getMyDrafts(
+        drafterId: string,
+        page: number = 1,
+        limit: number = 20,
+        draftFilter?: 'DRAFT_ONLY' | 'EXCLUDE_DRAFT',
+    ) {
         const skip = (page - 1) * limit;
 
         const qb = this.documentService
@@ -415,6 +424,13 @@ export class DocumentQueryService {
             .where('document.drafterId = :drafterId', { drafterId })
             .orderBy('document.createdAt', 'DESC')
             .addOrderBy('approvalSteps.stepOrder', 'ASC');
+
+        // DRAFT 상태 필터링
+        if (draftFilter === 'DRAFT_ONLY') {
+            qb.andWhere('document.status = :draftStatus', { draftStatus: DocumentStatus.DRAFT });
+        } else if (draftFilter === 'EXCLUDE_DRAFT') {
+            qb.andWhere('document.status != :draftStatus', { draftStatus: DocumentStatus.DRAFT });
+        }
 
         // 전체 개수 조회
         const totalItems = await qb.getCount();

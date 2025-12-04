@@ -299,11 +299,17 @@ export class DocumentService {
     }
 
     /**
-     * 내가 작성한 문서 전체 조회 (상태 무관)
+     * 내가 작성한 문서 전체 조회
+     * @param drafterId 기안자 ID
+     * @param page 페이지 번호
+     * @param limit 페이지당 항목 수
+     * @param draftFilter DRAFT 상태 필터 (DRAFT_ONLY: 임시저장만, EXCLUDE_DRAFT: 임시저장 제외)
      */
-    async getMyDrafts(drafterId: string, page: number, limit: number) {
-        this.logger.debug(`내가 작성한 문서 전체 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}`);
-        return await this.documentQueryService.getMyDrafts(drafterId, page, limit);
+    async getMyDrafts(drafterId: string, page: number, limit: number, draftFilter?: 'DRAFT_ONLY' | 'EXCLUDE_DRAFT') {
+        this.logger.debug(
+            `내가 작성한 문서 조회: 사용자 ${drafterId}, 페이지 ${page}, 제한 ${limit}, 필터 ${draftFilter || '없음'}`,
+        );
+        return await this.documentQueryService.getMyDrafts(drafterId, page, limit, draftFilter);
     }
 
     /**

@@ -135,7 +135,7 @@ export declare class DocumentService {
             hasPreviousPage: boolean;
         };
     }>;
-    getMyDrafts(drafterId: string, page: number, limit: number): Promise<{
+    getMyDrafts(drafterId: string, page: number, limit: number, draftFilter?: 'DRAFT_ONLY' | 'EXCLUDE_DRAFT'): Promise<{
         data: (import("../../../domain").Document | {
             drafter: {
                 id: string;

@@ -72,7 +72,7 @@ export declare class DocumentQueryService {
             hasPreviousPage: boolean;
         };
     }>;
-    getMyDrafts(drafterId: string, page?: number, limit?: number): Promise<{
+    getMyDrafts(drafterId: string, page?: number, limit?: number, draftFilter?: 'DRAFT_ONLY' | 'EXCLUDE_DRAFT'): Promise<{
         data: (Document | {
             drafter: {
                 id: string;

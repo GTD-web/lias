@@ -254,7 +254,7 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
             },
         };
     }
-    async getMyDrafts(drafterId, page = 1, limit = 20) {
+    async getMyDrafts(drafterId, page = 1, limit = 20, draftFilter) {
         const skip = (page - 1) * limit;
         const qb = this.documentService
             .createQueryBuilder('document')
@@ -267,6 +267,12 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
             .where('document.drafterId = :drafterId', { drafterId })
             .orderBy('document.createdAt', 'DESC')
             .addOrderBy('approvalSteps.stepOrder', 'ASC');
+        if (draftFilter === 'DRAFT_ONLY') {
+            qb.andWhere('document.status = :draftStatus', { draftStatus: approval_enum_1.DocumentStatus.DRAFT });
+        }
+        else if (draftFilter === 'EXCLUDE_DRAFT') {
+            qb.andWhere('document.status != :draftStatus', { draftStatus: approval_enum_1.DocumentStatus.DRAFT });
+        }
         const totalItems = await qb.getCount();
         const documents = await qb.skip(skip).take(limit).getMany();
         const mappedDocuments = documents.map((doc) => {
