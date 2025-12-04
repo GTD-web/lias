@@ -28,6 +28,7 @@ export declare class DocumentService {
     }>;
     getDocument(documentId: string, userId?: string): Promise<{
         canCancelApproval: boolean;
+        canCancelSubmit: boolean;
         id: string;
         documentNumber?: string;
         title: string;
@@ -66,6 +67,7 @@ export declare class DocumentService {
     }>;
     submitDocument(dto: SubmitDocumentDto): Promise<import("../../../domain").Document>;
     submitDocumentDirect(dto: SubmitDocumentDirectDto, drafterId: string): Promise<import("../../../domain").Document>;
+    cancelSubmit(documentId: string, drafterId: string, reason: string): Promise<import("../../../domain").Document>;
     private sendSubmitNotification;
     getTemplateForNewDocument(templateId: string, drafterId: string): Promise<{
         drafter: {

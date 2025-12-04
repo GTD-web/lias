@@ -53,6 +53,16 @@ export class SubmitDocumentDto {
 }
 
 /**
+ * 상신취소 DTO (기안자용)
+ * 정책: 결재진행중이고 결재자가 아직 어떤 처리도 하지 않은 상태일 때만 가능
+ */
+export class CancelSubmitDto {
+    documentId: string; // 취소할 문서 ID
+    drafterId: string; // 기안자 ID
+    reason: string; // 취소 사유
+}
+
+/**
  * 문서 조회 필터 DTO
  *
  * 필터링 조건 가이드:

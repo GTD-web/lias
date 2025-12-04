@@ -19,6 +19,7 @@ __exportStar(require("./reject-step.dto"), exports);
 __exportStar(require("./complete-agreement.dto"), exports);
 __exportStar(require("./complete-implementation.dto"), exports);
 __exportStar(require("./cancel-approval.dto"), exports);
+__exportStar(require("./cancel-approval-step.dto"), exports);
 __exportStar(require("./mark-reference-read.dto"), exports);
 __exportStar(require("./process-approval-action.dto"), exports);
 __exportStar(require("./approval-process-response.dto"), exports);

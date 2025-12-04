@@ -14,10 +14,12 @@ import { JwtService } from '@nestjs/jwt';
  * 3. POST /approval-process/complete-agreement - 협의 완료
  * 4. POST /approval-process/complete-implementation - 시행 완료
  * 5. POST /approval-process/mark-reference-read - 참조 열람 확인
- * 6. POST /approval-process/cancel - 결재 취소 (상신취소/결재취소)
+ * 6. POST /approval-process/cancel-approval-step - 결재취소 (결재자용)
  * 7. GET /approval-process/my-pending - 내 결재 대기 목록 조회
  * 8. GET /approval-process/document/:documentId/steps - 문서의 결재 단계 목록 조회
  * 9. POST /approval-process/process-action - 통합 결재 액션 처리
+ *
+ * 참고: 상신취소는 POST /documents/:documentId/cancel-submit (document.controller)로 이동됨
  */
 describe('ApprovalProcessController (e2e)', () => {
     let app: INestApplication;
@@ -492,138 +494,71 @@ describe('ApprovalProcessController (e2e)', () => {
         });
     });
 
-    // ==================== 결재 취소 테스트 ====================
+    // ==================== 결재취소 테스트 (결재자용) ====================
 
-    describe('POST /approval-process/cancel - 결재 취소', () => {
-        describe('상신취소 (기안자)', () => {
-            it('✅ 정상: 결재자가 처리하기 전 상신취소', async () => {
-                // 새 문서 생성
-                const docResponse = await request(app.getHttpServer())
-                    .post('/documents/submit-direct')
-                    .set('Authorization', `Bearer ${drafterToken}`)
-                    .send({
-                        documentTemplateId: templateId,
-                        title: '상신취소 테스트 문서',
-                        content: '<p>테스트</p>',
-                        approvalSteps: [
-                            { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
-                            { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerId },
-                        ],
-                    });
-
-                const response = await request(app.getHttpServer())
-                    .post('/approval-process/cancel')
-                    .set('Authorization', `Bearer ${drafterToken}`)
-                    .send({
-                        documentId: docResponse.body.id,
-                        reason: '재작성이 필요하여 취소합니다.',
-                    })
-                    .expect(200);
-
-                expect(response.body.status).toBe('CANCELLED');
-            });
-
-            it('❌ 실패: 결재자가 처리한 후 상신취소 시도', async () => {
-                // 새 문서 생성 및 결재 승인
-                const docResponse = await request(app.getHttpServer())
-                    .post('/documents/submit-direct')
-                    .set('Authorization', `Bearer ${drafterToken}`)
-                    .send({
-                        documentTemplateId: templateId,
-                        title: '취소 불가 테스트',
-                        content: '<p>테스트</p>',
-                        approvalSteps: [
-                            { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
-                            { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerId },
-                        ],
-                    });
-
-                const stepsRes = await request(app.getHttpServer())
-                    .get(`/approval-process/document/${docResponse.body.id}/steps`)
-                    .set('Authorization', `Bearer ${drafterToken}`);
-
-                const approvalStep = stepsRes.body.find((s: { stepType: string }) => s.stepType === 'APPROVAL');
-
-                // 결재 승인
-                await request(app.getHttpServer())
-                    .post('/approval-process/approve')
-                    .set('Authorization', `Bearer ${approverToken}`)
-                    .send({
-                        stepSnapshotId: approvalStep.id,
-                    });
-
-                // 기안자 상신취소 시도 (실패 예상)
-                await request(app.getHttpServer())
-                    .post('/approval-process/cancel')
-                    .set('Authorization', `Bearer ${drafterToken}`)
-                    .send({
-                        documentId: docResponse.body.id,
-                        reason: '취소',
-                    })
-                    .expect(400);
-            });
-        });
-
-        describe('결재취소 (결재자)', () => {
-            it('✅ 정상: 본인이 승인한 결재 취소 (다음 결재자 대기 중)', async () => {
-                // 여러 결재자가 있는 문서 생성 (첫 번째 결재자가 승인해도 문서는 PENDING 유지)
-                const docResponse = await request(app.getHttpServer())
-                    .post('/documents/submit-direct')
-                    .set('Authorization', `Bearer ${drafterToken}`)
-                    .send({
-                        documentTemplateId: templateId,
-                        title: '결재취소 테스트 (다중 결재자)',
-                        content: '<p>테스트</p>',
-                        approvalSteps: [
-                            { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
-                            { stepOrder: 2, stepType: 'APPROVAL', approverId: implementerId }, // 두 번째 결재자 추가
-                            { stepOrder: 3, stepType: 'IMPLEMENTATION', approverId: drafterId },
-                        ],
-                    });
-
-                const stepsRes = await request(app.getHttpServer())
-                    .get(`/approval-process/document/${docResponse.body.id}/steps`)
-                    .set('Authorization', `Bearer ${drafterToken}`);
-
-                const firstApprovalStep = stepsRes.body.find(
-                    (s: { stepType: string; stepOrder: number }) => s.stepType === 'APPROVAL' && s.stepOrder === 1,
-                );
-
-                // 첫 번째 결재자 승인 (문서는 여전히 PENDING 상태)
-                await request(app.getHttpServer())
-                    .post('/approval-process/approve')
-                    .set('Authorization', `Bearer ${approverToken}`)
-                    .send({
-                        stepSnapshotId: firstApprovalStep.id,
-                    });
-
-                // 첫 번째 결재자가 본인 결재 취소 (다음 결재자가 아직 처리 안함)
-                const response = await request(app.getHttpServer())
-                    .post('/approval-process/cancel')
-                    .set('Authorization', `Bearer ${approverToken}`)
-                    .send({
-                        documentId: docResponse.body.id,
-                        reason: '결재 취소',
-                    });
-
-                // 결재취소 성공 시 문서 상태는 PENDING 유지
-                if (response.status === 200) {
-                    expect(response.body.status).toBe('PENDING');
-                } else {
-                    // 정책에 따라 결재취소 불가능한 경우
-                    console.log('결재취소 응답:', response.status, response.body);
-                    expect([200, 400]).toContain(response.status);
-                }
-            });
-        });
-
-        it('❌ 실패: 취소 사유 누락', async () => {
+    describe('POST /approval-process/cancel-approval-step - 결재취소 (결재자용)', () => {
+        it('✅ 정상: 본인이 승인한 결재 취소 (다음 결재자 대기 중)', async () => {
+            // 여러 결재자가 있는 문서 생성 (첫 번째 결재자가 승인해도 문서는 PENDING 유지)
             const docResponse = await request(app.getHttpServer())
                 .post('/documents/submit-direct')
                 .set('Authorization', `Bearer ${drafterToken}`)
                 .send({
                     documentTemplateId: templateId,
-                    title: '사유 누락 테스트',
+                    title: '결재취소 테스트 (다중 결재자)',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
+                        { stepOrder: 2, stepType: 'APPROVAL', approverId: implementerId }, // 두 번째 결재자 추가
+                        { stepOrder: 3, stepType: 'IMPLEMENTATION', approverId: drafterId },
+                    ],
+                });
+
+            const stepsRes = await request(app.getHttpServer())
+                .get(`/approval-process/document/${docResponse.body.id}/steps`)
+                .set('Authorization', `Bearer ${drafterToken}`);
+
+            const firstApprovalStep = stepsRes.body.find(
+                (s: { stepType: string; stepOrder: number }) => s.stepType === 'APPROVAL' && s.stepOrder === 1,
+            );
+
+            // 첫 번째 결재자 승인 (문서는 여전히 PENDING 상태)
+            await request(app.getHttpServer())
+                .post('/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                });
+
+            // 첫 번째 결재자가 본인 결재 취소 (다음 결재자가 아직 처리 안함)
+            const response = await request(app.getHttpServer())
+                .post('/approval-process/cancel-approval-step')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                    reason: '결재 내용 재검토',
+                });
+
+            // 결재취소 성공 시 stepSnapshotId와 documentId 반환
+            if (response.status === 200) {
+                expect(response.body).toHaveProperty('stepSnapshotId');
+                expect(response.body).toHaveProperty('documentId');
+                expect(response.body).toHaveProperty('message');
+                expect(response.body.stepSnapshotId).toBe(firstApprovalStep.id);
+            } else {
+                // 정책에 따라 결재취소 불가능한 경우
+                console.log('결재취소 응답:', response.status, response.body);
+                expect([200, 400]).toContain(response.status);
+            }
+        });
+
+        it('❌ 실패: 본인이 승인하지 않은 결재 단계 취소 시도', async () => {
+            // 새 문서 생성
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '미승인 취소 시도 테스트',
                     content: '<p>테스트</p>',
                     approvalSteps: [
                         { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
@@ -631,14 +566,129 @@ describe('ApprovalProcessController (e2e)', () => {
                     ],
                 });
 
+            const stepsRes = await request(app.getHttpServer())
+                .get(`/approval-process/document/${docResponse.body.id}/steps`)
+                .set('Authorization', `Bearer ${drafterToken}`);
+
+            const approvalStep = stepsRes.body.find((s: { stepType: string }) => s.stepType === 'APPROVAL');
+
+            // 아직 승인하지 않은 결재 단계 취소 시도
             await request(app.getHttpServer())
-                .post('/approval-process/cancel')
-                .set('Authorization', `Bearer ${drafterToken}`)
+                .post('/approval-process/cancel-approval-step')
+                .set('Authorization', `Bearer ${approverToken}`)
                 .send({
-                    documentId: docResponse.body.id,
-                    // reason 누락
+                    stepSnapshotId: approvalStep.id,
+                    reason: '취소 시도',
                 })
                 .expect(400);
+        });
+
+        it('❌ 실패: 다른 사람의 결재 단계 취소 시도', async () => {
+            // 새 문서 생성
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '타인 결재 취소 시도 테스트',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
+                        { stepOrder: 2, stepType: 'APPROVAL', approverId: implementerId },
+                        { stepOrder: 3, stepType: 'IMPLEMENTATION', approverId: drafterId },
+                    ],
+                });
+
+            const stepsRes = await request(app.getHttpServer())
+                .get(`/approval-process/document/${docResponse.body.id}/steps`)
+                .set('Authorization', `Bearer ${drafterToken}`);
+
+            const firstApprovalStep = stepsRes.body.find(
+                (s: { stepType: string; stepOrder: number }) => s.stepType === 'APPROVAL' && s.stepOrder === 1,
+            );
+
+            // 첫 번째 결재자 승인
+            await request(app.getHttpServer())
+                .post('/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                });
+
+            // 다른 사람(시행자)이 취소 시도 (권한 없음)
+            await request(app.getHttpServer())
+                .post('/approval-process/cancel-approval-step')
+                .set('Authorization', `Bearer ${implementerToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                    reason: '취소 시도',
+                })
+                .expect(403);
+        });
+
+        it('❌ 실패: 다음 결재자가 이미 처리한 경우', async () => {
+            // 새 문서 생성
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${drafterToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '다음 단계 처리됨 테스트',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverId },
+                        { stepOrder: 2, stepType: 'APPROVAL', approverId: implementerId },
+                        { stepOrder: 3, stepType: 'IMPLEMENTATION', approverId: drafterId },
+                    ],
+                });
+
+            const stepsRes = await request(app.getHttpServer())
+                .get(`/approval-process/document/${docResponse.body.id}/steps`)
+                .set('Authorization', `Bearer ${drafterToken}`);
+
+            const firstApprovalStep = stepsRes.body.find(
+                (s: { stepType: string; stepOrder: number }) => s.stepType === 'APPROVAL' && s.stepOrder === 1,
+            );
+            const secondApprovalStep = stepsRes.body.find(
+                (s: { stepType: string; stepOrder: number }) => s.stepType === 'APPROVAL' && s.stepOrder === 2,
+            );
+
+            // 첫 번째 결재자 승인
+            await request(app.getHttpServer())
+                .post('/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                });
+
+            // 두 번째 결재자 승인
+            await request(app.getHttpServer())
+                .post('/approval-process/approve')
+                .set('Authorization', `Bearer ${implementerToken}`)
+                .send({
+                    stepSnapshotId: secondApprovalStep.id,
+                });
+
+            // 첫 번째 결재자가 취소 시도 (다음 결재자가 이미 처리함 - 실패 예상)
+            await request(app.getHttpServer())
+                .post('/approval-process/cancel-approval-step')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                    reason: '취소 시도',
+                })
+                .expect(400);
+        });
+
+        it('❌ 실패: 존재하지 않는 결재 단계 ID', async () => {
+            await request(app.getHttpServer())
+                .post('/approval-process/cancel-approval-step')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: '00000000-0000-0000-0000-000000000000',
+                    reason: '취소 시도',
+                })
+                .expect(404);
         });
     });
 
@@ -678,7 +728,7 @@ describe('ApprovalProcessController (e2e)', () => {
             expect(response.body.status).toBe('APPROVED');
         });
 
-        it('✅ 정상: 취소 액션 (cancel)', async () => {
+        it('✅ [Deprecated] 정상: 취소 액션 (cancel) - 상신취소는 /documents/:id/cancel-submit 사용 권장', async () => {
             const docResponse = await request(app.getHttpServer())
                 .post('/documents/submit-direct')
                 .set('Authorization', `Bearer ${drafterToken}`)

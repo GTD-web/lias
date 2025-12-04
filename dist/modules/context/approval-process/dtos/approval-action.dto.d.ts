@@ -4,6 +4,11 @@ export declare class ApproveStepDto {
     approverId: string;
     comment?: string;
 }
+export declare class CancelApprovalStepResultDto {
+    stepSnapshotId: string;
+    documentId: string;
+    message: string;
+}
 export declare class RejectStepDto {
     stepSnapshotId: string;
     approverId: string;
@@ -19,6 +24,16 @@ export declare class CompleteImplementationDto {
     implementerId: string;
     comment?: string;
     resultData?: Record<string, any>;
+}
+export declare class CancelSubmitDto {
+    documentId: string;
+    drafterId: string;
+    reason: string;
+}
+export declare class CancelApprovalStepDto {
+    stepSnapshotId: string;
+    approverId: string;
+    reason?: string;
 }
 export declare class CancelApprovalDto {
     documentId: string;

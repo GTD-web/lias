@@ -1,5 +1,5 @@
 import { DocumentService } from '../services/document.service';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto } from '../dtos';
+import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto, CancelSubmitDto } from '../dtos';
 import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 import { Employee } from '../../../domain/employee/employee.entity';
@@ -78,6 +78,7 @@ export declare class DocumentController {
     }>;
     getDocument(user: Employee, documentId: string): Promise<{
         canCancelApproval: boolean;
+        canCancelSubmit: boolean;
         id: string;
         documentNumber?: string;
         title: string;
@@ -106,6 +107,7 @@ export declare class DocumentController {
     updateDocument(user: Employee, documentId: string, dto: UpdateDocumentDto): Promise<import("../../../domain").Document>;
     deleteDocument(documentId: string): Promise<void>;
     submitDocument(documentId: string, dto: SubmitDocumentBodyDto): Promise<import("../../../domain").Document>;
+    cancelSubmit(user: Employee, documentId: string, dto: CancelSubmitDto): Promise<import("../../../domain").Document>;
     submitDocumentDirect(user: Employee, dto: SubmitDocumentDirectDto): Promise<import("../../../domain").Document>;
     getTemplateForNewDocument(templateId: string, user: Employee): Promise<{
         drafter: {

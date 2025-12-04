@@ -19,6 +19,7 @@ const employee_service_1 = require("../../domain/employee/employee.service");
 const approval_step_snapshot_service_1 = require("../../domain/approval-step-snapshot/approval-step-snapshot.service");
 const approval_enum_1 = require("../../../common/enums/approval.enum");
 const transaction_util_1 = require("../../../common/utils/transaction.util");
+const document_policy_validator_1 = require("../../../common/utils/document-policy.validator");
 let DocumentContext = DocumentContext_1 = class DocumentContext {
     constructor(dataSource, documentService, documentTemplateService, employeeService, approvalStepSnapshotService) {
         this.dataSource = dataSource;
@@ -101,6 +102,26 @@ let DocumentContext = DocumentContext_1 = class DocumentContext {
         const submittedDocument = await this.documentService.submitDocument(document, documentNumber, documentTemplateId || undefined, queryRunner);
         this.logger.log(`문서 기안 완료: ${dto.documentId}, 문서번호: ${documentNumber}`);
         return submittedDocument;
+    }
+    async 상신을취소한다(dto, queryRunner) {
+        this.logger.log(`상신 취소 시작: ${dto.documentId}, 기안자: ${dto.drafterId}`);
+        const document = await this.documentService.findOneWithError({
+            where: { id: dto.documentId },
+            relations: ['approvalSteps'],
+            queryRunner,
+        });
+        if (document.status !== approval_enum_1.DocumentStatus.PENDING) {
+            throw new common_1.BadRequestException('결재 진행 중인 문서만 상신취소할 수 있습니다.');
+        }
+        if (document.drafterId !== dto.drafterId) {
+            throw new common_1.ForbiddenException('기안자만 상신취소할 수 있습니다.');
+        }
+        const hasAnyProcessed = document_policy_validator_1.DocumentPolicyValidator.hasAnyApprovalProcessed(document.approvalSteps);
+        document_policy_validator_1.DocumentPolicyValidator.validateCancelSubmitOrThrow(document.status, hasAnyProcessed);
+        document.취소한다(dto.reason);
+        const cancelledDocument = await this.documentService.save(document, { queryRunner });
+        this.logger.log(`상신 취소 완료: ${dto.documentId}, 기안자: ${dto.drafterId}`);
+        return cancelledDocument;
     }
     buildUpdatedMetadata(document, dto) {
         const existingHistory = document.metadata?.modificationHistory || [];

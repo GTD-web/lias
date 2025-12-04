@@ -11,6 +11,8 @@ import {
     CompleteAgreementDto,
     CompleteImplementationDto,
     CancelApprovalDto,
+    CancelApprovalStepDto,
+    CancelApprovalStepResultDto,
     ApprovalStepFilterDto,
 } from './dtos/approval-action.dto';
 import { ApprovalStatus, ApprovalStepType, DocumentStatus } from '../../../common/enums/approval.enum';
@@ -369,12 +371,58 @@ export class ApprovalProcessContext {
     }
 
     /**
-     * 5. 결재 취소 (상신취소 + 결재취소 통합)
+     * 5. 결재취소 (결재자용)
      *
-     * 정책:
-     * - 상신취소 (기안자): 결재진행중이고 결재자가 아직 어떤 처리도 하지 않은 상태일 때만 가능
-     * - 결재취소 (결재자): 본인이 승인한 상태이고, 다음 단계가 처리되지 않은 상태에서만 가능
-     *   - APPROVAL 타입의 결재만 취소 대상 (AGREEMENT, REFERENCE, IMPLEMENTATION 제외)
+     * 정책: 본인이 승인한 상태이고, 다음 단계가 처리되지 않은 상태에서만 가능
+     * 결과: 본인의 결재 단계를 PENDING으로 되돌림 (문서 상태는 변경하지 않음)
+     */
+    async 결재를취소한다(dto: CancelApprovalStepDto, queryRunner?: QueryRunner): Promise<CancelApprovalStepResultDto> {
+        this.logger.log(`결재 취소 시작: ${dto.stepSnapshotId}, 결재자: ${dto.approverId}`);
+
+        // 1) 결재 단계 조회
+        const step = await this.approvalStepSnapshotService.findOneWithError({
+            where: { id: dto.stepSnapshotId },
+            relations: ['document', 'document.approvalSteps'],
+            queryRunner,
+        });
+
+        const document = step.document;
+
+        // 2) 결재진행중 상태 확인
+        if (document.status !== DocumentStatus.PENDING) {
+            throw new BadRequestException('결재 진행 중인 문서만 결재취소할 수 있습니다.');
+        }
+
+        // 3) 본인 결재 단계인지 확인
+        if (step.approverId !== dto.approverId) {
+            throw new ForbiddenException('본인의 결재 단계만 취소할 수 있습니다.');
+        }
+
+        // 4) 승인 상태인지 확인
+        if (step.status !== ApprovalStatus.APPROVED) {
+            throw new BadRequestException('승인한 결재만 취소할 수 있습니다.');
+        }
+
+        // 5) 정책 검증: 다음 단계가 처리되지 않은 경우에만 가능
+        const hasNextProcessed = DocumentPolicyValidator.hasNextStepProcessed(step.stepOrder, document.approvalSteps);
+        DocumentPolicyValidator.validateCancelApprovalOrThrow(step.status, hasNextProcessed);
+
+        // 6) 본인의 승인 단계를 PENDING으로 되돌림
+        step.대기한다();
+        step.의견을설정한다(dto.reason || '');
+        await this.approvalStepSnapshotService.save(step, { queryRunner });
+
+        this.logger.log(`결재 취소 완료: ${dto.stepSnapshotId}, 결재자: ${dto.approverId}`);
+
+        return {
+            stepSnapshotId: step.id,
+            documentId: document.id,
+            message: '결재가 취소되었습니다.',
+        };
+    }
+
+    /**
+     * @deprecated 상신을취소한다와 결재를취소한다로 분리됨
      */
     async cancelApproval(dto: CancelApprovalDto, queryRunner?: QueryRunner) {
         this.logger.log(`결재 취소 시작: ${dto.documentId}`);

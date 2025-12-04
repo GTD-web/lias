@@ -12,19 +12,20 @@ import { JwtService } from '@nestjs/jwt';
  * 1. POST /documents - 문서 생성 (임시저장)
  * 2. GET /documents/my-all/statistics - 내 전체 문서 통계 조회
  * 3. GET /documents/my-all/documents - 내 전체 문서 목록 조회
- * 4. GET /documents/my-drafts - 내가 작성한 문서 전체 조회
- * 5. GET /documents/:documentId - 문서 상세 조회
+ * 4. GET /documents/my-drafts - 내가 작성한 문서 전체 조회 (draftFilter 필터링 포함)
+ * 5. GET /documents/:documentId - 문서 상세 조회 (canCancelSubmit, canCancelApproval 필드 포함)
  * 6. PUT /documents/:documentId - 문서 수정
  * 7. DELETE /documents/:documentId - 문서 삭제
  * 8. POST /documents/:documentId/submit - 문서 기안
  * 9. POST /documents/submit-direct - 바로 기안
- * 10. GET /documents/templates/:templateId - 새 문서 작성용 템플릿 상세 조회
- * 11. GET /documents/statistics/:userId - 문서 통계 조회
- * 12. POST /documents/:documentId/comments - 코멘트 작성
- * 13. GET /documents/:documentId/comments - 코멘트 목록 조회
- * 14. PUT /documents/comments/:commentId - 코멘트 수정
- * 15. DELETE /documents/comments/:commentId - 코멘트 삭제
- * 16. GET /documents/comments/:commentId - 코멘트 상세 조회
+ * 10. POST /documents/:documentId/cancel-submit - 상신취소 (기안자용)
+ * 11. GET /documents/templates/:templateId - 새 문서 작성용 템플릿 상세 조회
+ * 12. GET /documents/statistics/:userId - 문서 통계 조회
+ * 13. POST /documents/:documentId/comments - 코멘트 작성
+ * 14. GET /documents/:documentId/comments - 코멘트 목록 조회
+ * 15. PUT /documents/comments/:commentId - 코멘트 수정
+ * 16. DELETE /documents/comments/:commentId - 코멘트 삭제
+ * 17. GET /documents/comments/:commentId - 코멘트 상세 조회
  */
 describe('DocumentController (e2e)', () => {
     let app: INestApplication;
@@ -198,6 +199,94 @@ describe('DocumentController (e2e)', () => {
 
             expect(response.body.id).toBe(documentId);
             expect(response.body.title).toBe('E2E 테스트 문서');
+        });
+
+        it('✅ 정상: 문서 조회 시 canCancelSubmit, canCancelApproval 필드 포함', async () => {
+            // 새 문서 생성 및 기안
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '취소 가능 여부 필드 테스트',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerEmployeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            // 기안자가 조회 시 canCancelSubmit 필드 확인
+            const response = await request(app.getHttpServer())
+                .get(`/documents/${docResponse.body.id}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+
+            // 필드가 존재하는지 확인
+            expect(response.body).toHaveProperty('canCancelSubmit');
+            expect(response.body).toHaveProperty('canCancelApproval');
+
+            // 결재자가 처리하지 않았으므로 기안자의 canCancelSubmit은 true
+            expect(response.body.canCancelSubmit).toBe(true);
+            // 기안자는 결재자가 아니므로 canCancelApproval은 false
+            expect(response.body.canCancelApproval).toBe(false);
+        });
+
+        it('✅ 정상: 결재자 승인 후 canCancelApproval 확인', async () => {
+            // 여러 결재자가 있는 문서 생성
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: 'canCancelApproval 테스트 문서',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'APPROVAL', approverId: implementerEmployeeId }, // 두 번째 결재자
+                        { stepOrder: 3, stepType: 'IMPLEMENTATION', approverId: employeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            // 결재자 토큰 생성
+            const employeeRepo = dataSource.getRepository('Employee');
+            const approver = await employeeRepo.findOne({ where: { id: approverEmployeeId } });
+            const approverToken = jwtService.sign({
+                sub: approverEmployeeId,
+                employeeNumber: approver?.employeeNumber,
+            });
+
+            // 결재 단계 조회
+            const stepsRes = await request(app.getHttpServer())
+                .get(`/approval-process/document/${docResponse.body.id}/steps`)
+                .set('Authorization', `Bearer ${authToken}`);
+
+            const firstApprovalStep = stepsRes.body.find(
+                (s: { stepType: string; stepOrder: number }) => s.stepType === 'APPROVAL' && s.stepOrder === 1,
+            );
+
+            // 첫 번째 결재자 승인
+            await request(app.getHttpServer())
+                .post('/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: firstApprovalStep.id,
+                });
+
+            // 첫 번째 결재자가 조회 시 canCancelApproval 확인
+            const response = await request(app.getHttpServer())
+                .get(`/documents/${docResponse.body.id}`)
+                .set('Authorization', `Bearer ${approverToken}`)
+                .expect(200);
+
+            // 본인이 승인했고 다음 결재자가 아직 처리 안했으므로 canCancelApproval은 true
+            expect(response.body.canCancelApproval).toBe(true);
+            // 기안자가 아니므로 canCancelSubmit은 false
+            expect(response.body.canCancelSubmit).toBe(false);
         });
 
         it('❌ 실패: 존재하지 않는 문서 ID', async () => {
@@ -390,6 +479,187 @@ describe('DocumentController (e2e)', () => {
         });
     });
 
+    // ==================== 상신취소 테스트 (기안자용) ====================
+
+    describe('POST /documents/:documentId/cancel-submit - 상신취소 (기안자용)', () => {
+        it('✅ 정상: 결재자 처리 전 상신취소', async () => {
+            // 새 문서 생성 및 기안
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '상신취소 테스트 문서',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerEmployeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            const response = await request(app.getHttpServer())
+                .post(`/documents/${docResponse.body.id}/cancel-submit`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    reason: '재작성이 필요하여 상신을 취소합니다.',
+                })
+                .expect(200);
+
+            expect(response.body.status).toBe('CANCELLED');
+        });
+
+        it('✅ 정상: 상신취소 후 canCancelSubmit 확인', async () => {
+            // 새 문서 생성 및 기안
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: 'canCancelSubmit 테스트 문서',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerEmployeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            // 문서 조회 시 canCancelSubmit 필드 확인
+            const getResponse = await request(app.getHttpServer())
+                .get(`/documents/${docResponse.body.id}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+
+            // 결재자가 아직 처리하지 않은 상태이므로 canCancelSubmit은 true
+            expect(getResponse.body).toHaveProperty('canCancelSubmit');
+            expect(getResponse.body.canCancelSubmit).toBe(true);
+        });
+
+        it('❌ 실패: 결재자가 처리한 후 상신취소 시도', async () => {
+            // 새 문서 생성 및 기안
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '취소 불가 테스트 문서',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerEmployeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            // 결재자 토큰 생성
+            const employeeRepo = dataSource.getRepository('Employee');
+            const approver = await employeeRepo.findOne({ where: { id: approverEmployeeId } });
+            const approverToken = jwtService.sign({
+                sub: approverEmployeeId,
+                employeeNumber: approver?.employeeNumber,
+            });
+
+            // 결재 단계 조회
+            const stepsRes = await request(app.getHttpServer())
+                .get(`/approval-process/document/${docResponse.body.id}/steps`)
+                .set('Authorization', `Bearer ${authToken}`);
+
+            const approvalStep = stepsRes.body.find((s: { stepType: string }) => s.stepType === 'APPROVAL');
+
+            // 결재자 승인
+            await request(app.getHttpServer())
+                .post('/approval-process/approve')
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    stepSnapshotId: approvalStep.id,
+                });
+
+            // 기안자 상신취소 시도 (실패 예상)
+            await request(app.getHttpServer())
+                .post(`/documents/${docResponse.body.id}/cancel-submit`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    reason: '취소 시도',
+                })
+                .expect(400);
+        });
+
+        it('❌ 실패: 기안자가 아닌 사용자의 상신취소 시도', async () => {
+            // 새 문서 생성 및 기안
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '타인 상신취소 시도 테스트',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerEmployeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            // 결재자 토큰 생성
+            const employeeRepo = dataSource.getRepository('Employee');
+            const approver = await employeeRepo.findOne({ where: { id: approverEmployeeId } });
+            const approverToken = jwtService.sign({
+                sub: approverEmployeeId,
+                employeeNumber: approver?.employeeNumber,
+            });
+
+            // 기안자가 아닌 결재자가 상신취소 시도 (권한 없음)
+            await request(app.getHttpServer())
+                .post(`/documents/${docResponse.body.id}/cancel-submit`)
+                .set('Authorization', `Bearer ${approverToken}`)
+                .send({
+                    reason: '취소 시도',
+                })
+                .expect(403);
+        });
+
+        it('❌ 실패: 취소 사유 누락', async () => {
+            // 새 문서 생성 및 기안
+            const docResponse = await request(app.getHttpServer())
+                .post('/documents/submit-direct')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    documentTemplateId: templateId,
+                    title: '사유 누락 테스트',
+                    content: '<p>테스트</p>',
+                    approvalSteps: [
+                        { stepOrder: 1, stepType: 'APPROVAL', approverId: approverEmployeeId },
+                        { stepOrder: 2, stepType: 'IMPLEMENTATION', approverId: implementerEmployeeId },
+                    ],
+                });
+
+            expect(docResponse.status).toBe(201);
+
+            await request(app.getHttpServer())
+                .post(`/documents/${docResponse.body.id}/cancel-submit`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    // reason 누락
+                })
+                .expect(400);
+        });
+
+        it('❌ 실패: 존재하지 않는 문서', async () => {
+            await request(app.getHttpServer())
+                .post('/documents/00000000-0000-0000-0000-000000000000/cancel-submit')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    reason: '취소 시도',
+                })
+                .expect(404);
+        });
+    });
+
     // ==================== 문서 조회 테스트 ====================
 
     describe('GET /documents/my-all/statistics - 내 전체 문서 통계 조회', () => {
@@ -469,6 +739,38 @@ describe('DocumentController (e2e)', () => {
                 .expect(200);
 
             expect(response.body).toHaveProperty('meta');
+        });
+
+        it('✅ 정상: DRAFT_ONLY 필터링 (임시저장 문서만)', async () => {
+            const response = await request(app.getHttpServer())
+                .get('/documents/my-drafts')
+                .query({ draftFilter: 'DRAFT_ONLY' })
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+
+            expect(response.body).toHaveProperty('data');
+            // 모든 문서가 DRAFT 상태인지 확인 (데이터가 있는 경우)
+            if (response.body.data.length > 0) {
+                response.body.data.forEach((doc: { status: string }) => {
+                    expect(doc.status).toBe('DRAFT');
+                });
+            }
+        });
+
+        it('✅ 정상: EXCLUDE_DRAFT 필터링 (상신 완료 문서만)', async () => {
+            const response = await request(app.getHttpServer())
+                .get('/documents/my-drafts')
+                .query({ draftFilter: 'EXCLUDE_DRAFT' })
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+
+            expect(response.body).toHaveProperty('data');
+            // 모든 문서가 DRAFT가 아닌 상태인지 확인 (데이터가 있는 경우)
+            if (response.body.data.length > 0) {
+                response.body.data.forEach((doc: { status: string }) => {
+                    expect(doc.status).not.toBe('DRAFT');
+                });
+            }
         });
     });
 

@@ -91,6 +91,15 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
         });
         return result;
     }
+    async cancelApprovalStep(dto, approverId) {
+        this.logger.log(`결재 취소 요청: ${dto.stepSnapshotId}, 결재자: ${approverId}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            return await this.approvalProcessContext.결재를취소한다({
+                ...dto,
+                approverId: approverId,
+            }, queryRunner);
+        });
+    }
     async cancelApproval(dto, cancelerId) {
         this.logger.log(`결재 취소 요청: ${dto.documentId}`);
         return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {

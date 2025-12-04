@@ -225,6 +225,25 @@ export class DocumentService {
     }
 
     /**
+     * 상신취소 (기안자용)
+     * 정책: 결재진행중이고 결재자가 아직 어떤 처리도 하지 않은 상태일 때만 가능
+     */
+    async cancelSubmit(documentId: string, drafterId: string, reason: string) {
+        this.logger.log(`상신 취소 요청: ${documentId}, 기안자: ${drafterId}`);
+
+        return await withTransaction(this.dataSource, async (queryRunner) => {
+            return await this.documentContext.상신을취소한다(
+                {
+                    documentId,
+                    drafterId,
+                    reason,
+                },
+                queryRunner,
+            );
+        });
+    }
+
+    /**
      * 문서 기안 알림 전송 (private)
      */
     private async sendSubmitNotification(documentId: string, drafterId: string): Promise<void> {
