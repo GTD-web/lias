@@ -105,6 +105,20 @@ __decorate([
     __metadata("design:type", String)
 ], MappedApproverDto.prototype, "email", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '직책 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], MappedApproverDto.prototype, "positionId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '직책명',
+        example: '팀장',
+    }),
+    __metadata("design:type", String)
+], MappedApproverDto.prototype, "positionTitle", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({
         description: '할당 유형',
         example: 'FIXED',

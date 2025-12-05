@@ -84,6 +84,18 @@ export class MappedApproverDto {
     })
     email: string;
 
+    @ApiPropertyOptional({
+        description: '직책 ID',
+        example: 'uuid',
+    })
+    positionId?: string;
+
+    @ApiPropertyOptional({
+        description: '직책명',
+        example: '팀장',
+    })
+    positionTitle?: string;
+
     @ApiProperty({
         description: '할당 유형',
         example: 'FIXED',
