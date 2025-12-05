@@ -77,6 +77,23 @@ export declare class DocumentController {
         };
     }>;
     getDocument(user: Employee, documentId: string): Promise<{
+        drafter: {
+            id: string;
+            employeeNumber: string;
+            name: string;
+            email: string;
+            department: {
+                id: string;
+                departmentName: string;
+                departmentCode: string;
+            };
+            position: {
+                id: string;
+                positionTitle: string;
+                positionCode: string;
+                level: number;
+            };
+        };
         canCancelApproval: boolean;
         canCancelSubmit: boolean;
         id: string;
@@ -99,7 +116,6 @@ export declare class DocumentController {
         rejectedAt?: Date;
         createdAt: Date;
         updatedAt: Date;
-        drafter: Employee;
         approvalSteps: import("../../../domain").ApprovalStepSnapshot[];
         revisions: import("../../../domain").DocumentRevision[];
         comments: import("../../../domain").Comment[];

@@ -27,6 +27,23 @@ export declare class DocumentService {
         documentId: string;
     }>;
     getDocument(documentId: string, userId?: string): Promise<{
+        drafter: {
+            id: string;
+            employeeNumber: string;
+            name: string;
+            email: string;
+            department: {
+                id: string;
+                departmentName: string;
+                departmentCode: string;
+            };
+            position: {
+                id: string;
+                positionTitle: string;
+                positionCode: string;
+                level: number;
+            };
+        };
         canCancelApproval: boolean;
         canCancelSubmit: boolean;
         id: string;
@@ -49,7 +66,6 @@ export declare class DocumentService {
         rejectedAt?: Date;
         createdAt: Date;
         updatedAt: Date;
-        drafter: import("../../../domain").Employee;
         approvalSteps: import("../../../domain").ApprovalStepSnapshot[];
         revisions: import("../../../domain").DocumentRevision[];
         comments: import("../../../domain").Comment[];

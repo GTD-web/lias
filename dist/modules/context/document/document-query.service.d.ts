@@ -11,6 +11,23 @@ export declare class DocumentQueryService {
     private readonly logger;
     constructor(dataSource: DataSource, documentService: DomainDocumentService, filterBuilder: DocumentFilterBuilder);
     getDocument(documentId: string, userId?: string, queryRunner?: QueryRunner): Promise<{
+        drafter: {
+            id: string;
+            employeeNumber: string;
+            name: string;
+            email: string;
+            department: {
+                id: string;
+                departmentName: string;
+                departmentCode: string;
+            };
+            position: {
+                id: string;
+                positionTitle: string;
+                positionCode: string;
+                level: number;
+            };
+        };
         canCancelApproval: boolean;
         canCancelSubmit: boolean;
         id: string;
@@ -33,7 +50,6 @@ export declare class DocumentQueryService {
         rejectedAt?: Date;
         createdAt: Date;
         updatedAt: Date;
-        drafter: import("../../domain").Employee;
         approvalSteps: import("../../domain").ApprovalStepSnapshot[];
         revisions: import("../../domain").DocumentRevision[];
         comments: import("../../domain").Comment[];
@@ -146,4 +162,5 @@ export declare class DocumentQueryService {
         };
     }>;
     getMyAllDocumentsStatistics(userId: string): Promise<Record<string, number>>;
+    private extractDrafterDepartmentPosition;
 }

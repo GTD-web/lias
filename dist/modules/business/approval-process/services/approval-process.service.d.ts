@@ -62,7 +62,7 @@ export declare class ApprovalProcessService {
         };
     }>;
     getApprovalSteps(documentId: string): Promise<import("../../../domain").ApprovalStepSnapshot[]>;
-    processApprovalAction(dto: ProcessApprovalActionDto, approverId: string): Promise<import("../../../domain").ApprovalStepSnapshot | import("../../../domain").Document>;
+    processApprovalAction(dto: ProcessApprovalActionDto, approverId: string): Promise<import("../../../domain").Document | import("../../../domain").ApprovalStepSnapshot>;
     private sendApproveNotification;
     private sendRejectNotification;
     private sendCompleteAgreementNotification;
