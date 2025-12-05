@@ -424,63 +424,63 @@ export class ApprovalProcessContext {
     /**
      * @deprecated 상신을취소한다와 결재를취소한다로 분리됨
      */
-    async cancelApproval(dto: CancelApprovalDto, queryRunner?: QueryRunner) {
-        this.logger.log(`결재 취소 시작: ${dto.documentId}`);
+    // async cancelApproval(dto: CancelApprovalDto, queryRunner?: QueryRunner) {
+    //     this.logger.log(`결재 취소 시작: ${dto.documentId}`);
 
-        // 1) Document 조회
-        const document = await this.documentService.findOneWithError({
-            where: { id: dto.documentId },
-            relations: ['approvalSteps'],
-            queryRunner,
-        });
+    //     // 1) Document 조회
+    //     const document = await this.documentService.findOneWithError({
+    //         where: { id: dto.documentId },
+    //         relations: ['approvalSteps'],
+    //         queryRunner,
+    //     });
 
-        // 2) 결재진행중 상태 확인
-        if (document.status !== DocumentStatus.PENDING) {
-            throw new BadRequestException('결재 진행 중인 문서만 취소할 수 있습니다.');
-        }
+    //     // 2) 결재진행중 상태 확인
+    //     if (document.status !== DocumentStatus.PENDING) {
+    //         throw new BadRequestException('결재 진행 중인 문서만 취소할 수 있습니다.');
+    //     }
 
-        // 3) 요청자 역할 확인
-        const isDrafter = document.drafterId === dto.requesterId;
+    //     // 3) 요청자 역할 확인
+    //     const isDrafter = document.drafterId === dto.requesterId;
 
-        // 요청자가 결재자인 경우: 본인이 승인한 APPROVAL 단계 찾기
-        const requesterApprovedStep = document.approvalSteps.find(
-            (step) =>
-                step.approverId === dto.requesterId &&
-                step.status === ApprovalStatus.APPROVED &&
-                step.stepType === ApprovalStepType.APPROVAL,
-        );
+    //     // 요청자가 결재자인 경우: 본인이 승인한 APPROVAL 단계 찾기
+    //     const requesterApprovedStep = document.approvalSteps.find(
+    //         (step) =>
+    //             step.approverId === dto.requesterId &&
+    //             step.status === ApprovalStatus.APPROVED &&
+    //             step.stepType === ApprovalStepType.APPROVAL,
+    //     );
 
-        // 4) 정책 검증
-        if (isDrafter) {
-            // 기안자의 상신취소: 결재자가 아직 아무것도 처리하지 않은 경우에만 가능
-            const hasAnyProcessed = DocumentPolicyValidator.hasAnyApprovalProcessed(document.approvalSteps);
-            DocumentPolicyValidator.validateCancelSubmitOrThrow(document.status, hasAnyProcessed);
-        } else if (requesterApprovedStep) {
-            // 결재자의 결재취소: 본인이 승인했고, 다음 단계가 처리되지 않은 경우에만 가능
-            const hasNextProcessed = DocumentPolicyValidator.hasNextStepProcessed(
-                requesterApprovedStep.stepOrder,
-                document.approvalSteps,
-            );
-            DocumentPolicyValidator.validateCancelApprovalOrThrow(requesterApprovedStep.status, hasNextProcessed);
+    //     // 4) 정책 검증
+    //     if (isDrafter) {
+    //         // 기안자의 상신취소: 결재자가 아직 아무것도 처리하지 않은 경우에만 가능
+    //         const hasAnyProcessed = DocumentPolicyValidator.hasAnyApprovalProcessed(document.approvalSteps);
+    //         DocumentPolicyValidator.validateCancelSubmitOrThrow(document.status, hasAnyProcessed);
+    //     } else if (requesterApprovedStep) {
+    //         // 결재자의 결재취소: 본인이 승인했고, 다음 단계가 처리되지 않은 경우에만 가능
+    //         const hasNextProcessed = DocumentPolicyValidator.hasNextStepProcessed(
+    //             requesterApprovedStep.stepOrder,
+    //             document.approvalSteps,
+    //         );
+    //         DocumentPolicyValidator.validateCancelApprovalOrThrow(requesterApprovedStep.status, hasNextProcessed);
 
-            // 결재취소인 경우: 본인의 승인 단계를 PENDING으로 되돌림
-            requesterApprovedStep.대기한다();
-            await this.approvalStepSnapshotService.save(requesterApprovedStep, { queryRunner });
+    //         // 결재취소인 경우: 본인의 승인 단계를 PENDING으로 되돌림
+    //         requesterApprovedStep.대기한다();
+    //         await this.approvalStepSnapshotService.save(requesterApprovedStep, { queryRunner });
 
-            this.logger.log(`결재 단계 취소 완료: ${requesterApprovedStep.id}, 취소자: ${dto.requesterId}`);
-            return document; // 결재취소는 문서 상태를 변경하지 않고 단계만 되돌림
-        } else {
-            throw new ForbiddenException('기안자이거나, 본인이 APPROVAL 결재를 승인한 상태에서만 취소할 수 있습니다.');
-        }
+    //         this.logger.log(`결재 단계 취소 완료: ${requesterApprovedStep.id}, 취소자: ${dto.requesterId}`);
+    //         return document; // 결재취소는 문서 상태를 변경하지 않고 단계만 되돌림
+    //     } else {
+    //         throw new ForbiddenException('기안자이거나, 본인이 APPROVAL 결재를 승인한 상태에서만 취소할 수 있습니다.');
+    //     }
 
-        // 5) 상신취소: Document 상태를 CANCELLED로 변경
-        document.취소한다(dto.reason);
+    //     // 5) 상신취소: Document 상태를 CANCELLED로 변경
+    //     document.취소한다(dto.reason);
 
-        const cancelledDocument = await this.documentService.save(document, { queryRunner });
+    //     const cancelledDocument = await this.documentService.save(document, { queryRunner });
 
-        this.logger.log(`상신 취소 완료: ${dto.documentId}, 취소자: ${dto.requesterId}`);
-        return cancelledDocument;
-    }
+    //     this.logger.log(`상신 취소 완료: ${dto.documentId}, 취소자: ${dto.requesterId}`);
+    //     return cancelledDocument;
+    // }
 
     /**
      * 6. 내 결재 대기 목록 조회 (페이징, 필터링)

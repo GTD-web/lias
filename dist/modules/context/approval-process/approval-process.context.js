@@ -230,40 +230,6 @@ let ApprovalProcessContext = ApprovalProcessContext_1 = class ApprovalProcessCon
             message: '결재가 취소되었습니다.',
         };
     }
-    async cancelApproval(dto, queryRunner) {
-        this.logger.log(`결재 취소 시작: ${dto.documentId}`);
-        const document = await this.documentService.findOneWithError({
-            where: { id: dto.documentId },
-            relations: ['approvalSteps'],
-            queryRunner,
-        });
-        if (document.status !== approval_enum_1.DocumentStatus.PENDING) {
-            throw new common_1.BadRequestException('결재 진행 중인 문서만 취소할 수 있습니다.');
-        }
-        const isDrafter = document.drafterId === dto.requesterId;
-        const requesterApprovedStep = document.approvalSteps.find((step) => step.approverId === dto.requesterId &&
-            step.status === approval_enum_1.ApprovalStatus.APPROVED &&
-            step.stepType === approval_enum_1.ApprovalStepType.APPROVAL);
-        if (isDrafter) {
-            const hasAnyProcessed = document_policy_validator_1.DocumentPolicyValidator.hasAnyApprovalProcessed(document.approvalSteps);
-            document_policy_validator_1.DocumentPolicyValidator.validateCancelSubmitOrThrow(document.status, hasAnyProcessed);
-        }
-        else if (requesterApprovedStep) {
-            const hasNextProcessed = document_policy_validator_1.DocumentPolicyValidator.hasNextStepProcessed(requesterApprovedStep.stepOrder, document.approvalSteps);
-            document_policy_validator_1.DocumentPolicyValidator.validateCancelApprovalOrThrow(requesterApprovedStep.status, hasNextProcessed);
-            requesterApprovedStep.대기한다();
-            await this.approvalStepSnapshotService.save(requesterApprovedStep, { queryRunner });
-            this.logger.log(`결재 단계 취소 완료: ${requesterApprovedStep.id}, 취소자: ${dto.requesterId}`);
-            return document;
-        }
-        else {
-            throw new common_1.ForbiddenException('기안자이거나, 본인이 APPROVAL 결재를 승인한 상태에서만 취소할 수 있습니다.');
-        }
-        document.취소한다(dto.reason);
-        const cancelledDocument = await this.documentService.save(document, { queryRunner });
-        this.logger.log(`상신 취소 완료: ${dto.documentId}, 취소자: ${dto.requesterId}`);
-        return cancelledDocument;
-    }
     async getMyPendingApprovals(userId, type, page = 1, limit = 20, queryRunner) {
         const repository = queryRunner
             ? queryRunner.manager.getRepository(document_entity_1.Document)

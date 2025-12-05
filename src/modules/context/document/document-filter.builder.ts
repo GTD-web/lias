@@ -80,11 +80,11 @@ export class DocumentFilterBuilder {
     }
 
     /**
-     * 결재 진행중 필터 (내가 상신한 문서)
+     * 결재 진행중 필터 (내가 상신한 문서 - DRAFT 제외한 모든 상태)
      */
     private applyPendingFilter(qb: SelectQueryBuilder<Document>, userId: string): void {
-        qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status = :status', {
-            status: DocumentStatus.PENDING,
+        qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status != :draftStatus', {
+            draftStatus: DocumentStatus.DRAFT,
         });
     }
 
