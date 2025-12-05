@@ -1,5 +1,5 @@
 import { DocumentService } from '../services/document.service';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto, CancelSubmitDto } from '../dtos';
+import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentBodyDto, SubmitDocumentDirectDto, QueryMyAllDocumentsDto, CancelSubmitDto, CreateTestDocumentQueryDto } from '../dtos';
 import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 import { Employee } from '../../../domain/employee/employee.entity';
@@ -174,4 +174,12 @@ export declare class DocumentController {
     updateComment(commentId: string, user: Employee, dto: UpdateCommentDto): Promise<import("../../../domain").Comment>;
     deleteComment(commentId: string, user: Employee): Promise<void>;
     getComment(commentId: string): Promise<import("../../../domain").Comment>;
+    createTestDocument(query: CreateTestDocumentQueryDto): Promise<{
+        documentId: string;
+        documentNumber: string;
+        title: string;
+        status: DocumentStatus;
+        approvalStepsCount: number;
+        message: string;
+    }>;
 }

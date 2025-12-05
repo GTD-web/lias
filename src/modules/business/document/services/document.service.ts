@@ -5,12 +5,18 @@ import { TemplateContext } from '../../../context/template/template.context';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { NotificationContext } from '../../../context/notification/notification.context';
 import { CommentContext } from '../../../context/comment/comment.context';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
+import {
+    CreateDocumentDto,
+    UpdateDocumentDto,
+    SubmitDocumentDto,
+    SubmitDocumentDirectDto,
+    CreateTestDocumentDto,
+} from '../dtos';
 import {
     CreateDocumentDto as ContextCreateDocumentDto,
     DocumentFilterDto,
 } from '../../../context/document/dtos/document.dto';
-import { ApprovalStepType } from 'src/common/enums/approval.enum';
+import { ApprovalStepType, DocumentStatus } from 'src/common/enums/approval.enum';
 import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
 import { withTransaction } from 'src/common/utils/transaction.util';
 import { DataSource } from 'typeorm';
@@ -378,5 +384,83 @@ export class DocumentService {
     async getComment(commentId: string) {
         this.logger.debug(`코멘트 조회: ${commentId}`);
         return await this.commentContext.코멘트를조회한다(commentId);
+    }
+
+    // ============================================
+    // 🧪 테스트 데이터 생성
+    // ============================================
+
+    /**
+     * 테스트 문서 생성
+     * 개발/테스트 환경에서 다양한 상태의 문서를 빠르게 생성합니다.
+     */
+    async createTestDocument(dto: CreateTestDocumentDto) {
+        this.logger.log(`테스트 문서 생성 시작: ${dto.title}`);
+
+        return await withTransaction(this.dataSource, async (queryRunner) => {
+            // 1. 문서 생성 (DocumentContext 사용)
+            const document = await this.documentContext.createDocument(
+                {
+                    title: dto.title,
+                    content: dto.content || '<p>테스트 문서 내용입니다.</p>',
+                    drafterId: dto.drafterId,
+                    metadata: { isTestDocument: true },
+                },
+                queryRunner,
+            );
+
+            // 2. 결재 단계 스냅샷 생성 (DocumentContext 사용)
+            const approvalStepsForContext = dto.approvalSteps.map((step) => ({
+                stepOrder: step.stepOrder,
+                stepType: step.stepType,
+                approverId: step.approverId,
+            }));
+            await this.documentContext.createApprovalStepSnapshots(document.id, approvalStepsForContext, queryRunner);
+
+            // 3. 결재 단계 상태 업데이트 (테스트용으로 직접 업데이트)
+            for (const step of dto.approvalSteps) {
+                await queryRunner.manager.update(
+                    'approval_step_snapshots',
+                    { documentId: document.id, stepOrder: step.stepOrder },
+                    {
+                        status: step.status,
+                        comment: step.comment || null,
+                        approvedAt: step.status === 'APPROVED' ? new Date() : null,
+                    },
+                );
+            }
+
+            // 4. 문서 상태 및 번호 업데이트 (DRAFT가 아닌 경우)
+            let documentNumber = '';
+            if (dto.status !== DocumentStatus.DRAFT) {
+                // 문서 번호 생성 (간단한 테스트용 번호)
+                const timestamp = Date.now().toString().slice(-6);
+                documentNumber = `TEST-${new Date().getFullYear()}-${timestamp}`;
+
+                await queryRunner.manager.update(
+                    'documents',
+                    { id: document.id },
+                    {
+                        status: dto.status,
+                        documentNumber: documentNumber,
+                        submittedAt: new Date(),
+                        ...(dto.status === DocumentStatus.APPROVED && { approvedAt: new Date() }),
+                        ...(dto.status === DocumentStatus.REJECTED && { rejectedAt: new Date() }),
+                        ...(dto.status === DocumentStatus.CANCELLED && { cancelledAt: new Date() }),
+                    },
+                );
+            }
+
+            this.logger.log(`테스트 문서 생성 완료: ${document.id}`);
+
+            return {
+                documentId: document.id,
+                documentNumber: documentNumber || '(임시저장)',
+                title: dto.title,
+                status: dto.status,
+                approvalStepsCount: dto.approvalSteps.length,
+                message: '테스트 문서가 성공적으로 생성되었습니다.',
+            };
+        });
     }
 }

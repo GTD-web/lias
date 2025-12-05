@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../../../../common/guards/jwt-auth.guard");
 const document_service_1 = require("../services/document.service");
 const dtos_1 = require("../dtos");
+const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const comment_dto_1 = require("../dtos/comment.dto");
 const user_decorator_1 = require("../../../../common/decorators/user.decorator");
 const employee_entity_1 = require("../../../domain/employee/employee.entity");
@@ -90,6 +91,79 @@ let DocumentController = class DocumentController {
     }
     async getComment(commentId) {
         return await this.documentService.getComment(commentId);
+    }
+    async createTestDocument(query) {
+        const getEmployeeId = (name) => dtos_1.TEST_EMPLOYEE_ID_MAP[name];
+        const approvalSteps = [];
+        let stepOrder = 1;
+        if (query.agreement1Approver && query.agreement1Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.AGREEMENT,
+                approverId: getEmployeeId(query.agreement1Approver),
+                status: query.agreement1Status,
+            });
+        }
+        if (query.agreement2Approver && query.agreement2Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.AGREEMENT,
+                approverId: getEmployeeId(query.agreement2Approver),
+                status: query.agreement2Status,
+            });
+        }
+        approvalSteps.push({
+            stepOrder: stepOrder++,
+            stepType: approval_enum_1.ApprovalStepType.APPROVAL,
+            approverId: getEmployeeId(query.approval1Approver),
+            status: query.approval1Status,
+        });
+        if (query.approval2Approver && query.approval2Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.APPROVAL,
+                approverId: getEmployeeId(query.approval2Approver),
+                status: query.approval2Status,
+            });
+        }
+        if (query.approval3Approver && query.approval3Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.APPROVAL,
+                approverId: getEmployeeId(query.approval3Approver),
+                status: query.approval3Status,
+            });
+        }
+        approvalSteps.push({
+            stepOrder: stepOrder++,
+            stepType: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
+            approverId: getEmployeeId(query.implementationApprover),
+            status: query.implementationStatus,
+        });
+        if (query.reference1Approver && query.reference1Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.REFERENCE,
+                approverId: getEmployeeId(query.reference1Approver),
+                status: query.reference1Status,
+            });
+        }
+        if (query.reference2Approver && query.reference2Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: approval_enum_1.ApprovalStepType.REFERENCE,
+                approverId: getEmployeeId(query.reference2Approver),
+                status: query.reference2Status,
+            });
+        }
+        const dto = {
+            title: query.title,
+            content: query.content,
+            drafterId: getEmployeeId(query.drafterName),
+            status: query.status,
+            approvalSteps,
+        };
+        return await this.documentService.createTestDocument(dto);
     }
 };
 exports.DocumentController = DocumentController;
@@ -765,6 +839,42 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "getComment", null);
+__decorate([
+    (0, common_1.Get)('test/create'),
+    (0, swagger_1.ApiOperation)({
+        summary: '🧪 테스트 문서 생성',
+        description: '개발/테스트 환경에서 다양한 상태의 문서를 빠르게 생성합니다.\n\n' +
+            '**⚠️ 주의: 이 API는 테스트 목적으로만 사용해야 합니다.**\n\n' +
+            '**결재 단계별 구분:**\n' +
+            '- 🤝 **합의 (AGREEMENT)**: 합의1, 합의2 (선택)\n' +
+            '- ✅ **결재 (APPROVAL)**: 결재1 (필수), 결재2 (선택)\n' +
+            '- 🚀 **시행 (IMPLEMENTATION)**: 시행 (필수)\n' +
+            '- 📋 **참조 (REFERENCE)**: 참조1, 참조2 (선택)\n\n' +
+            '**사용 가능한 직원:**\n' +
+            '김규현, 김종식, 우창욱, 이화영, 조민경, 박헌남, 유승훈, 민정호\n\n' +
+            '**예시 시나리오:**\n' +
+            '1. 결재 진행중: 결재1(APPROVED) + 시행(PENDING)\n' +
+            '2. 완전 완료: 결재1(APPROVED) + 시행(APPROVED)\n' +
+            '3. 합의 후 결재: 합의1(APPROVED) + 결재1(APPROVED) + 시행(PENDING)',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '테스트 문서 생성 성공',
+        type: dtos_1.CreateTestDocumentResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: '잘못된 요청',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: '인증 실패',
+    }),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dtos_1.CreateTestDocumentQueryDto]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "createTestDocument", null);
 exports.DocumentController = DocumentController = __decorate([
     (0, swagger_1.ApiTags)('문서 관리'),
     (0, swagger_1.ApiBearerAuth)(),

@@ -9,21 +9,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateTestDocumentResponseDto = exports.CreateTestDocumentDto = exports.CreateTestDocumentQueryDto = exports.TestEmployeeId = void 0;
+exports.CreateTestDocumentResponseDto = exports.CreateTestDocumentDto = exports.CreateTestDocumentQueryDto = exports.TEST_EMPLOYEE_ID_MAP = exports.TestEmployeeName = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const approval_enum_1 = require("../../../../common/enums/approval.enum");
-var TestEmployeeId;
-(function (TestEmployeeId) {
-    TestEmployeeId["\uAE40\uADDC\uD604"] = "839e6f06-8d44-43a1-948c-095253c4cf8c";
-    TestEmployeeId["\uAE40\uC885\uC2DD"] = "604a5c05-e0c0-495f-97bc-b86046db4342";
-    TestEmployeeId["\uC6B0\uCC3D\uC6B1"] = "02b1d831-f278-4393-86ec-9db01248a1ec";
-    TestEmployeeId["\uC774\uD654\uC601"] = "fd3336ea-2b7f-463a-9f21-cced8d68892f";
-    TestEmployeeId["\uC870\uBBFC\uACBD"] = "1e9cc4b3-affb-4f63-9749-3480cd5261b9";
-    TestEmployeeId["\uBC15\uD5CC\uB0A8"] = "f5f08c1d-9330-40f8-b80c-e75d9442503b";
-    TestEmployeeId["\uC720\uC2B9\uD6C8"] = "dbfbb104-6560-4557-8079-7845a82ffe14";
-    TestEmployeeId["\uBBFC\uC815\uD638"] = "2f0ecd69-1b07-4d33-8f49-b71ef9048d87";
-})(TestEmployeeId || (exports.TestEmployeeId = TestEmployeeId = {}));
+var TestEmployeeName;
+(function (TestEmployeeName) {
+    TestEmployeeName["\uAE40\uADDC\uD604"] = "\uAE40\uADDC\uD604";
+    TestEmployeeName["\uAE40\uC885\uC2DD"] = "\uAE40\uC885\uC2DD";
+    TestEmployeeName["\uC6B0\uCC3D\uC6B1"] = "\uC6B0\uCC3D\uC6B1";
+    TestEmployeeName["\uC774\uD654\uC601"] = "\uC774\uD654\uC601";
+    TestEmployeeName["\uC870\uBBFC\uACBD"] = "\uC870\uBBFC\uACBD";
+    TestEmployeeName["\uBC15\uD5CC\uB0A8"] = "\uBC15\uD5CC\uB0A8";
+    TestEmployeeName["\uC720\uC2B9\uD6C8"] = "\uC720\uC2B9\uD6C8";
+    TestEmployeeName["\uBBFC\uC815\uD638"] = "\uBBFC\uC815\uD638";
+})(TestEmployeeName || (exports.TestEmployeeName = TestEmployeeName = {}));
+exports.TEST_EMPLOYEE_ID_MAP = {
+    [TestEmployeeName.김규현]: '839e6f06-8d44-43a1-948c-095253c4cf8c',
+    [TestEmployeeName.김종식]: '604a5c05-e0c0-495f-97bc-b86046db4342',
+    [TestEmployeeName.우창욱]: '02b1d831-f278-4393-86ec-9db01248a1ec',
+    [TestEmployeeName.이화영]: 'fd3336ea-2b7f-463a-9f21-cced8d68892f',
+    [TestEmployeeName.조민경]: '1e9cc4b3-affb-4f63-9749-3480cd5261b9',
+    [TestEmployeeName.박헌남]: 'f5f08c1d-9330-40f8-b80c-e75d9442503b',
+    [TestEmployeeName.유승훈]: 'dbfbb104-6560-4557-8079-7845a82ffe14',
+    [TestEmployeeName.민정호]: '2f0ecd69-1b07-4d33-8f49-b71ef9048d87',
+};
 class CreateTestDocumentQueryDto {
 }
 exports.CreateTestDocumentQueryDto = CreateTestDocumentQueryDto;
@@ -47,14 +57,14 @@ __decorate([
 ], CreateTestDocumentQueryDto.prototype, "content", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '기안자 ID (테스트 직원 중 선택)',
-        enum: TestEmployeeId,
-        example: TestEmployeeId.김규현,
-        enumName: 'TestEmployeeId',
+        description: '기안자 선택',
+        enum: TestEmployeeName,
+        example: TestEmployeeName.김규현,
+        enumName: 'TestEmployeeName',
     }),
-    (0, class_validator_1.IsEnum)(TestEmployeeId),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "drafterId", void 0);
+], CreateTestDocumentQueryDto.prototype, "drafterName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '문서 상태',
@@ -66,125 +76,165 @@ __decorate([
     __metadata("design:type", String)
 ], CreateTestDocumentQueryDto.prototype, "status", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '[단계1] 결재 단계 타입',
-        enum: approval_enum_1.ApprovalStepType,
-        example: approval_enum_1.ApprovalStepType.APPROVAL,
-        enumName: 'ApprovalStepType',
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[합의1] 합의자 선택',
+        enum: TestEmployeeName,
+        enumName: 'TestEmployeeName',
     }),
-    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStepType),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step1Type", void 0);
+], CreateTestDocumentQueryDto.prototype, "agreement1Approver", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[합의1] 합의 상태',
+        enum: approval_enum_1.ApprovalStatus,
+        enumName: 'ApprovalStatus',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
+    __metadata("design:type", String)
+], CreateTestDocumentQueryDto.prototype, "agreement1Status", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[합의2] 합의자 선택',
+        enum: TestEmployeeName,
+        enumName: 'TestEmployeeName',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
+    __metadata("design:type", String)
+], CreateTestDocumentQueryDto.prototype, "agreement2Approver", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[합의2] 합의 상태',
+        enum: approval_enum_1.ApprovalStatus,
+        enumName: 'ApprovalStatus',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
+    __metadata("design:type", String)
+], CreateTestDocumentQueryDto.prototype, "agreement2Status", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '[단계1] 결재자 ID',
-        enum: TestEmployeeId,
-        example: TestEmployeeId.김종식,
-        enumName: 'TestEmployeeId',
+        description: '[결재1] 결재자 선택 (필수)',
+        enum: TestEmployeeName,
+        example: TestEmployeeName.김종식,
+        enumName: 'TestEmployeeName',
     }),
-    (0, class_validator_1.IsEnum)(TestEmployeeId),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step1Approver", void 0);
+], CreateTestDocumentQueryDto.prototype, "approval1Approver", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '[단계1] 결재 상태',
+        description: '[결재1] 결재 상태 (필수)',
         enum: approval_enum_1.ApprovalStatus,
         example: approval_enum_1.ApprovalStatus.APPROVED,
         enumName: 'ApprovalStatus',
     }),
     (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step1Status", void 0);
+], CreateTestDocumentQueryDto.prototype, "approval1Status", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '[단계2] 결재 단계 타입',
-        enum: approval_enum_1.ApprovalStepType,
-        example: approval_enum_1.ApprovalStepType.IMPLEMENTATION,
-        enumName: 'ApprovalStepType',
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[결재2] 결재자 선택',
+        enum: TestEmployeeName,
+        enumName: 'TestEmployeeName',
     }),
-    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStepType),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step2Type", void 0);
+], CreateTestDocumentQueryDto.prototype, "approval2Approver", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: '[단계2] 결재자 ID',
-        enum: TestEmployeeId,
-        example: TestEmployeeId.김규현,
-        enumName: 'TestEmployeeId',
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[결재2] 결재 상태',
+        enum: approval_enum_1.ApprovalStatus,
+        enumName: 'ApprovalStatus',
     }),
-    (0, class_validator_1.IsEnum)(TestEmployeeId),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step2Approver", void 0);
+], CreateTestDocumentQueryDto.prototype, "approval2Status", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[결재3] 결재자 선택',
+        enum: TestEmployeeName,
+        enumName: 'TestEmployeeName',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
+    __metadata("design:type", String)
+], CreateTestDocumentQueryDto.prototype, "approval3Approver", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '[결재3] 결재 상태',
+        enum: approval_enum_1.ApprovalStatus,
+        enumName: 'ApprovalStatus',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
+    __metadata("design:type", String)
+], CreateTestDocumentQueryDto.prototype, "approval3Status", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '[단계2] 결재 상태',
+        description: '[시행] 시행자 선택 (필수)',
+        enum: TestEmployeeName,
+        example: TestEmployeeName.김규현,
+        enumName: 'TestEmployeeName',
+    }),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
+    __metadata("design:type", String)
+], CreateTestDocumentQueryDto.prototype, "implementationApprover", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '[시행] 시행 상태 (필수)',
         enum: approval_enum_1.ApprovalStatus,
         example: approval_enum_1.ApprovalStatus.PENDING,
         enumName: 'ApprovalStatus',
     }),
     (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step2Status", void 0);
+], CreateTestDocumentQueryDto.prototype, "implementationStatus", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '[단계3] 결재 단계 타입 (선택)',
-        enum: approval_enum_1.ApprovalStepType,
-        enumName: 'ApprovalStepType',
+        description: '[참조1] 참조자 선택',
+        enum: TestEmployeeName,
+        enumName: 'TestEmployeeName',
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStepType),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step3Type", void 0);
+], CreateTestDocumentQueryDto.prototype, "reference1Approver", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '[단계3] 결재자 ID (선택)',
-        enum: TestEmployeeId,
-        enumName: 'TestEmployeeId',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(TestEmployeeId),
-    __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step3Approver", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: '[단계3] 결재 상태 (선택)',
+        description: '[참조1] 참조 상태',
         enum: approval_enum_1.ApprovalStatus,
         enumName: 'ApprovalStatus',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step3Status", void 0);
+], CreateTestDocumentQueryDto.prototype, "reference1Status", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '[단계4] 결재 단계 타입 (선택)',
-        enum: approval_enum_1.ApprovalStepType,
-        enumName: 'ApprovalStepType',
+        description: '[참조2] 참조자 선택',
+        enum: TestEmployeeName,
+        enumName: 'TestEmployeeName',
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStepType),
+    (0, class_validator_1.IsEnum)(TestEmployeeName),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step4Type", void 0);
+], CreateTestDocumentQueryDto.prototype, "reference2Approver", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: '[단계4] 결재자 ID (선택)',
-        enum: TestEmployeeId,
-        enumName: 'TestEmployeeId',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(TestEmployeeId),
-    __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step4Approver", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: '[단계4] 결재 상태 (선택)',
+        description: '[참조2] 참조 상태',
         enum: approval_enum_1.ApprovalStatus,
         enumName: 'ApprovalStatus',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(approval_enum_1.ApprovalStatus),
     __metadata("design:type", String)
-], CreateTestDocumentQueryDto.prototype, "step4Status", void 0);
+], CreateTestDocumentQueryDto.prototype, "reference2Status", void 0);
 class CreateTestDocumentDto {
 }
 exports.CreateTestDocumentDto = CreateTestDocumentDto;
@@ -201,7 +251,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '문서 번호',
-        example: 'DOC-2025-0001',
+        example: 'TEST-2025-123456',
     }),
     __metadata("design:type", String)
 ], CreateTestDocumentResponseDto.prototype, "documentNumber", void 0);

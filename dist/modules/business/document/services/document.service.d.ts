@@ -4,8 +4,9 @@ import { TemplateContext } from '../../../context/template/template.context';
 import { ApprovalProcessContext } from '../../../context/approval-process/approval-process.context';
 import { NotificationContext } from '../../../context/notification/notification.context';
 import { CommentContext } from '../../../context/comment/comment.context';
-import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto } from '../dtos';
+import { CreateDocumentDto, UpdateDocumentDto, SubmitDocumentDto, SubmitDocumentDirectDto, CreateTestDocumentDto } from '../dtos';
 import { DocumentFilterDto } from '../../../context/document/dtos/document.dto';
+import { DocumentStatus } from 'src/common/enums/approval.enum';
 import { CreateCommentDto, UpdateCommentDto } from '../dtos/comment.dto';
 import { DataSource } from 'typeorm';
 import { ApproverMappingService } from 'src/modules/context/template/approver-mapping.service';
@@ -50,7 +51,7 @@ export declare class DocumentService {
         documentNumber?: string;
         title: string;
         content: string;
-        status: import("src/common/enums/approval.enum").DocumentStatus;
+        status: DocumentStatus;
         comment?: string;
         metadata?: Record<string, any>;
         drafterId: string;
@@ -181,7 +182,7 @@ export declare class DocumentService {
             documentNumber?: string;
             title: string;
             content: string;
-            status: import("src/common/enums/approval.enum").DocumentStatus;
+            status: DocumentStatus;
             comment?: string;
             metadata?: Record<string, any>;
             drafterId: string;
@@ -215,4 +216,12 @@ export declare class DocumentService {
     deleteComment(commentId: string, authorId: string): Promise<import("../../../domain").Comment>;
     getDocumentComments(documentId: string): Promise<import("../../../domain").Comment[]>;
     getComment(commentId: string): Promise<import("../../../domain").Comment>;
+    createTestDocument(dto: CreateTestDocumentDto): Promise<{
+        documentId: string;
+        documentNumber: string;
+        title: string;
+        status: DocumentStatus;
+        approvalStepsCount: number;
+        message: string;
+    }>;
 }

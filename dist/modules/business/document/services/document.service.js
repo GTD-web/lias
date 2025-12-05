@@ -18,6 +18,7 @@ const template_context_1 = require("../../../context/template/template.context")
 const approval_process_context_1 = require("../../../context/approval-process/approval-process.context");
 const notification_context_1 = require("../../../context/notification/notification.context");
 const comment_context_1 = require("../../../context/comment/comment.context");
+const approval_enum_1 = require("../../../../common/enums/approval.enum");
 const transaction_util_1 = require("../../../../common/utils/transaction.util");
 const typeorm_1 = require("typeorm");
 const approver_mapping_service_1 = require("../../../context/template/approver-mapping.service");
@@ -220,6 +221,52 @@ let DocumentService = DocumentService_1 = class DocumentService {
     async getComment(commentId) {
         this.logger.debug(`코멘트 조회: ${commentId}`);
         return await this.commentContext.코멘트를조회한다(commentId);
+    }
+    async createTestDocument(dto) {
+        this.logger.log(`테스트 문서 생성 시작: ${dto.title}`);
+        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
+            const document = await this.documentContext.createDocument({
+                title: dto.title,
+                content: dto.content || '<p>테스트 문서 내용입니다.</p>',
+                drafterId: dto.drafterId,
+                metadata: { isTestDocument: true },
+            }, queryRunner);
+            const approvalStepsForContext = dto.approvalSteps.map((step) => ({
+                stepOrder: step.stepOrder,
+                stepType: step.stepType,
+                approverId: step.approverId,
+            }));
+            await this.documentContext.createApprovalStepSnapshots(document.id, approvalStepsForContext, queryRunner);
+            for (const step of dto.approvalSteps) {
+                await queryRunner.manager.update('approval_step_snapshots', { documentId: document.id, stepOrder: step.stepOrder }, {
+                    status: step.status,
+                    comment: step.comment || null,
+                    approvedAt: step.status === 'APPROVED' ? new Date() : null,
+                });
+            }
+            let documentNumber = '';
+            if (dto.status !== approval_enum_1.DocumentStatus.DRAFT) {
+                const timestamp = Date.now().toString().slice(-6);
+                documentNumber = `TEST-${new Date().getFullYear()}-${timestamp}`;
+                await queryRunner.manager.update('documents', { id: document.id }, {
+                    status: dto.status,
+                    documentNumber: documentNumber,
+                    submittedAt: new Date(),
+                    ...(dto.status === approval_enum_1.DocumentStatus.APPROVED && { approvedAt: new Date() }),
+                    ...(dto.status === approval_enum_1.DocumentStatus.REJECTED && { rejectedAt: new Date() }),
+                    ...(dto.status === approval_enum_1.DocumentStatus.CANCELLED && { cancelledAt: new Date() }),
+                });
+            }
+            this.logger.log(`테스트 문서 생성 완료: ${document.id}`);
+            return {
+                documentId: document.id,
+                documentNumber: documentNumber || '(임시저장)',
+                title: dto.title,
+                status: dto.status,
+                approvalStepsCount: dto.approvalSteps.length,
+                message: '테스트 문서가 성공적으로 생성되었습니다.',
+            };
+        });
     }
 };
 exports.DocumentService = DocumentService;

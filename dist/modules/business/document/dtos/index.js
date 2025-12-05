@@ -29,4 +29,5 @@ __exportStar(require("./document-statistics-response.dto"), exports);
 __exportStar(require("./query-my-all-documents.dto"), exports);
 __exportStar(require("./my-all-documents-statistics-response.dto"), exports);
 __exportStar(require("./comment.dto"), exports);
+__exportStar(require("./create-test-document.dto"), exports);
 //# sourceMappingURL=index.js.map
