@@ -1,31 +1,36 @@
 import { DocumentStatus, ApprovalStepType, ApprovalStatus } from '../../../../common/enums/approval.enum';
-export declare enum TestEmployeeId {
-    김규현 = "839e6f06-8d44-43a1-948c-095253c4cf8c",
-    김종식 = "604a5c05-e0c0-495f-97bc-b86046db4342",
-    우창욱 = "02b1d831-f278-4393-86ec-9db01248a1ec",
-    이화영 = "fd3336ea-2b7f-463a-9f21-cced8d68892f",
-    조민경 = "1e9cc4b3-affb-4f63-9749-3480cd5261b9",
-    박헌남 = "f5f08c1d-9330-40f8-b80c-e75d9442503b",
-    유승훈 = "dbfbb104-6560-4557-8079-7845a82ffe14",
-    민정호 = "2f0ecd69-1b07-4d33-8f49-b71ef9048d87"
+export declare enum TestEmployeeName {
+    김규현 = "\uAE40\uADDC\uD604",
+    김종식 = "\uAE40\uC885\uC2DD",
+    우창욱 = "\uC6B0\uCC3D\uC6B1",
+    이화영 = "\uC774\uD654\uC601",
+    조민경 = "\uC870\uBBFC\uACBD",
+    박헌남 = "\uBC15\uD5CC\uB0A8",
+    유승훈 = "\uC720\uC2B9\uD6C8",
+    민정호 = "\uBBFC\uC815\uD638"
 }
+export declare const TEST_EMPLOYEE_ID_MAP: Record<TestEmployeeName, string>;
 export declare class CreateTestDocumentQueryDto {
     title: string;
     content?: string;
-    drafterId: TestEmployeeId;
+    drafterName: TestEmployeeName;
     status: DocumentStatus;
-    step1Type: ApprovalStepType;
-    step1Approver: TestEmployeeId;
-    step1Status: ApprovalStatus;
-    step2Type: ApprovalStepType;
-    step2Approver: TestEmployeeId;
-    step2Status: ApprovalStatus;
-    step3Type?: ApprovalStepType;
-    step3Approver?: TestEmployeeId;
-    step3Status?: ApprovalStatus;
-    step4Type?: ApprovalStepType;
-    step4Approver?: TestEmployeeId;
-    step4Status?: ApprovalStatus;
+    agreement1Approver?: TestEmployeeName;
+    agreement1Status?: ApprovalStatus;
+    agreement2Approver?: TestEmployeeName;
+    agreement2Status?: ApprovalStatus;
+    approval1Approver: TestEmployeeName;
+    approval1Status: ApprovalStatus;
+    approval2Approver?: TestEmployeeName;
+    approval2Status?: ApprovalStatus;
+    approval3Approver?: TestEmployeeName;
+    approval3Status?: ApprovalStatus;
+    implementationApprover: TestEmployeeName;
+    implementationStatus: ApprovalStatus;
+    reference1Approver?: TestEmployeeName;
+    reference1Status?: ApprovalStatus;
+    reference2Approver?: TestEmployeeName;
+    reference2Status?: ApprovalStatus;
 }
 export interface TestApprovalStep {
     stepOrder: number;

@@ -30,7 +30,13 @@ import {
     QueryMyAllDocumentsDto,
     MyAllDocumentsStatisticsResponseDto,
     CancelSubmitDto,
+    CreateTestDocumentQueryDto,
+    CreateTestDocumentDto,
+    CreateTestDocumentResponseDto,
+    TEST_EMPLOYEE_ID_MAP,
+    TestEmployeeName,
 } from '../dtos';
+import { ApprovalStepType } from '../../../../common/enums/approval.enum';
 import { CreateCommentDto, UpdateCommentDto, DeleteCommentDto, CommentResponseDto } from '../dtos/comment.dto';
 import { DocumentStatus } from '../../../../common/enums/approval.enum';
 import { User } from '../../../../common/decorators/user.decorator';
@@ -710,5 +716,125 @@ export class DocumentController {
     })
     async getComment(@Param('commentId') commentId: string) {
         return await this.documentService.getComment(commentId);
+    }
+
+    // ==================== 테스트 데이터 생성 API ====================
+
+    @Get('test/create')
+    @ApiOperation({
+        summary: '🧪 테스트 문서 생성',
+        description:
+            '개발/테스트 환경에서 다양한 상태의 문서를 빠르게 생성합니다.\n\n' +
+            '**⚠️ 주의: 이 API는 테스트 목적으로만 사용해야 합니다.**\n\n' +
+            '**결재 단계별 구분:**\n' +
+            '- 🤝 **합의 (AGREEMENT)**: 합의1, 합의2 (선택)\n' +
+            '- ✅ **결재 (APPROVAL)**: 결재1 (필수), 결재2 (선택)\n' +
+            '- 🚀 **시행 (IMPLEMENTATION)**: 시행 (필수)\n' +
+            '- 📋 **참조 (REFERENCE)**: 참조1, 참조2 (선택)\n\n' +
+            '**사용 가능한 직원:**\n' +
+            '김규현, 김종식, 우창욱, 이화영, 조민경, 박헌남, 유승훈, 민정호\n\n' +
+            '**예시 시나리오:**\n' +
+            '1. 결재 진행중: 결재1(APPROVED) + 시행(PENDING)\n' +
+            '2. 완전 완료: 결재1(APPROVED) + 시행(APPROVED)\n' +
+            '3. 합의 후 결재: 합의1(APPROVED) + 결재1(APPROVED) + 시행(PENDING)',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '테스트 문서 생성 성공',
+        type: CreateTestDocumentResponseDto,
+    })
+    @ApiResponse({
+        status: 400,
+        description: '잘못된 요청',
+    })
+    @ApiResponse({
+        status: 401,
+        description: '인증 실패',
+    })
+    async createTestDocument(@Query() query: CreateTestDocumentQueryDto) {
+        // 이름 -> ID 변환 헬퍼 함수
+        const getEmployeeId = (name: TestEmployeeName): string => TEST_EMPLOYEE_ID_MAP[name];
+
+        // Query 파라미터를 내부 DTO로 변환
+        const approvalSteps: CreateTestDocumentDto['approvalSteps'] = [];
+        let stepOrder = 1;
+
+        // 1. 합의 단계 추가 (AGREEMENT)
+        if (query.agreement1Approver && query.agreement1Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.AGREEMENT,
+                approverId: getEmployeeId(query.agreement1Approver),
+                status: query.agreement1Status,
+            });
+        }
+        if (query.agreement2Approver && query.agreement2Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.AGREEMENT,
+                approverId: getEmployeeId(query.agreement2Approver),
+                status: query.agreement2Status,
+            });
+        }
+
+        // 2. 결재 단계 추가 (APPROVAL) - 필수
+        approvalSteps.push({
+            stepOrder: stepOrder++,
+            stepType: ApprovalStepType.APPROVAL,
+            approverId: getEmployeeId(query.approval1Approver),
+            status: query.approval1Status,
+        });
+        if (query.approval2Approver && query.approval2Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.APPROVAL,
+                approverId: getEmployeeId(query.approval2Approver),
+                status: query.approval2Status,
+            });
+        }
+        if (query.approval3Approver && query.approval3Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.APPROVAL,
+                approverId: getEmployeeId(query.approval3Approver),
+                status: query.approval3Status,
+            });
+        }
+
+        // 3. 시행 단계 추가 (IMPLEMENTATION) - 필수
+        approvalSteps.push({
+            stepOrder: stepOrder++,
+            stepType: ApprovalStepType.IMPLEMENTATION,
+            approverId: getEmployeeId(query.implementationApprover),
+            status: query.implementationStatus,
+        });
+
+        // 4. 참조 단계 추가 (REFERENCE)
+        if (query.reference1Approver && query.reference1Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.REFERENCE,
+                approverId: getEmployeeId(query.reference1Approver),
+                status: query.reference1Status,
+            });
+        }
+        if (query.reference2Approver && query.reference2Status) {
+            approvalSteps.push({
+                stepOrder: stepOrder++,
+                stepType: ApprovalStepType.REFERENCE,
+                approverId: getEmployeeId(query.reference2Approver),
+                status: query.reference2Status,
+            });
+        }
+
+        const dto: CreateTestDocumentDto = {
+            title: query.title,
+            content: query.content,
+            drafterId: getEmployeeId(query.drafterName),
+            status: query.status,
+            approvalSteps,
+        };
+
+        return await this.documentService.createTestDocument(dto);
     }
 }
