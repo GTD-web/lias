@@ -67,15 +67,19 @@ export class ApproverMappingService {
                     case AssigneeRule.FIXED:
                         // 고정 결재자: targetEmployeeId에 지정된 직원
                         if (step.targetEmployeeId && step.targetEmployee) {
-                            const fixedEmployeePosition = await this.getEmployeePosition(step.targetEmployee.id);
+                            const fixedEmployeeDeptPos = await this.getEmployeeDepartmentPosition(
+                                step.targetEmployee.id,
+                            );
                             mappedStep.mappedApprovers = [
                                 {
                                     employeeId: step.targetEmployee.id,
                                     employeeNumber: step.targetEmployee.employeeNumber,
                                     name: step.targetEmployee.name,
                                     email: step.targetEmployee.email,
-                                    positionId: fixedEmployeePosition?.id,
-                                    positionTitle: fixedEmployeePosition?.positionTitle,
+                                    positionId: fixedEmployeeDeptPos.position?.id,
+                                    positionTitle: fixedEmployeeDeptPos.position?.positionTitle,
+                                    departmentId: fixedEmployeeDeptPos.department?.id,
+                                    departmentName: fixedEmployeeDeptPos.department?.departmentName,
                                     type: 'FIXED',
                                 },
                             ];
@@ -93,6 +97,8 @@ export class ApproverMappingService {
                                 email: drafter.email,
                                 positionId: drafterPosition.id,
                                 positionTitle: drafterPosition.positionTitle,
+                                departmentId: drafterDepartment.id,
+                                departmentName: drafterDepartment.departmentName,
                                 type: 'DRAFTER',
                             },
                         ];
@@ -113,6 +119,8 @@ export class ApproverMappingService {
                         //         email: drafter.email,
                         //         positionId: drafterPosition.id,
                         //         positionTitle: drafterPosition.positionTitle,
+                        //         departmentId: drafterDepartment.id,
+                        //         departmentName: drafterDepartment.departmentName,
                         //         type: 'DRAFTER',
                         //     },
                         // ];
@@ -124,6 +132,8 @@ export class ApproverMappingService {
                                 email: superiorResult.employee.email,
                                 positionId: superiorResult.position?.id,
                                 positionTitle: superiorResult.position?.positionTitle,
+                                departmentId: superiorResult.department?.id,
+                                departmentName: superiorResult.department?.departmentName,
                                 type: 'SUPERIOR',
                             });
                         }
@@ -154,6 +164,8 @@ export class ApproverMappingService {
                                 email: emp.employee.email,
                                 positionId: emp.position?.id,
                                 positionTitle: emp.position?.positionTitle,
+                                departmentId: emp.department?.id,
+                                departmentName: emp.department?.departmentName,
                                 type: 'DEPARTMENT_REFERENCE',
                             }));
                             mappedStep.targetDepartment = await this.departmentService.findOne({
@@ -246,6 +258,8 @@ export class ApproverMappingService {
             email: drafter.email,
             positionId: drafterPosition.id,
             positionTitle: drafterPosition.positionTitle,
+            departmentId: drafterDepartment.id,
+            departmentName: drafterDepartment.departmentName,
             type: 'DRAFTER',
         });
 
@@ -397,29 +411,36 @@ export class ApproverMappingService {
     }
 
     /**
-     * 직원의 포지션 정보 조회
+     * 직원의 부서 및 포지션 정보 조회
      */
-    private async getEmployeePosition(employeeId: string): Promise<Position | null> {
+    private async getEmployeeDepartmentPosition(
+        employeeId: string,
+    ): Promise<{ position: Position | null; department: Department | null }> {
         const employee = await this.employeeService.findOne({
             where: { id: employeeId },
-            relations: ['departmentPositions', 'departmentPositions.position'],
+            relations: ['departmentPositions', 'departmentPositions.position', 'departmentPositions.department'],
         });
 
-        if (!employee?.departmentPositions?.length) return null;
+        if (!employee?.departmentPositions?.length) {
+            return { position: null, department: null };
+        }
 
         const currentDeptPos =
             employee.departmentPositions.find((dp) => dp.isManager) || employee.departmentPositions[0];
-        return currentDeptPos?.position || null;
+        return {
+            position: currentDeptPos?.position || null,
+            department: currentDeptPos?.department || null,
+        };
     }
 
     /**
-     * 직속 상급자와 포지션 정보 함께 찾기
+     * 직속 상급자와 부서/포지션 정보 함께 찾기
      */
     private async findDirectSuperiorWithPosition(
         employee: Employee,
         department: Department,
         position: Position,
-    ): Promise<{ employee: Employee; position: Position | null } | null> {
+    ): Promise<{ employee: Employee; position: Position | null; department: Department | null } | null> {
         const allEmployees = await this.employeeService.findAll({
             relations: ['departmentPositions', 'departmentPositions.department', 'departmentPositions.position'],
         });
@@ -445,6 +466,7 @@ export class ApproverMappingService {
             return {
                 employee: superior,
                 position: superiorDeptPos?.position || null,
+                department: superiorDeptPos?.department || null,
             };
         }
 
@@ -452,11 +474,11 @@ export class ApproverMappingService {
     }
 
     /**
-     * 부서장과 포지션 정보 함께 찾기
+     * 부서장과 부서/포지션 정보 함께 찾기
      */
     private async findDepartmentHeadWithPosition(
         departmentId: string,
-    ): Promise<{ employee: Employee; position: Position | null } | null> {
+    ): Promise<{ employee: Employee; position: Position | null; department: Department | null } | null> {
         const allEmployees = await this.employeeService.findAll({
             relations: ['departmentPositions', 'departmentPositions.department', 'departmentPositions.position'],
         });
@@ -469,33 +491,35 @@ export class ApproverMappingService {
 
         let departmentHead: Employee | null = null;
         let headPosition: Position | null = null;
+        let headDepartment: Department | null = null;
         let minLevel = 999;
 
         for (const emp of deptEmployees) {
             const deptPos = emp.departmentPositions?.find((dp) => dp.departmentId === departmentId);
             if (deptPos?.position) {
                 if (deptPos.position.hasManagementAuthority) {
-                    return { employee: emp, position: deptPos.position };
+                    return { employee: emp, position: deptPos.position, department: deptPos.department || null };
                 }
                 if (deptPos.position.level < minLevel) {
                     minLevel = deptPos.position.level;
                     departmentHead = emp;
                     headPosition = deptPos.position;
+                    headDepartment = deptPos.department || null;
                 }
             }
         }
 
-        return departmentHead ? { employee: departmentHead, position: headPosition } : null;
+        return departmentHead ? { employee: departmentHead, position: headPosition, department: headDepartment } : null;
     }
 
     /**
-     * 부서의 모든 직원과 포지션 정보 함께 찾기
+     * 부서의 모든 직원과 부서/포지션 정보 함께 찾기
      */
     private async findDepartmentEmployeesWithPosition(
         departmentId: string,
-    ): Promise<{ employee: Employee; position: Position | null }[]> {
+    ): Promise<{ employee: Employee; position: Position | null; department: Department | null }[]> {
         const allEmployees = await this.employeeService.findAll({
-            relations: ['departmentPositions', 'departmentPositions.position'],
+            relations: ['departmentPositions', 'departmentPositions.position', 'departmentPositions.department'],
         });
 
         return allEmployees
@@ -505,6 +529,7 @@ export class ApproverMappingService {
                 return {
                     employee: emp,
                     position: deptPos?.position || null,
+                    department: deptPos?.department || null,
                 };
             });
     }

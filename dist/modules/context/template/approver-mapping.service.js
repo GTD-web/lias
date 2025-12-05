@@ -47,15 +47,17 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
             switch (step.assigneeRule) {
                 case approval_enum_1.AssigneeRule.FIXED:
                     if (step.targetEmployeeId && step.targetEmployee) {
-                        const fixedEmployeePosition = await this.getEmployeePosition(step.targetEmployee.id);
+                        const fixedEmployeeDeptPos = await this.getEmployeeDepartmentPosition(step.targetEmployee.id);
                         mappedStep.mappedApprovers = [
                             {
                                 employeeId: step.targetEmployee.id,
                                 employeeNumber: step.targetEmployee.employeeNumber,
                                 name: step.targetEmployee.name,
                                 email: step.targetEmployee.email,
-                                positionId: fixedEmployeePosition?.id,
-                                positionTitle: fixedEmployeePosition?.positionTitle,
+                                positionId: fixedEmployeeDeptPos.position?.id,
+                                positionTitle: fixedEmployeeDeptPos.position?.positionTitle,
+                                departmentId: fixedEmployeeDeptPos.department?.id,
+                                departmentName: fixedEmployeeDeptPos.department?.departmentName,
                                 type: 'FIXED',
                             },
                         ];
@@ -71,6 +73,8 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
                             email: drafter.email,
                             positionId: drafterPosition.id,
                             positionTitle: drafterPosition.positionTitle,
+                            departmentId: drafterDepartment.id,
+                            departmentName: drafterDepartment.departmentName,
                             type: 'DRAFTER',
                         },
                     ];
@@ -85,6 +89,8 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
                             email: superiorResult.employee.email,
                             positionId: superiorResult.position?.id,
                             positionTitle: superiorResult.position?.positionTitle,
+                            departmentId: superiorResult.department?.id,
+                            departmentName: superiorResult.department?.departmentName,
                             type: 'SUPERIOR',
                         });
                     }
@@ -104,6 +110,8 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
                             email: emp.employee.email,
                             positionId: emp.position?.id,
                             positionTitle: emp.position?.positionTitle,
+                            departmentId: emp.department?.id,
+                            departmentName: emp.department?.departmentName,
                             type: 'DEPARTMENT_REFERENCE',
                         }));
                         mappedStep.targetDepartment = await this.departmentService.findOne({
@@ -168,6 +176,8 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
             email: drafter.email,
             positionId: drafterPosition.id,
             positionTitle: drafterPosition.positionTitle,
+            departmentId: drafterDepartment.id,
+            departmentName: drafterDepartment.departmentName,
             type: 'DRAFTER',
         });
         const isDrafterDepartmentHead = drafterPosition.hasManagementAuthority || (await this.isDepartmentHead(drafter, drafterDepartment));
@@ -280,15 +290,19 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
             return emp.departmentPositions?.some((dp) => dp.departmentId === departmentId);
         });
     }
-    async getEmployeePosition(employeeId) {
+    async getEmployeeDepartmentPosition(employeeId) {
         const employee = await this.employeeService.findOne({
             where: { id: employeeId },
-            relations: ['departmentPositions', 'departmentPositions.position'],
+            relations: ['departmentPositions', 'departmentPositions.position', 'departmentPositions.department'],
         });
-        if (!employee?.departmentPositions?.length)
-            return null;
+        if (!employee?.departmentPositions?.length) {
+            return { position: null, department: null };
+        }
         const currentDeptPos = employee.departmentPositions.find((dp) => dp.isManager) || employee.departmentPositions[0];
-        return currentDeptPos?.position || null;
+        return {
+            position: currentDeptPos?.position || null,
+            department: currentDeptPos?.department || null,
+        };
     }
     async findDirectSuperiorWithPosition(employee, department, position) {
         const allEmployees = await this.employeeService.findAll({
@@ -314,6 +328,7 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
             return {
                 employee: superior,
                 position: superiorDeptPos?.position || null,
+                department: superiorDeptPos?.department || null,
             };
         }
         return null;
@@ -329,25 +344,27 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
             return null;
         let departmentHead = null;
         let headPosition = null;
+        let headDepartment = null;
         let minLevel = 999;
         for (const emp of deptEmployees) {
             const deptPos = emp.departmentPositions?.find((dp) => dp.departmentId === departmentId);
             if (deptPos?.position) {
                 if (deptPos.position.hasManagementAuthority) {
-                    return { employee: emp, position: deptPos.position };
+                    return { employee: emp, position: deptPos.position, department: deptPos.department || null };
                 }
                 if (deptPos.position.level < minLevel) {
                     minLevel = deptPos.position.level;
                     departmentHead = emp;
                     headPosition = deptPos.position;
+                    headDepartment = deptPos.department || null;
                 }
             }
         }
-        return departmentHead ? { employee: departmentHead, position: headPosition } : null;
+        return departmentHead ? { employee: departmentHead, position: headPosition, department: headDepartment } : null;
     }
     async findDepartmentEmployeesWithPosition(departmentId) {
         const allEmployees = await this.employeeService.findAll({
-            relations: ['departmentPositions', 'departmentPositions.position'],
+            relations: ['departmentPositions', 'departmentPositions.position', 'departmentPositions.department'],
         });
         return allEmployees
             .filter((emp) => emp.departmentPositions?.some((dp) => dp.departmentId === departmentId))
@@ -356,6 +373,7 @@ let ApproverMappingService = ApproverMappingService_1 = class ApproverMappingSer
             return {
                 employee: emp,
                 position: deptPos?.position || null,
+                department: deptPos?.department || null,
             };
         });
     }

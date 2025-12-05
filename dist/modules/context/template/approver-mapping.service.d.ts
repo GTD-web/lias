@@ -43,7 +43,7 @@ export declare class ApproverMappingService {
     private findDepartmentHead;
     private getDepartmentPathToRoot;
     private findDepartmentEmployees;
-    private getEmployeePosition;
+    private getEmployeeDepartmentPosition;
     private findDirectSuperiorWithPosition;
     private findDepartmentHeadWithPosition;
     private findDepartmentEmployeesWithPosition;

@@ -119,6 +119,20 @@ __decorate([
     __metadata("design:type", String)
 ], MappedApproverDto.prototype, "positionTitle", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '부서 ID',
+        example: 'uuid',
+    }),
+    __metadata("design:type", String)
+], MappedApproverDto.prototype, "departmentId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '부서명',
+        example: '개발팀',
+    }),
+    __metadata("design:type", String)
+], MappedApproverDto.prototype, "departmentName", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({
         description: '할당 유형',
         example: 'FIXED',
