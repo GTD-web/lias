@@ -27,7 +27,13 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
     async getDocument(documentId, userId, queryRunner) {
         const document = await this.documentService.findOne({
             where: { id: documentId },
-            relations: ['drafter', 'approvalSteps'],
+            relations: [
+                'drafter',
+                'drafter.departmentPositions',
+                'drafter.departmentPositions.department',
+                'drafter.departmentPositions.position',
+                'approvalSteps',
+            ],
             order: {
                 approvalSteps: {
                     stepOrder: 'ASC',
@@ -38,6 +44,7 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
         if (!document) {
             throw new common_1.NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
         }
+        const drafterWithDeptPos = this.extractDrafterDepartmentPosition(document.drafter);
         if (userId) {
             const canCancelApproval = document.approvalSteps && document.approvalSteps.length > 0
                 ? this.calculateCanCancelApproval(document.approvalSteps, document.status, userId)
@@ -45,12 +52,14 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
             const canCancelSubmit = this.calculateCanCancelSubmit(document.approvalSteps || [], document.status, document.drafterId, userId);
             return {
                 ...document,
+                drafter: drafterWithDeptPos,
                 canCancelApproval,
                 canCancelSubmit,
             };
         }
         return {
             ...document,
+            drafter: drafterWithDeptPos,
             canCancelApproval: false,
             canCancelSubmit: false,
         };
@@ -432,6 +441,32 @@ let DocumentQueryService = DocumentQueryService_1 = class DocumentQueryService {
             statistics[filterType] = count;
         }
         return statistics;
+    }
+    extractDrafterDepartmentPosition(drafter) {
+        if (!drafter)
+            return null;
+        const currentDeptPos = drafter.departmentPositions?.find((dp) => dp.isManager) || drafter.departmentPositions?.[0];
+        return {
+            id: drafter.id,
+            employeeNumber: drafter.employeeNumber,
+            name: drafter.name,
+            email: drafter.email || null,
+            department: currentDeptPos?.department
+                ? {
+                    id: currentDeptPos.department.id,
+                    departmentName: currentDeptPos.department.departmentName,
+                    departmentCode: currentDeptPos.department.departmentCode,
+                }
+                : null,
+            position: currentDeptPos?.position
+                ? {
+                    id: currentDeptPos.position.id,
+                    positionTitle: currentDeptPos.position.positionTitle,
+                    positionCode: currentDeptPos.position.positionCode,
+                    level: currentDeptPos.position.level,
+                }
+                : null,
+        };
     }
 };
 exports.DocumentQueryService = DocumentQueryService;

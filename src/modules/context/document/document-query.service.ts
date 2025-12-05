@@ -37,7 +37,13 @@ export class DocumentQueryService {
     async getDocument(documentId: string, userId?: string, queryRunner?: QueryRunner) {
         const document = await this.documentService.findOne({
             where: { id: documentId },
-            relations: ['drafter', 'approvalSteps'],
+            relations: [
+                'drafter',
+                'drafter.departmentPositions',
+                'drafter.departmentPositions.department',
+                'drafter.departmentPositions.position',
+                'approvalSteps',
+            ],
             order: {
                 approvalSteps: {
                     stepOrder: 'ASC',
@@ -49,6 +55,9 @@ export class DocumentQueryService {
         if (!document) {
             throw new NotFoundException(`문서를 찾을 수 없습니다: ${documentId}`);
         }
+
+        // 기안자의 부서/포지션 정보 추출
+        const drafterWithDeptPos = this.extractDrafterDepartmentPosition(document.drafter);
 
         // 결재취소/상신취소 가능 여부 계산 (userId가 제공된 경우)
         if (userId) {
@@ -66,6 +75,7 @@ export class DocumentQueryService {
 
             return {
                 ...document,
+                drafter: drafterWithDeptPos,
                 canCancelApproval,
                 canCancelSubmit,
             };
@@ -73,6 +83,7 @@ export class DocumentQueryService {
 
         return {
             ...document,
+            drafter: drafterWithDeptPos,
             canCancelApproval: false,
             canCancelSubmit: false,
         };
@@ -691,5 +702,53 @@ export class DocumentQueryService {
         }
 
         return statistics;
+    }
+
+    // ============================================
+    // 🔧 헬퍼 메서드
+    // ============================================
+
+    /**
+     * 기안자의 부서/포지션 정보 추출
+     * @param drafter 기안자 엔티티 (departmentPositions 관계 포함)
+     */
+    private extractDrafterDepartmentPosition(drafter: {
+        id: string;
+        employeeNumber: string;
+        name: string;
+        email?: string;
+        departmentPositions?: Array<{
+            isManager: boolean;
+            department?: { id: string; departmentName: string; departmentCode: string };
+            position?: { id: string; positionTitle: string; positionCode: string; level: number };
+        }>;
+    }) {
+        if (!drafter) return null;
+
+        // 기안자의 현재 부서/직책 정보 추출 (isManager가 true인 것 우선, 없으면 첫 번째)
+        const currentDeptPos =
+            drafter.departmentPositions?.find((dp) => dp.isManager) || drafter.departmentPositions?.[0];
+
+        return {
+            id: drafter.id,
+            employeeNumber: drafter.employeeNumber,
+            name: drafter.name,
+            email: drafter.email || null,
+            department: currentDeptPos?.department
+                ? {
+                      id: currentDeptPos.department.id,
+                      departmentName: currentDeptPos.department.departmentName,
+                      departmentCode: currentDeptPos.department.departmentCode,
+                  }
+                : null,
+            position: currentDeptPos?.position
+                ? {
+                      id: currentDeptPos.position.id,
+                      positionTitle: currentDeptPos.position.positionTitle,
+                      positionCode: currentDeptPos.position.positionCode,
+                      level: currentDeptPos.position.level,
+                  }
+                : null,
+        };
     }
 }
