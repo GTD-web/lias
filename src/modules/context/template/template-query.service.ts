@@ -28,7 +28,13 @@ export class TemplateQueryService {
 
         const template = await this.documentTemplateService.findOneWithError({
             where: { id: templateId },
-            relations: ['category', 'approvalStepTemplates'],
+            relations: [
+                'category',
+                'approvalStepTemplates',
+                'approvalStepTemplates.targetEmployee',
+                'approvalStepTemplates.targetDepartment',
+                'approvalStepTemplates.targetPosition',
+            ],
         });
 
         // 결재단계 정렬

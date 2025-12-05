@@ -18,6 +18,7 @@ const employee_service_1 = require("../../domain/employee/employee.service");
 const employee_department_position_service_1 = require("../../domain/employee-department-position/employee-department-position.service");
 const employee_enum_1 = require("../../../common/enums/employee.enum");
 const sso_1 = require("../../integrations/sso");
+const typeorm_1 = require("typeorm");
 let MetadataContext = MetadataContext_1 = class MetadataContext {
     constructor(departmentService, positionService, employeeService, employeeDepartmentPositionService, ssoService) {
         this.departmentService = departmentService;
@@ -29,7 +30,7 @@ let MetadataContext = MetadataContext_1 = class MetadataContext {
     }
     async getAllDepartments() {
         this.logger.debug('모든 부서 조회');
-        return await this.departmentService.findAll();
+        return await this.departmentService.findAll({ where: { departmentCode: (0, typeorm_1.Not)('퇴사자') } });
     }
     async getEmployeesByDepartment(departmentId, activeOnly = true) {
         this.logger.debug(`부서별 직원 조회: ${departmentId}, activeOnly: ${activeOnly}`);
@@ -178,6 +179,7 @@ let MetadataContext = MetadataContext_1 = class MetadataContext {
     async getDepartmentHierarchyWithEmployees(activeOnly = true) {
         this.logger.debug(`계층구조 부서 및 직원 조회: activeOnly=${activeOnly}`);
         const allDepartments = await this.departmentService.findAll({
+            where: { departmentCode: (0, typeorm_1.Not)('퇴사자') },
             order: { order: 'ASC' },
         });
         const allEdps = await this.employeeDepartmentPositionService.findAll({
