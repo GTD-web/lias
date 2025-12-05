@@ -18,7 +18,6 @@ const document_context_1 = require("../../../context/document/document.context")
 const document_query_service_1 = require("../../../context/document/document-query.service");
 const notification_context_1 = require("../../../context/notification/notification.context");
 const transaction_util_1 = require("../../../../common/utils/transaction.util");
-const dtos_1 = require("../dtos");
 let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessService {
     constructor(dataSource, approvalProcessContext, documentContext, documentQueryService, notificationContext) {
         this.dataSource = dataSource;
@@ -100,15 +99,6 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
             }, queryRunner);
         });
     }
-    async cancelApproval(dto, cancelerId) {
-        this.logger.log(`결재 취소 요청: ${dto.documentId}`);
-        return await (0, transaction_util_1.withTransaction)(this.dataSource, async (queryRunner) => {
-            return await this.approvalProcessContext.cancelApproval({
-                ...dto,
-                requesterId: cancelerId,
-            }, queryRunner);
-        });
-    }
     async getMyPendingApprovals(userId, type, page, limit) {
         this.logger.debug(`내 결재 대기 목록 조회: userId=${userId}, type=${type}, page=${page}, limit=${limit}`);
         return await this.approvalProcessContext.getMyPendingApprovals(userId, type, page, limit);
@@ -116,68 +106,6 @@ let ApprovalProcessService = ApprovalProcessService_1 = class ApprovalProcessSer
     async getApprovalSteps(documentId) {
         this.logger.debug(`문서 결재 단계 목록 조회: ${documentId}`);
         return await this.approvalProcessContext.getApprovalSteps(documentId);
-    }
-    async processApprovalAction(dto, approverId) {
-        this.logger.log(`통합 결재 액션 처리 요청: ${dto.type}`);
-        switch (dto.type) {
-            case dtos_1.ApprovalActionType.APPROVE:
-                if (!dto.stepSnapshotId) {
-                    throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
-                }
-                return await this.approveStep({
-                    stepSnapshotId: dto.stepSnapshotId,
-                    comment: dto.comment,
-                }, approverId);
-            case dtos_1.ApprovalActionType.REJECT:
-                if (!dto.stepSnapshotId) {
-                    throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
-                }
-                if (!dto.comment) {
-                    throw new common_1.BadRequestException('반려 시 사유(comment)는 필수입니다.');
-                }
-                return await this.rejectStep({
-                    stepSnapshotId: dto.stepSnapshotId,
-                    comment: dto.comment,
-                }, approverId);
-            case dtos_1.ApprovalActionType.COMPLETE_AGREEMENT:
-                if (!dto.stepSnapshotId) {
-                    throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
-                }
-                return await this.completeAgreement({
-                    stepSnapshotId: dto.stepSnapshotId,
-                    comment: dto.comment,
-                }, approverId);
-            case dtos_1.ApprovalActionType.COMPLETE_IMPLEMENTATION:
-                if (!dto.stepSnapshotId) {
-                    throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
-                }
-                return await this.completeImplementation({
-                    stepSnapshotId: dto.stepSnapshotId,
-                    comment: dto.comment,
-                    resultData: dto.resultData,
-                }, approverId);
-            case dtos_1.ApprovalActionType.MARK_REFERENCE_READ:
-                if (!dto.stepSnapshotId) {
-                    throw new common_1.BadRequestException('stepSnapshotId는 필수입니다.');
-                }
-                return await this.markReferenceRead({
-                    stepSnapshotId: dto.stepSnapshotId,
-                    comment: dto.comment,
-                }, approverId);
-            case dtos_1.ApprovalActionType.CANCEL:
-                if (!dto.documentId) {
-                    throw new common_1.BadRequestException('documentId는 필수입니다.');
-                }
-                if (!dto.reason) {
-                    throw new common_1.BadRequestException('취소 사유(reason)는 필수입니다.');
-                }
-                return await this.cancelApproval({
-                    documentId: dto.documentId,
-                    reason: dto.reason,
-                }, approverId);
-            default:
-                throw new common_1.BadRequestException(`지원하지 않는 액션 타입입니다: ${dto.type}`);
-        }
     }
     async sendApproveNotification(documentId, currentStepId, approverEmployeeNumber) {
         try {

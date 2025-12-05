@@ -51,8 +51,8 @@ let DocumentFilterBuilder = class DocumentFilterBuilder {
         });
     }
     applyPendingFilter(qb, userId) {
-        qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status = :status', {
-            status: approval_enum_1.DocumentStatus.PENDING,
+        qb.andWhere('document.drafterId = :userId', { userId }).andWhere('document.status != :draftStatus', {
+            draftStatus: approval_enum_1.DocumentStatus.DRAFT,
         });
     }
     applyReceivedFilter(qb, userId, receivedStepType) {
