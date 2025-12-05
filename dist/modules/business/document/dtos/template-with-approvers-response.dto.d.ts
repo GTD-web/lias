@@ -15,6 +15,8 @@ export declare class MappedApproverDto {
     employeeNumber: string;
     name: string;
     email: string;
+    positionId?: string;
+    positionTitle?: string;
     type: string;
 }
 export declare class ApprovalStepTemplateWithApproversDto {

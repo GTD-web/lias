@@ -67,12 +67,15 @@ export class ApproverMappingService {
                     case AssigneeRule.FIXED:
                         // 고정 결재자: targetEmployeeId에 지정된 직원
                         if (step.targetEmployeeId && step.targetEmployee) {
+                            const fixedEmployeePosition = await this.getEmployeePosition(step.targetEmployee.id);
                             mappedStep.mappedApprovers = [
                                 {
                                     employeeId: step.targetEmployee.id,
                                     employeeNumber: step.targetEmployee.employeeNumber,
                                     name: step.targetEmployee.name,
                                     email: step.targetEmployee.email,
+                                    positionId: fixedEmployeePosition?.id,
+                                    positionTitle: fixedEmployeePosition?.positionTitle,
                                     type: 'FIXED',
                                 },
                             ];
@@ -88,6 +91,8 @@ export class ApproverMappingService {
                                 employeeNumber: drafter.employeeNumber,
                                 name: drafter.name,
                                 email: drafter.email,
+                                positionId: drafterPosition.id,
+                                positionTitle: drafterPosition.positionTitle,
                                 type: 'DRAFTER',
                             },
                         ];
@@ -95,22 +100,30 @@ export class ApproverMappingService {
 
                     case AssigneeRule.HIERARCHY_TO_SUPERIOR:
                         // 기안자의 직속 상급자, 기안자까지 포함하는 부분은 일단 주석처리 2025-12-03 김규현
-                        const superior = await this.findDirectSuperior(drafter, drafterDepartment, drafterPosition);
+                        const superiorResult = await this.findDirectSuperiorWithPosition(
+                            drafter,
+                            drafterDepartment,
+                            drafterPosition,
+                        );
                         // mappedStep.mappedApprovers = [
                         //     {
                         //         employeeId: drafter.id,
                         //         employeeNumber: drafter.employeeNumber,
                         //         name: drafter.name,
                         //         email: drafter.email,
+                        //         positionId: drafterPosition.id,
+                        //         positionTitle: drafterPosition.positionTitle,
                         //         type: 'DRAFTER',
                         //     },
                         // ];
-                        if (superior) {
+                        if (superiorResult) {
                             mappedStep.mappedApprovers.push({
-                                employeeId: superior.id,
-                                employeeNumber: superior.employeeNumber,
-                                name: superior.name,
-                                email: superior.email,
+                                employeeId: superiorResult.employee.id,
+                                employeeNumber: superiorResult.employee.employeeNumber,
+                                name: superiorResult.employee.name,
+                                email: superiorResult.employee.email,
+                                positionId: superiorResult.position?.id,
+                                positionTitle: superiorResult.position?.positionTitle,
                                 type: 'SUPERIOR',
                             });
                         }
@@ -131,12 +144,16 @@ export class ApproverMappingService {
                     case AssigneeRule.DEPARTMENT_REFERENCE:
                         // 부서 전체 참조: targetDepartmentId에 지정된 부서의 모든 직원
                         if (step.targetDepartmentId) {
-                            const departmentEmployees = await this.findDepartmentEmployees(step.targetDepartmentId);
-                            mappedStep.mappedApprovers = departmentEmployees.map((emp) => ({
-                                employeeId: emp.id,
-                                employeeNumber: emp.employeeNumber,
-                                name: emp.name,
-                                email: emp.email,
+                            const departmentEmployeesWithPosition = await this.findDepartmentEmployeesWithPosition(
+                                step.targetDepartmentId,
+                            );
+                            mappedStep.mappedApprovers = departmentEmployeesWithPosition.map((emp) => ({
+                                employeeId: emp.employee.id,
+                                employeeNumber: emp.employee.employeeNumber,
+                                name: emp.employee.name,
+                                email: emp.employee.email,
+                                positionId: emp.position?.id,
+                                positionTitle: emp.position?.positionTitle,
                                 type: 'DEPARTMENT_REFERENCE',
                             }));
                             mappedStep.targetDepartment = await this.departmentService.findOne({
@@ -227,6 +244,8 @@ export class ApproverMappingService {
             employeeNumber: drafter.employeeNumber,
             name: drafter.name,
             email: drafter.email,
+            positionId: drafterPosition.id,
+            positionTitle: drafterPosition.positionTitle,
             type: 'DRAFTER',
         });
 
@@ -239,13 +258,15 @@ export class ApproverMappingService {
 
         // 4. 기안자가 부서장이 아닌 경우, 기안자의 부서의 부서장 추가
         if (!isDrafterDepartmentHead) {
-            const drafterDeptHead = await this.findDepartmentHead(drafterDepartment.id);
-            if (drafterDeptHead && drafterDeptHead.id !== drafter.id) {
+            const drafterDeptHeadResult = await this.findDepartmentHeadWithPosition(drafterDepartment.id);
+            if (drafterDeptHeadResult && drafterDeptHeadResult.employee.id !== drafter.id) {
                 approvers.push({
-                    employeeId: drafterDeptHead.id,
-                    employeeNumber: drafterDeptHead.employeeNumber,
-                    name: drafterDeptHead.name,
-                    email: drafterDeptHead.email,
+                    employeeId: drafterDeptHeadResult.employee.id,
+                    employeeNumber: drafterDeptHeadResult.employee.employeeNumber,
+                    name: drafterDeptHeadResult.employee.name,
+                    email: drafterDeptHeadResult.employee.email,
+                    positionId: drafterDeptHeadResult.position?.id,
+                    positionTitle: drafterDeptHeadResult.position?.positionTitle,
                     type: 'HIERARCHY',
                     departmentId: drafterDepartment.id,
                     departmentName: drafterDepartment.departmentName,
@@ -257,13 +278,15 @@ export class ApproverMappingService {
         // 5. 상위 부서들의 부서장 찾기
         const parentDepartments = departmentPath.slice(1);
         for (const dept of parentDepartments) {
-            const deptHead = await this.findDepartmentHead(dept.id);
-            if (deptHead && !approvers.find((a) => a.employeeId === deptHead.id)) {
+            const deptHeadResult = await this.findDepartmentHeadWithPosition(dept.id);
+            if (deptHeadResult && !approvers.find((a) => a.employeeId === deptHeadResult.employee.id)) {
                 approvers.push({
-                    employeeId: deptHead.id,
-                    employeeNumber: deptHead.employeeNumber,
-                    name: deptHead.name,
-                    email: deptHead.email,
+                    employeeId: deptHeadResult.employee.id,
+                    employeeNumber: deptHeadResult.employee.employeeNumber,
+                    name: deptHeadResult.employee.name,
+                    email: deptHeadResult.employee.email,
+                    positionId: deptHeadResult.position?.id,
+                    positionTitle: deptHeadResult.position?.positionTitle,
                     type: 'HIERARCHY',
                     departmentId: dept.id,
                     departmentName: dept.departmentName,
@@ -371,5 +394,118 @@ export class ApproverMappingService {
         return allEmployees.filter((emp) => {
             return emp.departmentPositions?.some((dp) => dp.departmentId === departmentId);
         });
+    }
+
+    /**
+     * 직원의 포지션 정보 조회
+     */
+    private async getEmployeePosition(employeeId: string): Promise<Position | null> {
+        const employee = await this.employeeService.findOne({
+            where: { id: employeeId },
+            relations: ['departmentPositions', 'departmentPositions.position'],
+        });
+
+        if (!employee?.departmentPositions?.length) return null;
+
+        const currentDeptPos =
+            employee.departmentPositions.find((dp) => dp.isManager) || employee.departmentPositions[0];
+        return currentDeptPos?.position || null;
+    }
+
+    /**
+     * 직속 상급자와 포지션 정보 함께 찾기
+     */
+    private async findDirectSuperiorWithPosition(
+        employee: Employee,
+        department: Department,
+        position: Position,
+    ): Promise<{ employee: Employee; position: Position | null } | null> {
+        const allEmployees = await this.employeeService.findAll({
+            relations: ['departmentPositions', 'departmentPositions.department', 'departmentPositions.position'],
+        });
+
+        const superiors = allEmployees.filter((emp) => {
+            const empDeptPos = emp.departmentPositions?.find((dp) => dp.departmentId === department.id);
+            if (!empDeptPos || emp.id === employee.id) return false;
+            const empPosition = empDeptPos.position;
+            return empPosition && empPosition.level < position.level;
+        });
+
+        if (superiors.length > 0) {
+            superiors.sort((a, b) => {
+                const aDeptPos = a.departmentPositions?.find((dp) => dp.departmentId === department.id);
+                const bDeptPos = b.departmentPositions?.find((dp) => dp.departmentId === department.id);
+                const aLevel = aDeptPos?.position?.level || 999;
+                const bLevel = bDeptPos?.position?.level || 999;
+                return aLevel - bLevel;
+            });
+
+            const superior = superiors[0];
+            const superiorDeptPos = superior.departmentPositions?.find((dp) => dp.departmentId === department.id);
+            return {
+                employee: superior,
+                position: superiorDeptPos?.position || null,
+            };
+        }
+
+        return null;
+    }
+
+    /**
+     * 부서장과 포지션 정보 함께 찾기
+     */
+    private async findDepartmentHeadWithPosition(
+        departmentId: string,
+    ): Promise<{ employee: Employee; position: Position | null } | null> {
+        const allEmployees = await this.employeeService.findAll({
+            relations: ['departmentPositions', 'departmentPositions.department', 'departmentPositions.position'],
+        });
+
+        const deptEmployees = allEmployees.filter((emp) => {
+            return emp.departmentPositions?.some((dp) => dp.departmentId === departmentId);
+        });
+
+        if (deptEmployees.length === 0) return null;
+
+        let departmentHead: Employee | null = null;
+        let headPosition: Position | null = null;
+        let minLevel = 999;
+
+        for (const emp of deptEmployees) {
+            const deptPos = emp.departmentPositions?.find((dp) => dp.departmentId === departmentId);
+            if (deptPos?.position) {
+                if (deptPos.position.hasManagementAuthority) {
+                    return { employee: emp, position: deptPos.position };
+                }
+                if (deptPos.position.level < minLevel) {
+                    minLevel = deptPos.position.level;
+                    departmentHead = emp;
+                    headPosition = deptPos.position;
+                }
+            }
+        }
+
+        return departmentHead ? { employee: departmentHead, position: headPosition } : null;
+    }
+
+    /**
+     * 부서의 모든 직원과 포지션 정보 함께 찾기
+     */
+    private async findDepartmentEmployeesWithPosition(
+        departmentId: string,
+    ): Promise<{ employee: Employee; position: Position | null }[]> {
+        const allEmployees = await this.employeeService.findAll({
+            relations: ['departmentPositions', 'departmentPositions.position'],
+        });
+
+        return allEmployees
+            .filter((emp) => emp.departmentPositions?.some((dp) => dp.departmentId === departmentId))
+            .map((emp) => {
+                const deptPos = emp.departmentPositions?.find((dp) => dp.departmentId === departmentId);
+                return {
+                    employee: emp,
+                    position: deptPos?.position || null,
+                };
+            });
     }
 }
