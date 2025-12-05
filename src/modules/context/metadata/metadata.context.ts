@@ -5,6 +5,7 @@ import { DomainEmployeeService } from '../../domain/employee/employee.service';
 import { DomainEmployeeDepartmentPositionService } from '../../domain/employee-department-position/employee-department-position.service';
 import { EmployeeStatus } from '../../../common/enums/employee.enum';
 import { SSOService } from '../../integrations/sso';
+import { Not } from 'typeorm';
 
 /**
  * 메타데이터 컨텍스트
@@ -28,7 +29,7 @@ export class MetadataContext {
      */
     async getAllDepartments() {
         this.logger.debug('모든 부서 조회');
-        return await this.departmentService.findAll();
+        return await this.departmentService.findAll({ where: { departmentCode: Not('퇴사자') } });
     }
 
     /**
@@ -227,6 +228,7 @@ export class MetadataContext {
 
         // 모든 부서 조회
         const allDepartments = await this.departmentService.findAll({
+            where: { departmentCode: Not('퇴사자') },
             order: { order: 'ASC' },
         });
 

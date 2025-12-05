@@ -24,7 +24,13 @@ let TemplateQueryService = TemplateQueryService_1 = class TemplateQueryService {
         this.logger.debug(`문서 템플릿 상세 조회: ${templateId}`);
         const template = await this.documentTemplateService.findOneWithError({
             where: { id: templateId },
-            relations: ['category', 'approvalStepTemplates'],
+            relations: [
+                'category',
+                'approvalStepTemplates',
+                'approvalStepTemplates.targetEmployee',
+                'approvalStepTemplates.targetDepartment',
+                'approvalStepTemplates.targetPosition',
+            ],
         });
         if (template.approvalStepTemplates) {
             template.approvalStepTemplates.sort((a, b) => a.stepOrder - b.stepOrder);
